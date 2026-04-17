@@ -25,8 +25,7 @@ model Tournament {
   name        String
   slug        String              @unique
   location    String?
-  startDate   DateTime
-  endDate     DateTime?
+  eventDate   DateTime
   status      String              @default("draft")
   description String?
   createdAt   DateTime            @default(now())

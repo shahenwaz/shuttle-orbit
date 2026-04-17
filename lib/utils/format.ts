@@ -1,9 +1,19 @@
-export function formatDate(date: Date | string) {
+export function formatDate(date: Date | string | null | undefined) {
+  if (!date) {
+    return "Date unavailable";
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Date unavailable";
+  }
+
   return new Intl.DateTimeFormat("en-IE", {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(parsedDate);
 }
 
 export function formatTeamName(

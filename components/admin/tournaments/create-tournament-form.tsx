@@ -78,22 +78,18 @@ export function CreateTournamentForm() {
           ) : null}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="startDate">Start date</Label>
-          <Input id="startDate" name="startDate" type="date" />
-          {state.fieldErrors?.startDate ? (
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="eventDate">Tournament date</Label>
+          <input
+            id="eventDate"
+            name="eventDate"
+            type="date"
+            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground outline-none focus-visible:border-primary/50 dark-date"
+            style={{ colorScheme: "dark" }}
+          />
+          {state.fieldErrors?.eventDate ? (
             <p className="text-sm text-red-400">
-              {state.fieldErrors.startDate[0]}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="endDate">End date</Label>
-          <Input id="endDate" name="endDate" type="date" />
-          {state.fieldErrors?.endDate ? (
-            <p className="text-sm text-red-400">
-              {state.fieldErrors.endDate[0]}
+              {state.fieldErrors.eventDate[0]}
             </p>
           ) : null}
         </div>

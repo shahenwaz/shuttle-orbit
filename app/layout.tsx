@@ -3,7 +3,6 @@ import { Inter, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
-import { ThemeProvider } from "@/components/core/theme-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,21 +27,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      className={`${inter.variable} ${spaceGrotesk.variable} dark`}
       suppressHydrationWarning
-      className={`${inter.variable} ${spaceGrotesk.variable}`}
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-          </div>
-        </ThemeProvider>
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+        </div>
       </body>
     </html>
   );

@@ -48,7 +48,7 @@ export default async function TournamentDetailPage({
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
-            <span>{formatDate(tournament.startDate)}</span>
+            <span>{formatDate(tournament.eventDate)}</span>
           </div>
 
           {tournament.location ? (

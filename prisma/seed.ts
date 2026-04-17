@@ -64,7 +64,7 @@ async function main() {
       name: "Dublin Community Badminton Cup",
       slug: "dublin-community-badminton-cup-apr-2026",
       location: "Dublin",
-      startDate: new Date("2026-04-21T10:00:00.000Z"),
+      eventDate: new Date("2026-04-21T10:00:00.000Z"),
       status: "upcoming",
       description: "Community badminton tournament for Group B and Group C.",
     },

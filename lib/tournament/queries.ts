@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 export async function getFeaturedTournament() {
   return prisma.tournament.findFirst({
     orderBy: {
-      startDate: "asc",
+      eventDate: "asc",
     },
     include: {
       categories: {
@@ -18,7 +18,7 @@ export async function getFeaturedTournament() {
 export async function getAllTournaments() {
   return prisma.tournament.findMany({
     orderBy: {
-      startDate: "asc",
+      eventDate: "asc",
     },
     include: {
       categories: {

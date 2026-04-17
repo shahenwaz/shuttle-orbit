@@ -10,15 +10,14 @@ export default async function AdminTournamentsPage() {
   const [tournaments, tournamentCount] = await Promise.all([
     prisma.tournament.findMany({
       orderBy: {
-        startDate: "desc",
+        eventDate: "desc",
       },
       select: {
         id: true,
         name: true,
         slug: true,
         location: true,
-        startDate: true,
-        endDate: true,
+        eventDate: true,
         status: true,
         _count: {
           select: {

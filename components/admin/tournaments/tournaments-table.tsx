@@ -1,4 +1,6 @@
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils/format";
 
 type TournamentRow = {
@@ -6,8 +8,7 @@ type TournamentRow = {
   name: string;
   slug: string;
   location: string | null;
-  startDate: Date;
-  endDate: Date | null;
+  eventDate: Date;
   status: string;
   _count: {
     categories: number;
@@ -43,77 +44,67 @@ export function TournamentsTable({ tournaments }: TournamentsTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-background/40">
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-white/5 text-muted-foreground">
-            <tr className="border-b border-white/10">
-              <th className="px-4 py-3 font-medium">Tournament</th>
-              <th className="px-4 py-3 font-medium">Date</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Counts</th>
-              <th className="px-4 py-3 font-medium">Slug</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tournaments.map((tournament) => (
-              <tr
-                key={tournament.id}
-                className="border-b border-white/10 last:border-0"
-              >
-                <td className="px-4 py-3">
-                  <div className="space-y-1">
-                    <p className="font-medium text-foreground">
-                      {tournament.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {tournament.location ?? "No location set"}
-                    </p>
-                  </div>
-                </td>
+    <div className="grid gap-3">
+      {tournaments.map((tournament) => (
+        <div key={tournament.id} className="surface-panel p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="text-base font-semibold text-foreground">
+                  {tournament.name}
+                </h4>
+                <span
+                  className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(
+                    tournament.status,
+                  )}`}
+                >
+                  {tournament.status}
+                </span>
+              </div>
 
-                <td className="px-4 py-3 text-muted-foreground">
-                  <div className="space-y-1">
-                    <p>{formatDate(tournament.startDate)}</p>
-                    {tournament.endDate ? (
-                      <p className="text-xs">
-                        to {formatDate(tournament.endDate)}
-                      </p>
-                    ) : null}
-                  </div>
-                </td>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>{tournament.location ?? "No location set"}</p>
+                <p>{formatDate(tournament.eventDate)}</p>
+                <p className="break-all text-xs">{tournament.slug}</p>
+              </div>
+            </div>
 
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(
-                      tournament.status,
-                    )}`}
-                  >
-                    {tournament.status}
-                  </span>
-                </td>
+            <div className="grid gap-3 sm:grid-cols-[auto_auto] sm:items-center">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Categories</p>
+                  <p className="mt-1 text-base font-semibold">
+                    {tournament._count.categories}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Teams</p>
+                  <p className="mt-1 text-base font-semibold">
+                    {tournament._count.teamEntries}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Matches</p>
+                  <p className="mt-1 text-base font-semibold">
+                    {tournament._count.matches}
+                  </p>
+                </div>
+              </div>
 
-                <td className="px-4 py-3 text-muted-foreground">
-                  <div className="space-y-1 text-xs sm:text-sm">
-                    <p>{tournament._count.categories} categories</p>
-                    <p>{tournament._count.teamEntries} teams</p>
-                    <p>{tournament._count.matches} matches</p>
-                  </div>
-                </td>
-
-                <td className="px-4 py-3 text-muted-foreground">
-                  <Link
-                    href={`/tournaments/${tournament.slug}`}
-                    className="break-all text-primary hover:underline"
-                  >
-                    {tournament.slug}
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/tournaments/${tournament.slug}`}>Public</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href={`/admin/tournaments/${tournament.id}`}>
+                    Manage
                   </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
