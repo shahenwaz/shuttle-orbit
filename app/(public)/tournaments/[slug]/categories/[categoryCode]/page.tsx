@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 
+import { GroupStandingsTable } from "@/components/tournaments/group-standings-table";
+import { MatchCard } from "@/components/tournaments/match-card";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { computeGroupStandings } from "@/lib/tournament/standings";
 import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
 import { formatTeamName } from "@/lib/utils/format";
 
@@ -49,7 +52,7 @@ export default async function CategoryDetailPage({
         ) : null}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
         <Card className="rounded-3xl border-white/10 bg-white/5">
           <CardHeader>
             <CardTitle>Registered teams</CardTitle>
@@ -87,95 +90,107 @@ export default async function CategoryDetailPage({
               key={stage.id}
               className="rounded-3xl border-white/10 bg-white/5"
             >
-              <CardHeader>
+              <CardHeader className="space-y-2">
                 <CardTitle>{stage.name}</CardTitle>
+                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
+                  {stage.stageType.replaceAll("_", " ")}
+                </p>
               </CardHeader>
-              <CardContent className="space-y-5">
-                <div>
-                  <p className="mb-2 text-sm font-medium text-foreground">
-                    Groups
-                  </p>
-                  {stage.groups.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No groups created yet.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {stage.groups.map((group: GroupItem) => (
+
+              <CardContent className="space-y-6">
+                {stage.groups.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-semibold">
+                        Groups & standings
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Current group allocation and standings based on
+                        completed match results.
+                      </p>
+                    </div>
+
+                    {stage.groups.map((group: GroupItem) => {
+                      const groupMatches = stage.matches.filter(
+                        (match: MatchItem) => match.groupId === group.id,
+                      );
+
+                      const standings = computeGroupStandings(
+                        group.memberships.map((membership: MembershipItem) => ({
+                          id: membership.id,
+                          teamEntry: membership.teamEntry,
+                        })),
+                        groupMatches.map((match: MatchItem) => ({
+                          id: match.id,
+                          status: match.status,
+                          teamAId: match.teamAId,
+                          teamBId: match.teamBId,
+                          winnerId: match.winnerId,
+                          teamA: match.teamA,
+                          teamB: match.teamB,
+                          sets: match.sets.map((set) => ({
+                            setNumber: set.setNumber,
+                            teamAScore: set.teamAScore,
+                            teamBScore: set.teamBScore,
+                          })),
+                        })),
+                      );
+
+                      return (
                         <div
                           key={group.id}
-                          className="rounded-2xl border border-white/10 bg-background/40 p-4"
+                          className="space-y-4 rounded-2xl border border-white/10 bg-background/40 p-4"
                         >
-                          <p className="font-medium">{group.name}</p>
-                          <div className="mt-3 space-y-2">
-                            {group.memberships.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">
-                                No teams assigned yet.
-                              </p>
-                            ) : (
-                              group.memberships.map(
+                          <div className="space-y-2">
+                            <h4 className="text-base font-semibold">
+                              {group.name}
+                            </h4>
+
+                            <div className="flex flex-wrap gap-2">
+                              {group.memberships.map(
                                 (membership: MembershipItem) => {
                                   const team = membership.teamEntry;
 
                                   return (
-                                    <p
+                                    <span
                                       key={membership.id}
-                                      className="text-sm text-muted-foreground"
+                                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-foreground"
                                     >
                                       {formatTeamName(
                                         team.player1.fullName,
                                         team.player2.fullName,
                                         team.teamName,
                                       )}
-                                    </p>
+                                    </span>
                                   );
                                 },
-                              )
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
-                <div>
-                  <p className="mb-2 text-sm font-medium text-foreground">
-                    Matches
-                  </p>
+                          <GroupStandingsTable rows={standings} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold">Matches</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Completed and scheduled matches for this stage.
+                    </p>
+                  </div>
+
                   {stage.matches.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                       No matches generated yet.
                     </p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="grid gap-3">
                       {stage.matches.map((match: MatchItem) => (
-                        <div
-                          key={match.id}
-                          className="rounded-2xl border border-white/10 bg-background/40 p-4"
-                        >
-                          <p className="font-medium">
-                            {formatTeamName(
-                              match.teamA.player1.fullName,
-                              match.teamA.player2.fullName,
-                              match.teamA.teamName,
-                            )}{" "}
-                            vs{" "}
-                            {formatTeamName(
-                              match.teamB.player1.fullName,
-                              match.teamB.player2.fullName,
-                              match.teamB.teamName,
-                            )}
-                          </p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            Status: {match.status}
-                          </p>
-                          {match.scoreSummary ? (
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              Score: {match.scoreSummary}
-                            </p>
-                          ) : null}
-                        </div>
+                        <MatchCard key={match.id} match={match} />
                       ))}
                     </div>
                   )}

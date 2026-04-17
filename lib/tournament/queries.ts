@@ -68,9 +68,14 @@ export async function getTournamentBySlug(slug: string) {
                 },
               },
               matches: {
-                orderBy: {
-                  createdAt: "asc",
-                },
+                orderBy: [
+                  {
+                    scheduledAt: "asc",
+                  },
+                  {
+                    createdAt: "asc",
+                  },
+                ],
                 include: {
                   teamA: {
                     include: {
@@ -161,9 +166,14 @@ export async function getCategoryByTournamentAndCode(
                 },
               },
               matches: {
-                orderBy: {
-                  createdAt: "asc",
-                },
+                orderBy: [
+                  {
+                    scheduledAt: "asc",
+                  },
+                  {
+                    createdAt: "asc",
+                  },
+                ],
                 include: {
                   teamA: {
                     include: {
