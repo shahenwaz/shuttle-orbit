@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { FolderKanban, ShieldCheck, Trophy } from "lucide-react";
+import { FolderKanban, ShieldCheck, Swords, Trophy, Users } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getAdminDashboardStats } from "@/lib/tournament/queries";
 
 const adminSections = [
   {
@@ -25,7 +26,9 @@ const adminSections = [
   },
 ];
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const stats = await getAdminDashboardStats();
+
   return (
     <PageContainer className="space-y-8">
       <section className="space-y-3">
@@ -41,14 +44,67 @@ export default function AdminPage() {
         </p>
       </section>
 
+      <section className="grid gap-4 md:grid-cols-4">
+        <Card className="rounded-3xl border-white/10 bg-white/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Trophy className="h-4 w-4" />
+              Tournaments
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.tournamentCount}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-white/10 bg-white/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-4 w-4" />
+              Players
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.playerCount}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-white/10 bg-white/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-4 w-4" />
+              Teams
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.teamCount}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-white/10 bg-white/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Swords className="h-4 w-4" />
+              Matches
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.matchCount}</p>
+          </CardContent>
+        </Card>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-3">
         {adminSections.map((section) => {
           const Icon = section.icon;
 
           return (
-            <Card key={section.title}>
+            <Card
+              key={section.title}
+              className="rounded-3xl border-white/10 bg-white/5"
+            >
               <CardHeader className="space-y-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-muted">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-background/60">
                   <Icon className="h-5 w-5" />
                 </div>
                 <CardTitle>{section.title}</CardTitle>
@@ -57,7 +113,12 @@ export default function AdminPage() {
                 <p className="text-sm leading-6 text-muted-foreground">
                   {section.description}
                 </p>
-                <Button asChild variant="outline" size="sm">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
                   <Link href="/">Back to home</Link>
                 </Button>
               </CardContent>

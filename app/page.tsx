@@ -1,8 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, Medal, Settings2, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  MapPin,
+  Medal,
+  Settings2,
+  Users,
+} from "lucide-react";
+
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getFeaturedTournament } from "@/lib/tournament/queries";
+import { formatDate } from "@/lib/utils/format";
 
 const highlights = [
   {
@@ -23,9 +33,16 @@ const highlights = [
       "Publish fixtures, standings, results, and leaderboards in a modern public experience for your badminton community.",
     icon: Medal,
   },
-];
+] as const;
 
-export default function HomePage() {
+type FeaturedTournament = NonNullable<
+  Awaited<ReturnType<typeof getFeaturedTournament>>
+>;
+type FeaturedCategory = FeaturedTournament["categories"][number];
+
+export default async function HomePage() {
+  const featuredTournament = await getFeaturedTournament();
+
   return (
     <PageContainer className="space-y-12">
       <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
@@ -61,12 +78,60 @@ export default function HomePage() {
 
         <Card className="rounded-3xl border-white/10 bg-white/5 shadow-2xl shadow-black/20">
           <CardHeader>
-            <CardTitle>Foundation status</CardTitle>
+            <CardTitle>Featured tournament</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>Project shell initialized.</p>
-            <p>Dark theme foundation added.</p>
-            <p>Prisma setup comes next in a guided beginner-safe milestone.</p>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            {featuredTournament ? (
+              <>
+                <div>
+                  <p className="text-base font-semibold text-foreground">
+                    {featuredTournament.name}
+                  </p>
+                  <p className="mt-1 text-sm">
+                    {featuredTournament.description}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    <span>{formatDate(featuredTournament.startDate)}</span>
+                  </div>
+
+                  {featuredTournament.location ? (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>{featuredTournament.location}</span>
+                    </div>
+                  ) : null}
+
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {featuredTournament.categories.map(
+                      (category: FeaturedCategory) => (
+                        <span
+                          key={category.id}
+                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-foreground"
+                        >
+                          {category.name}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full rounded-full"
+                >
+                  <Link href={`/tournaments/${featuredTournament.slug}`}>
+                    View tournament
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <p>No tournament data found yet.</p>
+            )}
           </CardContent>
         </Card>
       </section>
