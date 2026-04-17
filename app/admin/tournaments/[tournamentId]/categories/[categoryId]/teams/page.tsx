@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Users2 } from "lucide-react";
 
+import { CreateSheet } from "@/components/admin/create-sheet";
 import { CreateTeamEntryForm } from "@/components/admin/teams/create-team-entry-form";
 import { TeamEntriesList } from "@/components/admin/teams/team-entries-list";
 import { SectionCard } from "@/components/admin/section-card";
@@ -96,63 +97,65 @@ export default async function AdminCategoryTeamsPage({
         </div>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm text-primary">
               <Users2 className="h-4 w-4" />
               Category teams
             </div>
 
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {category.name} team entries
-            </h1>
-
-            <p className="max-w-2xl text-muted-foreground">
-              Manage doubles teams for this category inside {tournament.name}.
-            </p>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                {category.name} team entries
+              </h1>
+              <p className="max-w-2xl text-muted-foreground">
+                Manage doubles teams for this category inside {tournament.name}.
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="surface-panel px-4 py-3 text-center">
-              <p className="text-xs text-muted-foreground">Teams</p>
-              <p className="mt-1 text-xl font-semibold">
-                {category._count.teamEntries}
-              </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="surface-panel px-4 py-3 text-center">
+                <p className="text-xs text-muted-foreground">Teams</p>
+                <p className="mt-1 text-xl font-semibold">
+                  {category._count.teamEntries}
+                </p>
+              </div>
+              <div className="surface-panel px-4 py-3 text-center">
+                <p className="text-xs text-muted-foreground">Stages</p>
+                <p className="mt-1 text-xl font-semibold">
+                  {category._count.stages}
+                </p>
+              </div>
+              <div className="surface-panel px-4 py-3 text-center">
+                <p className="text-xs text-muted-foreground">Matches</p>
+                <p className="mt-1 text-xl font-semibold">
+                  {category._count.matches}
+                </p>
+              </div>
             </div>
-            <div className="surface-panel px-4 py-3 text-center">
-              <p className="text-xs text-muted-foreground">Stages</p>
-              <p className="mt-1 text-xl font-semibold">
-                {category._count.stages}
-              </p>
-            </div>
-            <div className="surface-panel px-4 py-3 text-center">
-              <p className="text-xs text-muted-foreground">Matches</p>
-              <p className="mt-1 text-xl font-semibold">
-                {category._count.matches}
-              </p>
-            </div>
+
+            <CreateSheet
+              triggerLabel="Add team"
+              title="Create team"
+              description="Select two unique players. Each player can only appear once in the same category."
+            >
+              <CreateTeamEntryForm
+                tournamentId={tournament.id}
+                categoryId={category.id}
+                players={players}
+              />
+            </CreateSheet>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <SectionCard
-          title="Create team"
-          description="Select two unique players. Each player can only belong to one team in the same category."
-        >
-          <CreateTeamEntryForm
-            tournamentId={tournament.id}
-            categoryId={category.id}
-            players={players}
-          />
-        </SectionCard>
-
-        <SectionCard
-          title="Category teams"
-          description="Existing team entries for this tournament category."
-        >
-          <TeamEntriesList teams={category.teamEntries} />
-        </SectionCard>
-      </section>
+      <SectionCard
+        title="Category teams"
+        description="Existing team entries for this tournament category."
+      >
+        <TeamEntriesList teams={category.teamEntries} />
+      </SectionCard>
     </PageContainer>
   );
 }

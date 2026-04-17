@@ -33,7 +33,7 @@ export function CreateTournamentForm() {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="name">Tournament name</Label>
@@ -63,7 +63,7 @@ export function CreateTournamentForm() {
             id="status"
             name="status"
             defaultValue="draft"
-            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground outline-none focus-visible:border-primary/50"
+            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
           >
             {tournamentStatusValues.map((status) => (
               <option key={status} value={status}>
@@ -101,7 +101,7 @@ export function CreateTournamentForm() {
             name="description"
             rows={4}
             placeholder="Optional short summary for the tournament"
-            className="flex w-full rounded-xl border border-white/10 bg-background/70 px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/75 focus-visible:border-primary/50"
+            className="flex min-h-32 w-full rounded-xl border border-white/10 bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground/75 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
           />
           {state.fieldErrors?.description ? (
             <p className="text-sm text-red-400">
@@ -121,7 +121,7 @@ export function CreateTournamentForm() {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending} className="min-w-40">
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -32,7 +32,7 @@ export function CreatePlayerForm() {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="fullName">Full name</Label>
@@ -79,11 +79,7 @@ export function CreatePlayerForm() {
         </p>
       ) : null}
 
-      <Button
-        type="submit"
-        disabled={isPending}
-        className="h-11 rounded-full px-5"
-      >
+      <Button type="submit" disabled={isPending} className="min-w-32">
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

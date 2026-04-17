@@ -36,7 +36,7 @@ export function CreateCategoryForm({ tournamentId }: CreateCategoryFormProps) {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-6">
       <input type="hidden" name="tournamentId" value={tournamentId} />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -66,7 +66,7 @@ export function CreateCategoryForm({ tournamentId }: CreateCategoryFormProps) {
             name="rulesSummary"
             rows={4}
             placeholder="Optional short summary of how this category will be managed"
-            className="flex w-full rounded-xl border border-white/10 bg-background/70 px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/75 focus-visible:border-primary/50"
+            className="flex min-h-32 w-full rounded-xl border border-white/10 bg-background/70 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground/75 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
           />
           {state.fieldErrors?.rulesSummary ? (
             <p className="text-sm text-red-400">
@@ -86,7 +86,7 @@ export function CreateCategoryForm({ tournamentId }: CreateCategoryFormProps) {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending} className="min-w-36">
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

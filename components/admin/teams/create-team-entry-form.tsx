@@ -56,7 +56,7 @@ export function CreateTeamEntryForm({
   );
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-6">
       <input type="hidden" name="tournamentId" value={tournamentId} />
       <input type="hidden" name="categoryId" value={categoryId} />
 
@@ -67,7 +67,7 @@ export function CreateTeamEntryForm({
             id="player1Id"
             name="player1Id"
             defaultValue=""
-            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground outline-none focus-visible:border-primary/50"
+            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
           >
             <option value="" disabled>
               Select first player
@@ -91,7 +91,7 @@ export function CreateTeamEntryForm({
             id="player2Id"
             name="player2Id"
             defaultValue=""
-            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground outline-none focus-visible:border-primary/50"
+            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
           >
             <option value="" disabled>
               Select second player
@@ -134,7 +134,7 @@ export function CreateTeamEntryForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending} className="min-w-36">
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

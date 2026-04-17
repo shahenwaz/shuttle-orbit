@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, MapPin, Trophy } from "lucide-react";
 
+import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateCategoryForm } from "@/components/admin/tournaments/create-category-form";
 import { TournamentCategoriesList } from "@/components/admin/tournaments/tournament-categories-list";
 import { SectionCard } from "@/components/admin/section-card";
@@ -99,11 +100,18 @@ export default async function AdminTournamentDetailPage({
             <Button asChild variant="outline">
               <Link href="/admin/tournaments">Back to tournaments</Link>
             </Button>
-            <Button asChild>
+            <Button asChild variant="outline">
               <Link href={`/tournaments/${tournament.slug}`}>
                 View public page
               </Link>
             </Button>
+            <CreateDialog
+              triggerLabel="Add category"
+              title="Create category"
+              description="Add divisions like B, C, Mixed, or any custom format."
+            >
+              <CreateCategoryForm tournamentId={tournament.id} />
+            </CreateDialog>
           </div>
         </div>
       </section>
@@ -129,24 +137,15 @@ export default async function AdminTournamentDetailPage({
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <SectionCard
-          title="Create category"
-          description="Add divisions like B, C, Mixed, or any custom format you need."
-        >
-          <CreateCategoryForm tournamentId={tournament.id} />
-        </SectionCard>
-
-        <SectionCard
-          title="Tournament categories"
-          description="Categories define the competition divisions inside this event."
-        >
-          <TournamentCategoriesList
-            tournamentId={tournament.id}
-            categories={tournament.categories}
-          />
-        </SectionCard>
-      </section>
+      <SectionCard
+        title="Tournament categories"
+        description="Categories define the competition divisions inside this event."
+      >
+        <TournamentCategoriesList
+          tournamentId={tournament.id}
+          categories={tournament.categories}
+        />
+      </SectionCard>
     </PageContainer>
   );
 }
