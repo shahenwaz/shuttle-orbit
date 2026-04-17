@@ -3,55 +3,31 @@
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { slugify } from "@/lib/utils/slug";
-import {
-  createTournamentSchema,
-  type CreateTournamentInput,
-} from "@/lib/validations/tournament";
+import { createTournamentCategorySchema } from "@/lib/validations/category";
 
-export type CreateTournamentActionState = {
+export type CreateTournamentCategoryActionState = {
   success: boolean;
   message: string;
-  fieldErrors?: Partial<Record<keyof CreateTournamentInput, string[]>>;
+  fieldErrors?: {
+    tournamentId?: string[];
+    name?: string[];
+    code?: string[];
+    rulesSummary?: string[];
+  };
 };
 
-function toUtcMidday(dateString: string) {
-  return new Date(`${dateString}T12:00:00.000Z`);
-}
-
-async function generateUniqueTournamentSlug(name: string) {
-  const baseSlug = slugify(name);
-  let candidate = baseSlug;
-  let counter = 2;
-
-  while (true) {
-    const existing = await prisma.tournament.findUnique({
-      where: { slug: candidate },
-      select: { id: true },
-    });
-
-    if (!existing) {
-      return candidate;
-    }
-
-    candidate = `${baseSlug}-${counter}`;
-    counter += 1;
-  }
-}
-
-export async function createTournamentAction(
-  _prevState: CreateTournamentActionState,
+export async function createTournamentCategoryAction(
+  _prevState: CreateTournamentCategoryActionState,
   formData: FormData,
-): Promise<CreateTournamentActionState> {
+): Promise<CreateTournamentCategoryActionState> {
   const rawValues = {
+    tournamentId: formData.get("tournamentId"),
     name: formData.get("name"),
-    location: formData.get("location"),
-    eventDate: formData.get("eventDate"),
-    status: formData.get("status"),
-    description: formData.get("description"),
+    code: formData.get("code"),
+    rulesSummary: formData.get("rulesSummary"),
   };
 
-  const parsed = createTournamentSchema.safeParse(rawValues);
+  const parsed = createTournamentCategorySchema.safeParse(rawValues);
 
   if (!parsed.success) {
     return {
@@ -61,29 +37,60 @@ export async function createTournamentAction(
     };
   }
 
-  const { name, location, eventDate, status, description } = parsed.data;
+  const { tournamentId, name, code, rulesSummary } = parsed.data;
 
-  const slug = await generateUniqueTournamentSlug(name);
+  const normalizedCode = code.toUpperCase();
 
-  await prisma.tournament.create({
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { id: true, slug: true },
+  });
+
+  if (!tournament) {
+    return {
+      success: false,
+      message: "Tournament was not found.",
+    };
+  }
+
+  const existingCategory = await prisma.tournamentCategory.findFirst({
+    where: {
+      tournamentId,
+      code: normalizedCode,
+    },
+    select: { id: true },
+  });
+
+  if (existingCategory) {
+    return {
+      success: false,
+      message: "This category code already exists in the tournament.",
+      fieldErrors: {
+        code: ["Use a different category code for this tournament."],
+      },
+    };
+  }
+
+  await prisma.tournamentCategory.create({
     data: {
+      tournamentId,
       name,
-      slug,
-      location: location || null,
-      eventDate: toUtcMidday(eventDate),
-      status,
-      description: description || null,
+      code: normalizedCode,
+      rulesSummary: rulesSummary || null,
+      status: "draft",
     },
   });
 
+  revalidatePath(`/admin/tournaments/${tournamentId}`);
   revalidatePath("/admin/tournaments");
   revalidatePath("/admin");
-  revalidatePath("/");
+  revalidatePath(`/tournaments/${tournament.slug}`);
   revalidatePath("/tournaments");
+  revalidatePath("/");
 
   return {
     success: true,
-    message: "Tournament created successfully.",
+    message: "Category created successfully.",
     fieldErrors: {},
   };
 }
