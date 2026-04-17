@@ -1,16 +1,14 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Users2 } from "lucide-react";
 
 import { CreateSheet } from "@/components/admin/create-sheet";
+import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
+import { SectionCard } from "@/components/admin/section-card";
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
 import { CreateTeamEntryForm } from "@/components/admin/teams/create-team-entry-form";
 import { TeamEntriesList } from "@/components/admin/teams/team-entries-list";
-import { SectionCard } from "@/components/admin/section-card";
 import { PageContainer } from "@/components/layout/page-container";
-import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
-import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
-import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
+
 type AdminCategoryTeamsPageProps = {
   params: Promise<{
     tournamentId: string;
@@ -29,7 +27,6 @@ export default async function AdminCategoryTeamsPage({
       select: {
         id: true,
         name: true,
-        slug: true,
       },
     }),
     prisma.tournamentCategory.findFirst({
@@ -86,61 +83,38 @@ export default async function AdminCategoryTeamsPage({
   }
 
   return (
-    <PageContainer className="space-y-8">
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/admin/tournaments/${tournament.id}`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to tournament
-            </Link>
-          </Button>
-        </div>
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-              <Users2 className="h-4 w-4" />
-              Category teams
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                {category.name} team entries
-              </h1>
-              <p className="max-w-2xl text-muted-foreground">
-                Manage doubles teams for this category inside {tournament.name}.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <CompactStatRow>
-              <CompactStatPill
-                label="Teams"
-                value={category._count.teamEntries}
-              />
-              <CompactStatPill label="Stages" value={category._count.stages} />
-              <CompactStatPill
-                label="Matches"
-                value={category._count.matches}
-              />
-            </CompactStatRow>
-
-            <CreateSheet
-              triggerLabel="Add team"
-              title="Create team"
-              description="Select two unique players. Each player can only appear once in the same category."
-            >
-              <CreateTeamEntryForm
-                tournamentId={tournament.id}
-                categoryId={category.id}
-                players={players}
-              />
-            </CreateSheet>
-          </div>
-        </div>
-      </section>
+    <PageContainer className="space-y-6">
+      <CategoryWorkspaceHeader
+        tournamentId={tournament.id}
+        categoryId={category.id}
+        tournamentName={tournament.name}
+        categoryName={`${category.name} teams`}
+        description={`Manage doubles teams for this category inside ${tournament.name}.`}
+        activeTab="teams"
+        stats={
+          <>
+            <CompactStatPill
+              label="Teams"
+              value={category._count.teamEntries}
+            />
+            <CompactStatPill label="Stages" value={category._count.stages} />
+            <CompactStatPill label="Matches" value={category._count.matches} />
+          </>
+        }
+        actions={
+          <CreateSheet
+            triggerLabel="Add team"
+            title="Create team"
+            description="Select two unique players. Each player can only appear once in the same category."
+          >
+            <CreateTeamEntryForm
+              tournamentId={tournament.id}
+              categoryId={category.id}
+              players={players}
+            />
+          </CreateSheet>
+        }
+      />
 
       <SectionCard
         title="Category teams"

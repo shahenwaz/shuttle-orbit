@@ -6,12 +6,12 @@ import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateCategoryForm } from "@/components/admin/tournaments/create-category-form";
 import { TournamentCategoriesList } from "@/components/admin/tournaments/tournament-categories-list";
 import { SectionCard } from "@/components/admin/section-card";
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
+import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
 import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
-import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
-import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
@@ -57,27 +57,27 @@ export default async function AdminTournamentDetailPage({
 
   return (
     <PageContainer className="space-y-8">
-      <section className="space-y-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-              <Trophy className="h-4 w-4" />
+      <section className="space-y-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-primary">
+              <Trophy className="h-3.5 w-3.5" />
               Tournament admin
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
                 {tournament.name}
               </h1>
 
               {tournament.description ? (
-                <p className="max-w-3xl text-muted-foreground">
+                <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
                   {tournament.description}
                 </p>
               ) : null}
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
                 <span>{formatDate(tournament.eventDate)}</span>
@@ -86,23 +86,21 @@ export default async function AdminTournamentDetailPage({
               {tournament.location ? (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  <span>{tournament.location}</span>
+                  <span className="truncate">{tournament.location}</span>
                 </div>
               ) : null}
 
-              <div>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-foreground">
-                  {tournament.status}
-                </span>
-              </div>
+              <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-foreground">
+                {tournament.status}
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
               <Link href="/admin/tournaments">Back to tournaments</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link href={`/tournaments/${tournament.slug}`}>
                 View public page
               </Link>

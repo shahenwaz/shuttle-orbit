@@ -1,9 +1,10 @@
-import { Trophy } from "lucide-react";
-
 import { CreateSheet } from "@/components/admin/create-sheet";
+import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { CreateTournamentForm } from "@/components/admin/tournaments/create-tournament-form";
 import { TournamentsTable } from "@/components/admin/tournaments/tournaments-table";
 import { SectionCard } from "@/components/admin/section-card";
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
+import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 
@@ -34,41 +35,24 @@ export default async function AdminTournamentsPage() {
 
   return (
     <PageContainer className="space-y-8">
-      <section className="space-y-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-              <Trophy className="h-4 w-4" />
-              Admin tournaments
-            </div>
+      <AdminShellHeader
+        activeItem="tournaments"
+        title="Tournament management"
+        description="Create tournament shells, define categories, and grow them into full operational events."
+        actions={
+          <CreateSheet
+            triggerLabel="Add tournament"
+            title="Create tournament"
+            description="Create a single-day tournament shell with location, status, and summary."
+          >
+            <CreateTournamentForm />
+          </CreateSheet>
+        }
+      />
 
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Tournament management
-              </h1>
-              <p className="max-w-2xl text-muted-foreground">
-                Create tournament shells first, then enrich them with
-                categories, teams, groups, and match structure.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
-              <p className="text-sm text-muted-foreground">Total tournaments</p>
-              <p className="mt-1 text-3xl font-bold">{tournamentCount}</p>
-            </div>
-
-            <CreateSheet
-              triggerLabel="Add tournament"
-              title="Create tournament"
-              description="Create a single-day tournament shell with location, status, and summary."
-            >
-              <CreateTournamentForm />
-            </CreateSheet>
-          </div>
-        </div>
-      </section>
+      <CompactStatRow>
+        <CompactStatPill label="Tournaments" value={tournamentCount} />
+      </CompactStatRow>
 
       <SectionCard
         title="Tournament directory"

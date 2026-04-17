@@ -1,12 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
-import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
+import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { ResultsGroupList } from "@/components/admin/results/results-group-list";
 import { SectionCard } from "@/components/admin/section-card";
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
-import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 
 type AdminCategoryResultsPageProps = {
@@ -107,44 +105,21 @@ export default async function AdminCategoryResultsPage({
 
   return (
     <PageContainer className="space-y-6">
-      <section className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/admin/tournaments/${tournament.id}`}>
-              Back to tournament
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline" size="sm">
-            <Link
-              href={`/admin/tournaments/${tournament.id}/categories/${category.id}/fixtures`}
-            >
-              Manage fixtures
-            </Link>
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          <div className="inline-flex rounded-xl border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
-            Category results
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {category.name} results
-            </h1>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Record results and update standings from completed matches.
-            </p>
-          </div>
-        </div>
-
-        <CompactStatRow>
-          <CompactStatPill label="Groups" value={groups.length} />
-          <CompactStatPill label="Matches" value={category._count.matches} />
-          <CompactStatPill label="Completed" value={completedMatches} />
-        </CompactStatRow>
-      </section>
+      <CategoryWorkspaceHeader
+        tournamentId={tournament.id}
+        categoryId={category.id}
+        tournamentName={tournament.name}
+        categoryName={`${category.name} results`}
+        description="Record results and update standings from completed matches."
+        activeTab="results"
+        stats={
+          <>
+            <CompactStatPill label="Groups" value={groups.length} />
+            <CompactStatPill label="Matches" value={category._count.matches} />
+            <CompactStatPill label="Completed" value={completedMatches} />
+          </>
+        }
+      />
 
       <SectionCard
         title="Group results"
