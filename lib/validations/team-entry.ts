@@ -2,10 +2,10 @@ import { z } from "zod";
 
 export const createTeamEntrySchema = z
   .object({
-    tournamentId: z.string().cuid("Invalid tournament id."),
-    categoryId: z.string().cuid("Invalid category id."),
-    player1Id: z.string().cuid("Select a valid first player."),
-    player2Id: z.string().cuid("Select a valid second player."),
+    tournamentId: z.cuid({ error: "Invalid tournament id." }),
+    categoryId: z.cuid({ error: "Invalid category id." }),
+    player1Id: z.cuid({ error: "Select a valid first player." }),
+    player2Id: z.cuid({ error: "Select a valid second player." }),
     teamName: z
       .string()
       .trim()
@@ -22,5 +22,3 @@ export const createTeamEntrySchema = z
       });
     }
   });
-
-export type CreateTeamEntryInput = z.infer<typeof createTeamEntrySchema>;

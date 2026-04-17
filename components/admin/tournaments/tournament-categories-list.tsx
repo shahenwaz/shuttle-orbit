@@ -111,6 +111,14 @@ export function TournamentCategoriesList({
                   </Link>
                 </Button>
 
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    href={`/admin/tournaments/${tournamentId}/categories/${category.id}/fixtures`}
+                  >
+                    Fixtures
+                  </Link>
+                </Button>
+
                 <Button asChild size="sm">
                   <Link
                     href={`/admin/tournaments/${tournamentId}/categories/${category.id}/teams`}

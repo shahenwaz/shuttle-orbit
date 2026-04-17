@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const createGroupSchema = z.object({
-  tournamentId: z.string().cuid("Invalid tournament id."),
-  categoryId: z.string().cuid("Invalid category id."),
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+  categoryId: z.cuid({ error: "Invalid category id." }),
   name: z
     .string()
     .trim()
@@ -16,11 +16,8 @@ export const createGroupSchema = z.object({
 });
 
 export const assignTeamToGroupSchema = z.object({
-  tournamentId: z.string().cuid("Invalid tournament id."),
-  categoryId: z.string().cuid("Invalid category id."),
-  groupId: z.string().cuid("Invalid group id."),
-  teamEntryId: z.string().cuid("Invalid team entry id."),
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+  categoryId: z.cuid({ error: "Invalid category id." }),
+  groupId: z.cuid({ error: "Invalid group id." }),
+  teamEntryId: z.cuid({ error: "Invalid team entry id." }),
 });
-
-export type CreateGroupInput = z.infer<typeof createGroupSchema>;
-export type AssignTeamToGroupInput = z.infer<typeof assignTeamToGroupSchema>;
