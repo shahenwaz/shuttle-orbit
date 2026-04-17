@@ -7,22 +7,28 @@ import { getAdminDashboardStats } from "@/lib/tournament/queries";
 
 const adminSections = [
   {
+    title: "Players",
+    description:
+      "Create and manage the player base used across all tournaments and teams.",
+    icon: Users,
+    href: "/admin/players",
+    cta: "Manage players",
+  },
+  {
     title: "Tournament setup",
     description:
       "Create tournaments, categories, and future tournament structures.",
     icon: Trophy,
+    href: "/admin/tournaments",
+    cta: "Manage tournaments",
   },
   {
     title: "Operations",
     description:
       "Manage teams, groups, fixtures, scoring, standings, and progression.",
     icon: FolderKanban,
-  },
-  {
-    title: "Admin control",
-    description:
-      "Keep strong manual override support for real-life tournament changes.",
-    icon: ShieldCheck,
+    href: "/admin/tournaments",
+    cta: "Open workspace",
   },
 ];
 
@@ -119,7 +125,7 @@ export default async function AdminPage() {
                   size="sm"
                   className="rounded-full"
                 >
-                  <Link href="/">Back to home</Link>
+                  <Link href={section.href}>{section.cta}</Link>
                 </Button>
               </CardContent>
             </Card>
