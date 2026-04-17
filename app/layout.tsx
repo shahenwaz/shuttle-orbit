@@ -29,6 +29,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} dark`}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <div className="flex min-h-screen flex-col">

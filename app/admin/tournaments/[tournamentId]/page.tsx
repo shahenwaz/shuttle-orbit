@@ -10,6 +10,8 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
+import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
@@ -116,26 +118,14 @@ export default async function AdminTournamentDetailPage({
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        <div className="surface-card p-4">
-          <p className="text-sm text-muted-foreground">Categories</p>
-          <p className="mt-1 text-2xl font-bold">
-            {tournament._count.categories}
-          </p>
-        </div>
-
-        <div className="surface-card p-4">
-          <p className="text-sm text-muted-foreground">Teams</p>
-          <p className="mt-1 text-2xl font-bold">
-            {tournament._count.teamEntries}
-          </p>
-        </div>
-
-        <div className="surface-card p-4">
-          <p className="text-sm text-muted-foreground">Matches</p>
-          <p className="mt-1 text-2xl font-bold">{tournament._count.matches}</p>
-        </div>
-      </section>
+      <CompactStatRow>
+        <CompactStatPill
+          label="Categories"
+          value={tournament._count.categories}
+        />
+        <CompactStatPill label="Teams" value={tournament._count.teamEntries} />
+        <CompactStatPill label="Matches" value={tournament._count.matches} />
+      </CompactStatRow>
 
       <SectionCard
         title="Tournament categories"

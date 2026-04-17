@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { FolderKanban, ShieldCheck, Swords, Trophy, Users } from "lucide-react";
+import { FolderKanban, Trophy, Users } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getAdminDashboardStats } from "@/lib/tournament/queries";
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
+import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
 
 const adminSections = [
   {
@@ -50,55 +52,12 @@ export default async function AdminPage() {
         </p>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        <Card className="rounded-3xl border-white/10 bg-white/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Trophy className="h-4 w-4" />
-              Tournaments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.tournamentCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl border-white/10 bg-white/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4" />
-              Players
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.playerCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl border-white/10 bg-white/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheck className="h-4 w-4" />
-              Teams
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.teamCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl border-white/10 bg-white/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Swords className="h-4 w-4" />
-              Matches
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.matchCount}</p>
-          </CardContent>
-        </Card>
-      </section>
+      <CompactStatRow>
+        <CompactStatPill label="Tour" value={stats.tournamentCount} />
+        <CompactStatPill label="Players" value={stats.playerCount} />
+        <CompactStatPill label="Teams" value={stats.teamCount} />
+        <CompactStatPill label="Matches" value={stats.matchCount} />
+      </CompactStatRow>
 
       <section className="grid gap-4 md:grid-cols-3">
         {adminSections.map((section) => {

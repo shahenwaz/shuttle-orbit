@@ -9,7 +9,8 @@ import { SectionCard } from "@/components/admin/section-card";
 import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
-
+import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
+import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
 type AdminCategoryTeamsPageProps = {
   params: Promise<{
     tournamentId: string;
@@ -113,27 +114,18 @@ export default async function AdminCategoryTeamsPage({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="surface-panel px-4 py-3 text-center">
-                <p className="text-xs text-muted-foreground">Teams</p>
-                <p className="mt-1 text-xl font-semibold">
-                  {category._count.teamEntries}
-                </p>
-              </div>
-              <div className="surface-panel px-4 py-3 text-center">
-                <p className="text-xs text-muted-foreground">Stages</p>
-                <p className="mt-1 text-xl font-semibold">
-                  {category._count.stages}
-                </p>
-              </div>
-              <div className="surface-panel px-4 py-3 text-center">
-                <p className="text-xs text-muted-foreground">Matches</p>
-                <p className="mt-1 text-xl font-semibold">
-                  {category._count.matches}
-                </p>
-              </div>
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <CompactStatRow>
+              <CompactStatPill
+                label="Teams"
+                value={category._count.teamEntries}
+              />
+              <CompactStatPill label="Stages" value={category._count.stages} />
+              <CompactStatPill
+                label="Matches"
+                value={category._count.matches}
+              />
+            </CompactStatRow>
 
             <CreateSheet
               triggerLabel="Add team"

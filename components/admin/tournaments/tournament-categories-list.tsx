@@ -103,6 +103,14 @@ export function TournamentCategoriesList({
               </div>
 
               <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    href={`/admin/tournaments/${tournamentId}/categories/${category.id}/groups`}
+                  >
+                    Manage groups
+                  </Link>
+                </Button>
+
                 <Button asChild size="sm">
                   <Link
                     href={`/admin/tournaments/${tournamentId}/categories/${category.id}/teams`}
