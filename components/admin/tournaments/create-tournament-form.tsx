@@ -62,7 +62,7 @@ export function CreateTournamentForm() {
           <select
             id="status"
             name="status"
-            defaultValue="draft"
+            defaultValue="upcoming"
             className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
           >
             {tournamentStatusValues.map((status) => (

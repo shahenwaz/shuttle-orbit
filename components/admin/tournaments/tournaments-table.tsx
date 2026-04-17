@@ -23,14 +23,10 @@ type TournamentsTableProps = {
 
 function getStatusBadgeClass(status: string) {
   switch (status) {
-    case "published":
-      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
-    case "upcoming":
-      return "border-sky-500/20 bg-sky-500/10 text-sky-300";
     case "completed":
       return "border-violet-500/20 bg-violet-500/10 text-violet-300";
     default:
-      return "border-amber-500/20 bg-amber-500/10 text-amber-300";
+      return "border-sky-500/20 bg-sky-500/10 text-sky-300";
   }
 }
 
