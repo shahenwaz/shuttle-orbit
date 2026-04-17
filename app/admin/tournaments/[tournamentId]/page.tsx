@@ -12,6 +12,8 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
+import { CreateSheet } from "@/components/admin/create-sheet";
+import { EditTournamentForm } from "@/components/admin/tournaments/edit-tournament-form";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
@@ -100,11 +102,30 @@ export default async function AdminTournamentDetailPage({
             <Button asChild variant="outline" size="sm">
               <Link href="/admin/tournaments">Back to tournaments</Link>
             </Button>
+
             <Button asChild variant="outline" size="sm">
               <Link href={`/tournaments/${tournament.slug}`}>
                 View public page
               </Link>
             </Button>
+
+            <CreateSheet
+              triggerLabel="Edit tournament"
+              title="Edit tournament"
+              description="Update tournament details and mark it completed when finished."
+            >
+              <EditTournamentForm
+                tournament={{
+                  id: tournament.id,
+                  name: tournament.name,
+                  location: tournament.location,
+                  eventDate: tournament.eventDate,
+                  status: tournament.status as "upcoming" | "completed",
+                  description: tournament.description,
+                }}
+              />
+            </CreateSheet>
+
             <CreateDialog
               triggerLabel="Add category"
               title="Create category"

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const tournamentStatusValues = ["upcoming", "completed"] as const;
 
-export const createTournamentSchema = z.object({
+export const tournamentBaseSchema = z.object({
   name: z
     .string()
     .trim()
@@ -30,4 +30,11 @@ export const createTournamentSchema = z.object({
     .or(z.literal("")),
 });
 
+export const createTournamentSchema = tournamentBaseSchema;
+
+export const updateTournamentSchema = tournamentBaseSchema.extend({
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+});
+
 export type CreateTournamentInput = z.infer<typeof createTournamentSchema>;
+export type UpdateTournamentInput = z.infer<typeof updateTournamentSchema>;
