@@ -9,21 +9,12 @@ export const createPlayerSchema = z.object({
   nickname: z
     .string()
     .trim()
-    .max(40, "Nickname must be 40 characters or less.")
-    .optional()
-    .or(z.literal("")),
-  gender: z
-    .string()
-    .trim()
-    .max(20, "Gender must be 20 characters or less.")
-    .optional()
-    .or(z.literal("")),
-  communityTag: z
-    .string()
-    .trim()
-    .max(50, "Community tag must be 50 characters or less.")
-    .optional()
-    .or(z.literal("")),
+    .min(3, "Username must be at least 3 characters.")
+    .max(30, "Username must be 30 characters or less.")
+    .regex(
+      /^[a-z0-9._-]+$/,
+      "Username can only contain lowercase letters, numbers, dot, underscore, and hyphen.",
+    ),
 });
 
 export type CreatePlayerInput = z.infer<typeof createPlayerSchema>;

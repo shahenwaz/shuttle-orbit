@@ -50,46 +50,20 @@ export function CreatePlayerForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="nickname">Nickname</Label>
+          <Label htmlFor="nickname">Username</Label>
           <Input
             id="nickname"
             name="nickname"
-            placeholder="Optional"
+            placeholder="e.g. shahenwaz"
             className="h-11 rounded-2xl border-white/10 bg-background/50"
           />
+          <p className="text-xs text-muted-foreground">
+            Use a unique handle. Lowercase letters, numbers, dot, underscore,
+            and hyphen only.
+          </p>
           {state.fieldErrors?.nickname ? (
             <p className="text-sm text-red-400">
               {state.fieldErrors.nickname[0]}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="gender">Gender</Label>
-          <Input
-            id="gender"
-            name="gender"
-            placeholder="Optional"
-            className="h-11 rounded-2xl border-white/10 bg-background/50"
-          />
-          {state.fieldErrors?.gender ? (
-            <p className="text-sm text-red-400">
-              {state.fieldErrors.gender[0]}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="communityTag">Community tag</Label>
-          <Input
-            id="communityTag"
-            name="communityTag"
-            placeholder="Optional"
-            className="h-11 rounded-2xl border-white/10 bg-background/50"
-          />
-          {state.fieldErrors?.communityTag ? (
-            <p className="text-sm text-red-400">
-              {state.fieldErrors.communityTag[0]}
             </p>
           ) : null}
         </div>

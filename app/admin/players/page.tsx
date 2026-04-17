@@ -16,8 +16,6 @@ export default async function AdminPlayersPage() {
         id: true,
         fullName: true,
         nickname: true,
-        gender: true,
-        communityTag: true,
         isActive: true,
         createdAt: true,
       },

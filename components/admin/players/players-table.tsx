@@ -3,9 +3,7 @@ import { formatDate } from "@/lib/utils/format";
 type PlayerRow = {
   id: string;
   fullName: string;
-  nickname: string | null;
-  gender: string | null;
-  communityTag: string | null;
+  nickname: string;
   isActive: boolean;
   createdAt: Date;
 };
@@ -29,10 +27,8 @@ export function PlayersTable({ players }: PlayersTableProps) {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-white/5 text-muted-foreground">
             <tr className="border-b border-white/10">
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Nickname</th>
-              <th className="px-4 py-3 font-medium">Gender</th>
-              <th className="px-4 py-3 font-medium">Community</th>
+              <th className="px-4 py-3 font-medium">Full name</th>
+              <th className="px-4 py-3 font-medium">Username</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Created</th>
             </tr>
@@ -47,13 +43,7 @@ export function PlayersTable({ players }: PlayersTableProps) {
                   {player.fullName}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {player.nickname ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {player.gender ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {player.communityTag ?? "—"}
+                  @{player.nickname}
                 </td>
                 <td className="px-4 py-3">
                   <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-300">

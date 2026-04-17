@@ -35,31 +35,30 @@ async function main() {
 
   const players = await prisma.$transaction([
     prisma.player.create({
-      data: { fullName: "Shahenwaz Muzahid", nickname: "Shahenwaz" },
+      data: { fullName: "Shahenwaz Muzahid", nickname: "shahenwaz" },
     }),
     prisma.player.create({
-      data: { fullName: "Rafi Islam", nickname: "Rafi" },
+      data: { fullName: "Rafi Islam", nickname: "rafi" },
     }),
     prisma.player.create({
-      data: { fullName: "Siam Hossain", nickname: "Siam" },
+      data: { fullName: "Siam Hossain", nickname: "siam" },
     }),
     prisma.player.create({
-      data: { fullName: "Nabil Ahmed", nickname: "Nabil" },
+      data: { fullName: "Nabil Ahmed", nickname: "nabil" },
     }),
     prisma.player.create({
-      data: { fullName: "Tahmid Hasan", nickname: "Tahmid" },
+      data: { fullName: "Tahmid Hasan", nickname: "tahmid" },
     }),
     prisma.player.create({
-      data: { fullName: "Rakib Chowdhury", nickname: "Rakib" },
+      data: { fullName: "Rakib Chowdhury", nickname: "rakib" },
     }),
     prisma.player.create({
-      data: { fullName: "Imran Kabir", nickname: "Imran" },
+      data: { fullName: "Imran Kabir", nickname: "imran" },
     }),
     prisma.player.create({
-      data: { fullName: "Fahim Rahman", nickname: "Fahim" },
+      data: { fullName: "Fahim Rahman", nickname: "fahim" },
     }),
   ]);
-
   const tournament = await prisma.tournament.create({
     data: {
       name: "Dublin Community Badminton Cup",

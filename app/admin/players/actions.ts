@@ -11,8 +11,6 @@ export type CreatePlayerActionState = {
   fieldErrors?: {
     fullName?: string[];
     nickname?: string[];
-    gender?: string[];
-    communityTag?: string[];
   };
 };
 
@@ -23,8 +21,6 @@ export async function createPlayerAction(
   const rawValues = {
     fullName: formData.get("fullName"),
     nickname: formData.get("nickname"),
-    gender: formData.get("gender"),
-    communityTag: formData.get("communityTag"),
   };
 
   const parsed = createPlayerSchema.safeParse(rawValues);
@@ -37,14 +33,31 @@ export async function createPlayerAction(
     };
   }
 
-  const { fullName, nickname, gender, communityTag } = parsed.data;
+  const { fullName, nickname } = parsed.data;
+
+  const existingPlayer = await prisma.player.findUnique({
+    where: {
+      nickname,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingPlayer) {
+    return {
+      success: false,
+      message: "This username is already taken.",
+      fieldErrors: {
+        nickname: ["Choose a different username."],
+      },
+    };
+  }
 
   await prisma.player.create({
     data: {
       fullName,
-      nickname: nickname || null,
-      gender: gender || null,
-      communityTag: communityTag || null,
+      nickname,
     },
   });
 
