@@ -169,7 +169,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           {players.length === 0 ? (
             <EmptyState message="No players available yet." />
           ) : (
-            <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
+            <div className="grid gap-1.5 sm:gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {players.map((player) => (
                 <PlayerCard key={player.id} player={player} />
               ))}
@@ -191,7 +191,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           {category.teamEntries.length === 0 ? (
             <EmptyState message="No teams available yet." />
           ) : (
-            <div className="grid gap-1.5 sm:gap-2">
+            <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2 lg:grid-cols-3">
               {category.teamEntries.map((team) => (
                 <TeamCard key={team.id} team={team} />
               ))}
