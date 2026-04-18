@@ -3,8 +3,8 @@ import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { CreatePlayerForm } from "@/components/admin/players/create-player-form";
 import { PlayersTable } from "@/components/admin/players/players-table";
 import { SectionCard } from "@/components/admin/section-card";
-import { CompactStatPill } from "@/components/shared/compact-stat-pill";
-import { CompactStatRow } from "@/components/shared/compact-stat-row";
+import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
+import { CompactStatRow } from "@/components/shared/stats/compact-stat-row";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 

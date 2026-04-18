@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { ResultsGroupList } from "@/components/admin/results/results-group-list";
 import { SectionCard } from "@/components/admin/section-card";
-import { CompactStatPill } from "@/components/shared/compact-stat-pill";
+import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 

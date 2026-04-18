@@ -57,7 +57,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const teamBIsWinner = match.winnerId === match.teamBId;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-background/40 p-4">
+    <div className="rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-medium text-foreground">
@@ -90,7 +90,7 @@ export function MatchCard({ match }: MatchCardProps) {
             )}
           >
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-foreground">
+              <p className="truncate text-xs font-medium text-foreground sm:text-sm">
                 {teamALabel}
               </p>
               {teamAIsWinner ? (
@@ -114,7 +114,7 @@ export function MatchCard({ match }: MatchCardProps) {
             )}
           >
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-foreground">
+              <p className="truncate text-xs font-medium text-foreground sm:text-sm">
                 {teamBLabel}
               </p>
               {teamBIsWinner ? (

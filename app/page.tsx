@@ -95,7 +95,7 @@ export default async function HomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4" />
-                    <span>{formatDate(featuredTournament.startDate)}</span>
+                    <span>{formatDate(featuredTournament.eventDate)}</span>
                   </div>
 
                   {featuredTournament.location ? (

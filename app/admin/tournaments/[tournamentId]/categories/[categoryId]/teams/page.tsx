@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { SectionCard } from "@/components/admin/section-card";
-import { CompactStatPill } from "@/components/shared/compact-stat-pill";
+import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { CreateTeamEntryForm } from "@/components/admin/teams/create-team-entry-form";
 import { TeamEntriesList } from "@/components/admin/teams/team-entries-list";
 import { PageContainer } from "@/components/layout/page-container";
