@@ -8,6 +8,7 @@ import { MatchCard } from "@/components/tournaments/match-card";
 import { PlayerCard } from "@/components/tournaments/player-card";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
+import { EmptyState } from "@/components/shared/empty-state";
 
 type CategoryTabsViewProps = {
   category: {
@@ -102,14 +103,6 @@ function SectionMetaLine({
     <div className="flex items-center gap-2 text-[11px] text-muted-foreground sm:text-sm">
       <span className="shrink-0 text-primary">{icon}</span>
       <p className="leading-5">{children}</p>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/4 px-4 py-5 text-xs text-muted-foreground sm:text-sm">
-      {message}
     </div>
   );
 }
