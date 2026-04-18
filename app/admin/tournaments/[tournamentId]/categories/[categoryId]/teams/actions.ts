@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
 import { createTeamEntrySchema } from "@/lib/validations/team-entry";
+import { z } from "zod";
 
 export type CreateTeamEntryActionState = {
   success: boolean;
@@ -16,6 +17,33 @@ export type CreateTeamEntryActionState = {
     teamName?: string[];
   };
 };
+
+export type RemoveTeamEntryActionState = {
+  success: boolean;
+  message: string;
+};
+
+const removeTeamEntrySchema = z.object({
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+  categoryId: z.cuid({ error: "Invalid category id." }),
+  teamEntryId: z.cuid({ error: "Invalid team entry id." }),
+});
+
+function revalidateTeamPaths(tournamentId: string, categoryId: string) {
+  revalidatePath(`/admin/tournaments/${tournamentId}`);
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/teams`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
+}
 
 export async function createTeamEntryAction(
   _prevState: CreateTeamEntryActionState,
@@ -47,12 +75,8 @@ export async function createTeamEntryAction(
       id: categoryId,
       tournamentId,
     },
-    include: {
-      tournament: {
-        select: {
-          id: true,
-        },
-      },
+    select: {
+      id: true,
     },
   });
 
@@ -96,14 +120,8 @@ export async function createTeamEntryAction(
       tournamentId,
       categoryId,
       OR: [
-        {
-          player1Id,
-          player2Id,
-        },
-        {
-          player1Id: player2Id,
-          player2Id: player1Id,
-        },
+        { player1Id, player2Id },
+        { player1Id: player2Id, player2Id: player1Id },
       ],
     },
     select: {
@@ -129,16 +147,64 @@ export async function createTeamEntryAction(
     },
   });
 
-  revalidatePath(
-    `/admin/tournaments/${tournamentId}/categories/${categoryId}/teams`,
-  );
-  revalidatePath(`/admin/tournaments/${tournamentId}`);
-  revalidatePath(`/admin/tournaments`);
-  revalidatePath(`/tournaments`);
+  revalidateTeamPaths(tournamentId, categoryId);
 
   return {
     success: true,
     message: "Team created successfully.",
     fieldErrors: {},
+  };
+}
+
+export async function removeTeamEntryAction(
+  _prevState: RemoveTeamEntryActionState,
+  formData: FormData,
+): Promise<RemoveTeamEntryActionState> {
+  const rawValues = {
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    teamEntryId: formData.get("teamEntryId"),
+  };
+
+  const parsed = removeTeamEntrySchema.safeParse(rawValues);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Invalid team removal request.",
+    };
+  }
+
+  const { tournamentId, categoryId, teamEntryId } = parsed.data;
+
+  const teamEntry = await prisma.teamEntry.findFirst({
+    where: {
+      id: teamEntryId,
+      tournamentId,
+      categoryId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!teamEntry) {
+    return {
+      success: false,
+      message: "Team entry not found.",
+    };
+  }
+
+  await prisma.teamEntry.delete({
+    where: {
+      id: teamEntryId,
+    },
+  });
+
+  revalidateTeamPaths(tournamentId, categoryId);
+
+  return {
+    success: true,
+    message: "Team removed successfully.",
   };
 }

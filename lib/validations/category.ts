@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-export const createTournamentCategorySchema = z.object({
-  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+export const categoryBaseSchema = z.object({
   name: z
     .string()
     .trim()
@@ -23,3 +22,19 @@ export const createTournamentCategorySchema = z.object({
     .optional()
     .or(z.literal("")),
 });
+
+export const createTournamentCategorySchema = categoryBaseSchema.extend({
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+});
+
+export const updateTournamentCategorySchema = categoryBaseSchema.extend({
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+  categoryId: z.cuid({ error: "Invalid category id." }),
+});
+
+export type CreateTournamentCategoryInput = z.infer<
+  typeof createTournamentCategorySchema
+>;
+export type UpdateTournamentCategoryInput = z.infer<
+  typeof updateTournamentCategorySchema
+>;

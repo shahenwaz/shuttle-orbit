@@ -1,3 +1,9 @@
+"use client";
+
+import { useActionState } from "react";
+
+import { removeTeamEntryAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/teams/actions";
+import { Button } from "@/components/ui/button";
 import { formatTeamName } from "@/lib/utils/format";
 
 type TeamEntryRow = {
@@ -15,6 +21,8 @@ type TeamEntryRow = {
 };
 
 type TeamEntriesListProps = {
+  tournamentId: string;
+  categoryId: string;
   teams: TeamEntryRow[];
 };
 
@@ -27,7 +35,11 @@ function getStatusBadgeClass(status: string) {
   }
 }
 
-export function TeamEntriesList({ teams }: TeamEntriesListProps) {
+export function TeamEntriesList({
+  tournamentId,
+  categoryId,
+  teams,
+}: TeamEntriesListProps) {
   if (teams.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -39,38 +51,86 @@ export function TeamEntriesList({ teams }: TeamEntriesListProps) {
   return (
     <div className="grid gap-3">
       {teams.map((team) => (
-        <div key={team.id} className="surface-panel p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h4 className="text-base font-semibold text-foreground">
-                  {formatTeamName(
-                    team.player1.fullName,
-                    team.player2.fullName,
-                    team.teamName,
-                  )}
-                </h4>
-                <span
-                  className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(
-                    team.status,
-                  )}`}
-                >
-                  {team.status}
-                </span>
-              </div>
-
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p>
-                  {team.player1.fullName} @{team.player1.nickname}
-                </p>
-                <p>
-                  {team.player2.fullName} @{team.player2.nickname}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TeamEntryCard
+          key={team.id}
+          tournamentId={tournamentId}
+          categoryId={categoryId}
+          team={team}
+        />
       ))}
+    </div>
+  );
+}
+
+function TeamEntryCard({
+  tournamentId,
+  categoryId,
+  team,
+}: {
+  tournamentId: string;
+  categoryId: string;
+  team: TeamEntryRow;
+}) {
+  const [state, formAction, isPending] = useActionState(removeTeamEntryAction, {
+    success: false,
+    message: "",
+  });
+
+  return (
+    <div className="surface-panel p-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="text-base font-semibold text-foreground">
+              {formatTeamName(
+                team.player1.fullName,
+                team.player2.fullName,
+                team.teamName,
+              )}
+            </h4>
+            <span
+              className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(
+                team.status,
+              )}`}
+            >
+              {team.status}
+            </span>
+          </div>
+
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p>
+              {team.player1.fullName} @{team.player1.nickname}
+            </p>
+            <p>
+              {team.player2.fullName} @{team.player2.nickname}
+            </p>
+          </div>
+
+          {state.message ? (
+            <p
+              className={`text-sm ${
+                state.success ? "text-emerald-400" : "text-red-400"
+              }`}
+            >
+              {state.message}
+            </p>
+          ) : null}
+        </div>
+
+        <form action={formAction}>
+          <input type="hidden" name="tournamentId" value={tournamentId} />
+          <input type="hidden" name="categoryId" value={categoryId} />
+          <input type="hidden" name="teamEntryId" value={team.id} />
+          <Button
+            type="submit"
+            variant="outline"
+            size="sm"
+            disabled={isPending}
+          >
+            Remove
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { createTournamentCategorySchema } from "@/lib/validations/category";
+import {
+  createTournamentCategorySchema,
+  updateTournamentCategorySchema,
+  type UpdateTournamentCategoryInput,
+} from "@/lib/validations/category";
 import {
   updateTournamentSchema,
   type UpdateTournamentInput,
@@ -24,6 +28,12 @@ export type UpdateTournamentActionState = {
   success: boolean;
   message: string;
   fieldErrors?: Partial<Record<keyof UpdateTournamentInput, string[]>>;
+};
+
+export type UpdateTournamentCategoryActionState = {
+  success: boolean;
+  message: string;
+  fieldErrors?: Partial<Record<keyof UpdateTournamentCategoryInput, string[]>>;
 };
 
 function toUtcMidday(dateString: string) {
@@ -169,6 +179,110 @@ export async function updateTournamentAction(
   return {
     success: true,
     message: "Tournament updated successfully.",
+    fieldErrors: {},
+  };
+}
+
+export async function updateTournamentCategoryAction(
+  _prevState: UpdateTournamentCategoryActionState,
+  formData: FormData,
+): Promise<UpdateTournamentCategoryActionState> {
+  const rawValues = {
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    name: formData.get("name"),
+    code: formData.get("code"),
+    rulesSummary: formData.get("rulesSummary"),
+  };
+
+  const parsed = updateTournamentCategorySchema.safeParse(rawValues);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Please fix the form errors.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { tournamentId, categoryId, name, code, rulesSummary } = parsed.data;
+  const normalizedCode = code.toUpperCase();
+
+  const category = await prisma.tournamentCategory.findFirst({
+    where: {
+      id: categoryId,
+      tournamentId,
+    },
+    include: {
+      tournament: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+  });
+
+  if (!category) {
+    return {
+      success: false,
+      message: "Category not found.",
+    };
+  }
+
+  const existingCategoryWithCode = await prisma.tournamentCategory.findFirst({
+    where: {
+      tournamentId,
+      code: normalizedCode,
+      NOT: {
+        id: categoryId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingCategoryWithCode) {
+    return {
+      success: false,
+      message: "This category code already exists in the tournament.",
+      fieldErrors: {
+        code: ["Use a different category code for this tournament."],
+      },
+    };
+  }
+
+  await prisma.tournamentCategory.update({
+    where: {
+      id: categoryId,
+    },
+    data: {
+      name,
+      code: normalizedCode,
+      rulesSummary: rulesSummary || null,
+    },
+  });
+
+  revalidatePath(`/admin/tournaments/${tournamentId}`);
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/teams`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
+  revalidatePath(`/tournaments/${category.tournament.slug}`);
+  revalidatePath("/tournaments");
+  revalidatePath("/");
+
+  return {
+    success: true,
+    message: "Category updated successfully.",
     fieldErrors: {},
   };
 }

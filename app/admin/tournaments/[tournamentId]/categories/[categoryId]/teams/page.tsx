@@ -120,7 +120,11 @@ export default async function AdminCategoryTeamsPage({
         title="Category teams"
         description="Existing team entries for this tournament category."
       >
-        <TeamEntriesList teams={category.teamEntries} />
+        <TeamEntriesList
+          tournamentId={tournament.id}
+          categoryId={category.id}
+          teams={category.teamEntries}
+        />
       </SectionCard>
     </PageContainer>
   );

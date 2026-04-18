@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { CreateDialog } from "@/components/admin/create-dialog";
+import { EditCategoryForm } from "@/components/admin/tournaments/edit-category-form";
 import { Button } from "@/components/ui/button";
 
 type TournamentCategoryRow = {
@@ -53,11 +55,9 @@ export function TournamentCategoriesList({
                 <h4 className="text-base font-semibold text-foreground">
                   {category.name}
                 </h4>
-
                 <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-foreground">
                   {category.code}
                 </span>
-
                 <span
                   className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(
                     category.status,
@@ -103,11 +103,27 @@ export function TournamentCategoriesList({
               </div>
 
               <div className="flex flex-wrap gap-2">
+                <CreateDialog
+                  triggerLabel="Edit"
+                  title="Edit category"
+                  description="Update category details."
+                >
+                  <EditCategoryForm
+                    tournamentId={tournamentId}
+                    category={{
+                      id: category.id,
+                      name: category.name,
+                      code: category.code,
+                      rulesSummary: category.rulesSummary,
+                    }}
+                  />
+                </CreateDialog>
+
                 <Button asChild variant="outline" size="sm">
                   <Link
                     href={`/admin/tournaments/${tournamentId}/categories/${category.id}/groups`}
                   >
-                    Manage groups
+                    Groups
                   </Link>
                 </Button>
 
@@ -131,7 +147,7 @@ export function TournamentCategoriesList({
                   <Link
                     href={`/admin/tournaments/${tournamentId}/categories/${category.id}/teams`}
                   >
-                    Manage teams
+                    Teams
                   </Link>
                 </Button>
               </div>
