@@ -24,7 +24,7 @@ export function TeamCard({ team, badgeLabel = "Team" }: TeamCardProps) {
   );
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/4 p-3 backdrop-blur-sm sm:p-4">
+    <div className="rounded-lg border border-white/10 bg-white/4 p-3 backdrop-blur-sm sm:p-4">
       <div className="space-y-2.5">
         <div className="flex items-start justify-between gap-3">
           <p className="min-w-0 truncate text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-sm">

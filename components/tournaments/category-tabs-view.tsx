@@ -5,6 +5,7 @@ import { Layers3, Swords, User, Users } from "lucide-react";
 
 import { GroupStandingsTable } from "@/components/tournaments/group-standings-table";
 import { MatchCard } from "@/components/tournaments/match-card";
+import { PlayerCard } from "@/components/tournaments/player-card";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
 
@@ -90,37 +91,6 @@ function getUniquePlayers(
   );
 }
 
-function PlayerCard({
-  player,
-  partnerCount,
-}: {
-  player: {
-    id: string;
-    fullName: string;
-    nickname: string;
-  };
-  partnerCount: number;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/4 p-3 backdrop-blur-sm sm:p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-foreground sm:text-base">
-            {player.fullName}
-          </p>
-          <p className="mt-1 text-[11px] text-muted-foreground sm:text-xs">
-            @{player.nickname}
-          </p>
-        </div>
-
-        <div className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary sm:text-[11px]">
-          {partnerCount} pair{partnerCount === 1 ? "" : "s"}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function SectionMetaLine({
   icon,
   children,
@@ -161,17 +131,6 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
     () => category.stages.reduce((sum, stage) => sum + stage.groups.length, 0),
     [category.stages],
   );
-
-  const playerPairCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-
-    for (const team of category.teamEntries) {
-      counts.set(team.player1.id, (counts.get(team.player1.id) ?? 0) + 1);
-      counts.set(team.player2.id, (counts.get(team.player2.id) ?? 0) + 1);
-    }
-
-    return counts;
-  }, [category.teamEntries]);
 
   const tabs: Array<{ key: TabKey; label: string }> = [
     { key: "players", label: "Players" },
@@ -217,13 +176,9 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           {players.length === 0 ? (
             <EmptyState message="No players available yet." />
           ) : (
-            <div className="grid gap-2.5 sm:gap-3 md:grid-cols-2">
+            <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
               {players.map((player) => (
-                <PlayerCard
-                  key={player.id}
-                  player={player}
-                  partnerCount={playerPairCounts.get(player.id) ?? 0}
-                />
+                <PlayerCard key={player.id} player={player} />
               ))}
             </div>
           )}
@@ -243,7 +198,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           {category.teamEntries.length === 0 ? (
             <EmptyState message="No teams available yet." />
           ) : (
-            <div className="grid gap-2.5 sm:gap-3">
+            <div className="grid gap-1.5 sm:gap-2">
               {category.teamEntries.map((team) => (
                 <TeamCard key={team.id} team={team} />
               ))}
@@ -279,7 +234,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
               {stage.matches.length === 0 ? (
                 <EmptyState message="No matches generated yet." />
               ) : (
-                <div className="grid gap-2.5 sm:gap-3">
+                <div className="grid gap-1.5 sm:gap-2">
                   {stage.matches.map((match) => (
                     <MatchCard key={match.id} match={match} />
                   ))}
