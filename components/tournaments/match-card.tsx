@@ -31,13 +31,22 @@ type MatchCardProps = {
   };
 };
 
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case "completed":
-      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
-    default:
-      return "border-white/10 bg-white/5 text-muted-foreground";
+function getScoreParts(scoreSummary: string | null) {
+  if (!scoreSummary) {
+    return null;
   }
+
+  const cleaned = scoreSummary.trim();
+  const match = cleaned.match(/^(\d+)\s*-\s*(\d+)$/);
+
+  if (!match) {
+    return cleaned;
+  }
+
+  return {
+    teamAScore: match[1],
+    teamBScore: match[2],
+  };
 }
 
 export function MatchCard({ match }: MatchCardProps) {
@@ -55,76 +64,86 @@ export function MatchCard({ match }: MatchCardProps) {
 
   const teamAIsWinner = match.winnerId === match.teamAId;
   const teamBIsWinner = match.winnerId === match.teamBId;
+  const parsedScore = getScoreParts(match.scoreSummary);
+  const hasCompletedScore =
+    match.status === "completed" &&
+    parsedScore !== null &&
+    typeof parsedScore !== "string";
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm font-medium text-foreground">
-            {match.roundLabel ?? "Match"}
-          </p>
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/4">
+      <div className="flex items-center justify-center gap-3 border-b border-white/10 px-3 py-2.5 sm:px-4">
+        <p className="truncate text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:text-xs">
+          {match.roundLabel ?? "Match"}
+        </p>
+      </div>
 
-          <span
-            className={cn(
-              "rounded-full border px-2.5 py-1 text-xs",
-              getStatusBadgeClass(match.status),
-            )}
-          >
-            {match.status}
-          </span>
+      <div className="px-3 py-3 sm:px-4 sm:py-3.5">
+        {hasCompletedScore ? (
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
+            <p
+              className={cn(
+                "truncate text-xs sm:text-sm",
+                teamAIsWinner
+                  ? "font-semibold text-foreground"
+                  : "font-medium text-muted-foreground",
+              )}
+              title={teamALabel}
+            >
+              {teamALabel}
+            </p>
 
-          {match.scoreSummary ? (
-            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-foreground">
-              {match.scoreSummary}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
-          <div
-            className={cn(
-              "rounded-xl border px-3 py-2",
-              teamAIsWinner
-                ? "border-emerald-500/20 bg-emerald-500/10"
-                : "border-white/10 bg-white/5",
-            )}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="truncate text-xs font-medium text-foreground sm:text-sm">
-                {teamALabel}
-              </p>
-              {teamAIsWinner ? (
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
-                  Winner
-                </span>
-              ) : null}
+            <div className="shrink-0 whitespace-nowrap text-sm font-bold tracking-tight text-foreground sm:text-base">
+              <span
+                className={cn(
+                  teamAIsWinner ? "text-primary" : "text-foreground",
+                )}
+              >
+                {parsedScore.teamAScore}
+              </span>
+              <span className="px-1.5 text-muted-foreground">-</span>
+              <span
+                className={cn(
+                  teamBIsWinner ? "text-primary" : "text-foreground",
+                )}
+              >
+                {parsedScore.teamBScore}
+              </span>
             </div>
-          </div>
 
-          <div className="px-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-            vs
+            <p
+              className={cn(
+                "truncate text-right text-xs sm:text-sm",
+                teamBIsWinner
+                  ? "font-semibold text-foreground"
+                  : "font-medium text-muted-foreground",
+              )}
+              title={teamBLabel}
+            >
+              {teamBLabel}
+            </p>
           </div>
+        ) : (
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
+            <p
+              className="truncate text-xs font-medium text-foreground sm:text-sm"
+              title={teamALabel}
+            >
+              {teamALabel}
+            </p>
 
-          <div
-            className={cn(
-              "rounded-xl border px-3 py-2",
-              teamBIsWinner
-                ? "border-emerald-500/20 bg-emerald-500/10"
-                : "border-white/10 bg-white/5",
-            )}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="truncate text-xs font-medium text-foreground sm:text-sm">
-                {teamBLabel}
-              </p>
-              {teamBIsWinner ? (
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
-                  Winner
-                </span>
-              ) : null}
+            <div className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary sm:text-xs">
+              VS
             </div>
+
+            <p
+              className="truncate text-right text-xs font-medium text-foreground sm:text-sm"
+              title={teamBLabel}
+            >
+              {teamBLabel}
+            </p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

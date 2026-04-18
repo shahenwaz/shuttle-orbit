@@ -29,7 +29,7 @@ export default async function CategoryDetailPage({
 
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
-      <section className="space-y-4">
+      <section className="space-y-3 sm:space-y-4">
         <Button
           asChild
           variant="outline"
@@ -52,7 +52,7 @@ export default async function CategoryDetailPage({
           </h1>
 
           {category.rulesSummary ? (
-            <p className="max-w-3xl text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
+            <p className="max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
               {category.rulesSummary}
             </p>
           ) : null}

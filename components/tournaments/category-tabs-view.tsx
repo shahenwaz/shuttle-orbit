@@ -335,7 +335,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
       ) : null}
 
       {activeTab === "standings" ? (
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-2.5 sm:space-y-3">
           <SectionMetaLine icon={<Layers3 className="h-3.5 w-3.5" />}>
             Showing{" "}
             <span className="font-semibold text-primary">{totalGroups}</span>{" "}
@@ -347,14 +347,20 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
               key={stage.id}
               className="rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4"
             >
-              <div className="mb-3 sm:mb-4">
-                <h3 className="text-sm font-semibold text-foreground sm:text-base">
-                  {stage.name}
-                </h3>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
-                  {stage.stageType.replaceAll("_", " ")} · {stage.groups.length}{" "}
-                  group{stage.groups.length === 1 ? "" : "s"}
-                </p>
+              <div className="mb-2.5 flex items-center justify-between gap-3 sm:mb-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
+                    {stage.name}
+                  </h3>
+                  <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
+                    {stage.stageType.replaceAll("_", " ")}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-white/10 bg-background/60 px-2 py-1 text-[10px] font-medium text-muted-foreground sm:text-[11px]">
+                  {stage.groups.length} group
+                  {stage.groups.length === 1 ? "" : "s"}
+                </span>
               </div>
 
               {stage.groups.length === 0 ? (

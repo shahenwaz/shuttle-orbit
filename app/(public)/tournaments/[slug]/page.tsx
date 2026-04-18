@@ -27,20 +27,20 @@ export default async function TournamentDetailPage({
   }
 
   return (
-    <PageContainer className="space-y-8">
+    <PageContainer className="space-y-6 sm:space-y-8">
       <TournamentHero tournament={tournament} />
 
-      <section className="space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+      <section className="space-y-3 sm:space-y-4">
+        <div className="space-y-1.5">
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
             Categories
           </h2>
-          <p className="text-sm text-muted-foreground sm:text-base">
+          <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
             Open a category to view teams, players, standings, and matches.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
           {tournament.categories.map((category: TournamentCategoryItem) => (
             <TournamentCategoryCard
               key={category.id}
