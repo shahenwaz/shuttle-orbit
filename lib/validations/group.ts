@@ -21,3 +21,6 @@ export const assignTeamToGroupSchema = z.object({
   groupId: z.cuid({ error: "Invalid group id." }),
   teamEntryId: z.cuid({ error: "Invalid team entry id." }),
 });
+
+export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+export type AssignTeamToGroupInput = z.infer<typeof assignTeamToGroupSchema>;

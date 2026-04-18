@@ -185,7 +185,11 @@ export default async function AdminCategoryGroupsPage({
           title="Groups overview"
           description="Current groups and assigned teams for the default group stage."
         >
-          <GroupsOverview groups={groups} />
+          <GroupsOverview
+            tournamentId={tournament.id}
+            categoryId={category.id}
+            groups={groups}
+          />
         </SectionCard>
 
         <SectionCard

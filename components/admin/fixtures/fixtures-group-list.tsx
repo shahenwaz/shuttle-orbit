@@ -1,3 +1,9 @@
+"use client";
+
+import { useActionState } from "react";
+
+import { resetGroupFixturesAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
+import { Button } from "@/components/ui/button";
 import { formatTeamName } from "@/lib/utils/format";
 
 type MatchRow = {
@@ -37,10 +43,16 @@ type GroupFixtureRow = {
 };
 
 type FixturesGroupListProps = {
+  tournamentId: string;
+  categoryId: string;
   groups: GroupFixtureRow[];
 };
 
-export function FixturesGroupList({ groups }: FixturesGroupListProps) {
+export function FixturesGroupList({
+  tournamentId,
+  categoryId,
+  groups,
+}: FixturesGroupListProps) {
   if (groups.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -52,68 +64,121 @@ export function FixturesGroupList({ groups }: FixturesGroupListProps) {
   return (
     <div className="grid gap-4">
       {groups.map((group) => (
-        <div key={group.id} className="surface-panel p-4">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <h4 className="text-base font-semibold text-foreground">
-              {group.name}
-            </h4>
-            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground">
-              {group.memberships.length} teams
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground">
-              {group.matches.length} matches
-            </span>
-          </div>
-
-          {group.matches.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No fixtures generated yet for this group.
-            </p>
-          ) : (
-            <div className="grid gap-3">
-              {group.matches.map((match) => (
-                <div
-                  key={match.id}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground">
-                      {match.roundLabel ?? "Match"}
-                    </p>
-                    <span className="rounded-full border border-white/10 bg-background/60 px-2.5 py-1 text-xs text-muted-foreground">
-                      {match.status}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-2">
-                    <p className="text-sm text-foreground">
-                      {formatTeamName(
-                        match.teamA.player1.fullName,
-                        match.teamA.player2.fullName,
-                        match.teamA.teamName,
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground">vs</p>
-                    <p className="text-sm text-foreground">
-                      {formatTeamName(
-                        match.teamB.player1.fullName,
-                        match.teamB.player2.fullName,
-                        match.teamB.teamName,
-                      )}
-                    </p>
-                  </div>
-
-                  {match.scoreSummary ? (
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      Score: {match.scoreSummary}
-                    </p>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <FixtureGroupCard
+          key={group.id}
+          tournamentId={tournamentId}
+          categoryId={categoryId}
+          group={group}
+        />
       ))}
+    </div>
+  );
+}
+
+function FixtureGroupCard({
+  tournamentId,
+  categoryId,
+  group,
+}: {
+  tournamentId: string;
+  categoryId: string;
+  group: GroupFixtureRow;
+}) {
+  const [state, formAction, isPending] = useActionState(
+    resetGroupFixturesAction,
+    {
+      success: false,
+      message: "",
+    },
+  );
+
+  return (
+    <div className="surface-panel p-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <h4 className="text-base font-semibold text-foreground">
+            {group.name}
+          </h4>
+          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground">
+            {group.memberships.length} teams
+          </span>
+          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground">
+            {group.matches.length} matches
+          </span>
+        </div>
+
+        <form action={formAction}>
+          <input type="hidden" name="tournamentId" value={tournamentId} />
+          <input type="hidden" name="categoryId" value={categoryId} />
+          <input type="hidden" name="groupId" value={group.id} />
+          <Button
+            type="submit"
+            variant="outline"
+            size="sm"
+            disabled={isPending || group.matches.length === 0}
+          >
+            Reset fixtures
+          </Button>
+        </form>
+      </div>
+
+      {state.message ? (
+        <p
+          className={`mb-4 text-sm ${
+            state.success ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
+          {state.message}
+        </p>
+      ) : null}
+
+      {group.matches.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No fixtures generated yet for this group.
+        </p>
+      ) : (
+        <div className="grid gap-3">
+          {group.matches.map((match) => (
+            <div
+              key={match.id}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-medium text-foreground">
+                  {match.roundLabel ?? "Match"}
+                </p>
+                <span className="rounded-full border border-white/10 bg-background/60 px-2.5 py-1 text-xs text-muted-foreground">
+                  {match.status}
+                </span>
+              </div>
+
+              <div className="mt-3 space-y-2">
+                <p className="text-sm text-foreground">
+                  {formatTeamName(
+                    match.teamA.player1.fullName,
+                    match.teamA.player2.fullName,
+                    match.teamA.teamName,
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">vs</p>
+                <p className="text-sm text-foreground">
+                  {formatTeamName(
+                    match.teamB.player1.fullName,
+                    match.teamB.player2.fullName,
+                    match.teamB.teamName,
+                  )}
+                </p>
+              </div>
+
+              {match.scoreSummary ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Score: {match.scoreSummary}
+                </p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -155,7 +155,11 @@ export default async function AdminCategoryFixturesPage({
         title="Group fixtures"
         description="Fixtures currently generated for the default group stage."
       >
-        <FixturesGroupList groups={groups} />
+        <FixturesGroupList
+          tournamentId={tournament.id}
+          categoryId={category.id}
+          groups={groups}
+        />
       </SectionCard>
     </PageContainer>
   );
