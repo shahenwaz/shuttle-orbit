@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { CategoryOpsNav } from "@/components/admin/categories/category-ops-nav";
-import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
+import { CompactStatRow } from "@/components/shared/compact-stat-row";
 import { Button } from "@/components/ui/button";
 
 type CategoryWorkspaceHeaderProps = {

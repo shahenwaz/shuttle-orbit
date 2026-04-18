@@ -7,7 +7,7 @@ import { CreateGroupForm } from "@/components/admin/groups/create-group-form";
 import { GroupsOverview } from "@/components/admin/groups/groups-overview";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { SectionCard } from "@/components/admin/section-card";
-import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
+import { CompactStatPill } from "@/components/shared/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 import { formatTeamName } from "@/lib/utils/format";

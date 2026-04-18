@@ -2,8 +2,8 @@ import Link from "next/link";
 import { FolderKanban, Trophy, Users } from "lucide-react";
 
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
-import { CompactStatPill } from "@/components/admin/stats/compact-stat-pill";
-import { CompactStatRow } from "@/components/admin/stats/compact-stat-row";
+import { CompactStatPill } from "@/components/shared/compact-stat-pill";
+import { CompactStatRow } from "@/components/shared/compact-stat-row";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
