@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, Shapes } from "lucide-react";
+import { ArrowLeft, CalendarDays, Shapes, Trophy } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -27,8 +27,8 @@ export default async function PlayerProfilePage({
 
   const { player, appearances } = profile;
 
-  const uniqueCategories = new Set(
-    appearances.map((entry) => entry.category.id),
+  const uniqueTournaments = new Set(
+    appearances.map((entry) => entry.category.tournament.id),
   ).size;
 
   return (
@@ -67,7 +67,9 @@ export default async function PlayerProfilePage({
           </span>
 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
-            {uniqueCategories} categorie{uniqueCategories === 1 ? "y" : "s"}
+            <Trophy className="h-3.5 w-3.5" />
+            {uniqueTournaments} tournament
+            {uniqueTournaments === 1 ? "" : "s"}
           </span>
         </div>
       </section>
