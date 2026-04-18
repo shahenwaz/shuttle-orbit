@@ -5,8 +5,8 @@ import { Layers3, Swords, User, Users } from "lucide-react";
 
 import { GroupStandingsTable } from "@/components/tournaments/group-standings-table";
 import { MatchCard } from "@/components/tournaments/match-card";
+import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
-import { formatTeamName } from "@/lib/utils/format";
 
 type CategoryTabsViewProps = {
   category: {
@@ -115,52 +115,6 @@ function PlayerCard({
 
         <div className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary sm:text-[11px]">
           {partnerCount} pair{partnerCount === 1 ? "" : "s"}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TeamCard({
-  team,
-}: {
-  team: CategoryTabsViewProps["category"]["teamEntries"][number];
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/4 p-3 backdrop-blur-sm sm:p-4">
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 truncate text-sm font-semibold text-foreground sm:text-base">
-            {formatTeamName(
-              team.player1.fullName,
-              team.player2.fullName,
-              team.teamName,
-            )}
-          </p>
-
-          <div className="shrink-0 rounded-full border border-white/10 bg-background/60 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">
-            Team
-          </div>
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-background/40 px-3 py-2">
-            <p className="truncate text-xs font-medium text-foreground sm:text-sm">
-              {team.player1.fullName}
-            </p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
-              @{team.player1.nickname}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-white/10 bg-background/40 px-3 py-2">
-            <p className="truncate text-xs font-medium text-foreground sm:text-sm">
-              {team.player2.fullName}
-            </p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
-              @{team.player2.nickname}
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -412,9 +366,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
                           </span>
                         </div>
 
-                        <div className="mx-0">
-                          <GroupStandingsTable rows={standings} />
-                        </div>
+                        <GroupStandingsTable rows={standings} />
                       </div>
                     );
                   })}
