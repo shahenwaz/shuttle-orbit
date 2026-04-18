@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { PageContainer } from "@/components/layout/page-container";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PlayerCard } from "@/components/tournaments/player-card";
@@ -30,7 +32,13 @@ export default async function PlayersPage() {
         ) : (
           <div className="grid gap-1.5 sm:gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {players.map((player) => (
-              <PlayerCard key={player.id} player={player} />
+              <Link
+                key={player.id}
+                href={`/players/${player.id}`}
+                className="block transition hover:-translate-y-0.5"
+              >
+                <PlayerCard player={player} />
+              </Link>
             ))}
           </div>
         )}
