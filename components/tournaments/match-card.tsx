@@ -83,7 +83,7 @@ export function MatchCard({ match }: MatchCardProps) {
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
             <p
               className={cn(
-                "truncate text-xs sm:text-sm",
+                "truncate text-[11px] sm:text-sm",
                 teamAIsWinner
                   ? "font-semibold text-foreground"
                   : "font-medium text-muted-foreground",
@@ -113,7 +113,7 @@ export function MatchCard({ match }: MatchCardProps) {
 
             <p
               className={cn(
-                "truncate text-right text-xs sm:text-sm",
+                "truncate text-right text-[11px] sm:text-sm",
                 teamBIsWinner
                   ? "font-semibold text-foreground"
                   : "font-medium text-muted-foreground",
@@ -126,7 +126,7 @@ export function MatchCard({ match }: MatchCardProps) {
         ) : (
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
             <p
-              className="truncate text-xs font-medium text-foreground sm:text-sm"
+              className="truncate text-[11px] font-medium text-foreground sm:text-sm"
               title={teamALabel}
             >
               {teamALabel}
@@ -137,7 +137,7 @@ export function MatchCard({ match }: MatchCardProps) {
             </div>
 
             <p
-              className="truncate text-right text-xs font-medium text-foreground sm:text-sm"
+              className="truncate text-right text-[11px] font-medium text-foreground sm:text-sm"
               title={teamBLabel}
             >
               {teamBLabel}

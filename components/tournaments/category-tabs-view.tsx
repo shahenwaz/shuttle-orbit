@@ -182,6 +182,14 @@ function SectionMetaLine({
   );
 }
 
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/4 px-4 py-5 text-xs text-muted-foreground sm:text-sm">
+      {message}
+    </div>
+  );
+}
+
 export function CategoryTabsView({ category }: CategoryTabsViewProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("players");
 
@@ -253,9 +261,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           </SectionMetaLine>
 
           {players.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/4 px-4 py-5 text-sm text-muted-foreground">
-              No players available yet.
-            </div>
+            <EmptyState message="No players available yet." />
           ) : (
             <div className="grid gap-2.5 sm:gap-3 md:grid-cols-2">
               {players.map((player) => (
@@ -281,9 +287,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           </SectionMetaLine>
 
           {category.teamEntries.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/4 px-4 py-5 text-sm text-muted-foreground">
-              No teams available yet.
-            </div>
+            <EmptyState message="No teams available yet." />
           ) : (
             <div className="grid gap-2.5 sm:gap-3">
               {category.teamEntries.map((team) => (
@@ -319,9 +323,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
               </div>
 
               {stage.matches.length === 0 ? (
-                <p className="text-xs text-muted-foreground sm:text-sm">
-                  No matches generated yet.
-                </p>
+                <EmptyState message="No matches generated yet." />
               ) : (
                 <div className="grid gap-2.5 sm:gap-3">
                   {stage.matches.map((match) => (
@@ -364,9 +366,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
               </div>
 
               {stage.groups.length === 0 ? (
-                <p className="text-xs text-muted-foreground sm:text-sm">
-                  No group standings for this stage.
-                </p>
+                <EmptyState message="No group standings available for this stage." />
               ) : (
                 <div className="space-y-3 sm:space-y-4">
                   {stage.groups.map((group) => {

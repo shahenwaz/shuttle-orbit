@@ -41,14 +41,14 @@ export function TournamentHero({ tournament }: TournamentHeroProps) {
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:text-sm">
           <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" />
+            <CalendarDays className="h-4 w-4 shrink-0" />
             <span>{formatDate(tournament.eventDate)}</span>
           </div>
 
           {tournament.location ? (
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>{tournament.location}</span>
+            <div className="flex min-w-0 items-center gap-2">
+              <MapPin className="h-4 w-4 shrink-0" />
+              <span className="truncate">{tournament.location}</span>
             </div>
           ) : null}
         </div>
