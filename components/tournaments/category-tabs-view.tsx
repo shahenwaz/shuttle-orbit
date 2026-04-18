@@ -394,18 +394,21 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
                     return (
                       <div
                         key={group.id}
-                        className="rounded-2xl border border-white/10 bg-background/40 p-3 sm:p-4"
+                        className="overflow-hidden rounded-2xl border border-white/10 bg-background/40"
                       >
-                        <div className="mb-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
                           <h4 className="text-sm font-semibold text-foreground sm:text-base">
                             {group.name}
                           </h4>
+
                           <span className="rounded-full border border-white/10 bg-background/60 px-2 py-1 text-[10px] font-medium text-muted-foreground sm:text-[11px]">
                             {group.memberships.length} teams
                           </span>
                         </div>
 
-                        <GroupStandingsTable rows={standings} />
+                        <div className="mx-0">
+                          <GroupStandingsTable rows={standings} />
+                        </div>
                       </div>
                     );
                   })}
