@@ -23,23 +23,6 @@ type TournamentCategoryCardProps = {
   };
 };
 
-function getCategoryProgressLabel(
-  category: TournamentCategoryCardProps["category"],
-) {
-  const completedMatches = 0;
-  const totalMatches = category._count.matches;
-
-  if (totalMatches === 0) {
-    return "Setup pending";
-  }
-
-  if (completedMatches === totalMatches) {
-    return "Completed";
-  }
-
-  return "In progress";
-}
-
 export function TournamentCategoryCard({
   tournamentSlug,
   category,
@@ -50,52 +33,44 @@ export function TournamentCategoryCard({
   );
 
   return (
-    <Link href={`/tournaments/${tournamentSlug}/categories/${category.code}`}>
+    <Link
+      href={`/tournaments/${tournamentSlug}/categories/${category.code}`}
+      className="block h-full"
+    >
       <Card className="h-full rounded-3xl border-white/10 bg-white/5 transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white/[0.07]">
-        <CardHeader className="space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
-              <div className="inline-flex rounded-full border border-white/10 bg-background/60 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                {category.code}
-              </div>
-              <CardTitle className="text-xl sm:text-2xl">
-                {category.name}
-              </CardTitle>
-            </div>
-
-            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary">
-              {getCategoryProgressLabel(category)}
-            </span>
-          </div>
+        <CardHeader className="space-y-3 px-4 sm:px-5">
+          <CardTitle className="truncate text-lg tracking-tight sm:text-xl">
+            {category.name}
+          </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
           {category.rulesSummary ? (
-            <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+            <p className="line-clamp-2 text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
               {category.rulesSummary}
             </p>
           ) : (
-            <p className="text-sm leading-6 text-muted-foreground">
+            <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
               View teams, standings, players, and matches for this category.
             </p>
           )}
 
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-background/50 px-3 py-1.5">
+          <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
               <Users className="h-3.5 w-3.5" />
               {category._count.teamEntries} teams
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-background/50 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
               <Swords className="h-3.5 w-3.5" />
               {category._count.matches} matches
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-background/50 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
               <Layers3 className="h-3.5 w-3.5" />
               {totalGroups} groups
             </span>
           </div>
 
-          <div className="flex items-center gap-2 pt-1 text-sm font-medium text-foreground">
+          <div className="flex items-center gap-1.5 pt-0.5 text-xs font-medium text-foreground sm:text-sm">
             Open category
             <ArrowRight className="h-4 w-4" />
           </div>
