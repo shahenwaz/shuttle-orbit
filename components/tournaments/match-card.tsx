@@ -1,33 +1,44 @@
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { formatTeamName } from "@/lib/utils/format";
 
 type MatchCardProps = {
   match: {
     id: string;
     status: string;
-    scoreSummary: string | null;
     roundLabel: string | null;
+    scoreSummary: string | null;
     winnerId: string | null;
     teamAId: string;
     teamBId: string;
     teamA: {
       teamName: string | null;
-      player1: { fullName: string };
-      player2: { fullName: string };
+      player1: {
+        fullName: string;
+      };
+      player2: {
+        fullName: string;
+      };
     };
     teamB: {
       teamName: string | null;
-      player1: { fullName: string };
-      player2: { fullName: string };
+      player1: {
+        fullName: string;
+      };
+      player2: {
+        fullName: string;
+      };
     };
-    sets: Array<{
-      id?: string;
-      setNumber: number;
-      teamAScore: number;
-      teamBScore: number;
-    }>;
   };
 };
+
+function getStatusBadgeClass(status: string) {
+  switch (status) {
+    case "completed":
+      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
+    default:
+      return "border-white/10 bg-white/5 text-muted-foreground";
+  }
+}
 
 export function MatchCard({ match }: MatchCardProps) {
   const teamALabel = formatTeamName(
@@ -47,66 +58,74 @@ export function MatchCard({ match }: MatchCardProps) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-background/40 p-4">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="space-y-1">
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-medium text-foreground">
             {match.roundLabel ?? "Match"}
           </p>
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+
+          <span
+            className={cn(
+              "rounded-full border px-2.5 py-1 text-xs",
+              getStatusBadgeClass(match.status),
+            )}
+          >
             {match.status}
-          </p>
+          </span>
+
+          {match.scoreSummary ? (
+            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-foreground">
+              {match.scoreSummary}
+            </span>
+          ) : null}
         </div>
 
-        {match.scoreSummary ? (
-          <Badge variant="secondary" className="rounded-full">
-            {match.scoreSummary}
-          </Badge>
-        ) : null}
-      </div>
-
-      <div className="space-y-3">
-        <div
-          className={`rounded-xl border px-3 py-3 ${
-            teamAIsWinner
-              ? "border-primary/30 bg-primary/10"
-              : "border-white/10 bg-white/5"
-          }`}
-        >
-          <p className="font-medium">{teamALabel}</p>
-        </div>
-
-        <div
-          className={`rounded-xl border px-3 py-3 ${
-            teamBIsWinner
-              ? "border-primary/30 bg-primary/10"
-              : "border-white/10 bg-white/5"
-          }`}
-        >
-          <p className="font-medium">{teamBLabel}</p>
-        </div>
-      </div>
-
-      {match.sets.length > 0 ? (
-        <div className="mt-4 space-y-2">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Set scores
-          </p>
-
-          <div className="space-y-2">
-            {match.sets.map((set) => (
-              <div
-                key={set.setNumber}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
-              >
-                <span>Set {set.setNumber}</span>
-                <span className="font-medium">
-                  {set.teamAScore} - {set.teamBScore}
+        <div className="space-y-2">
+          <div
+            className={cn(
+              "rounded-xl border px-3 py-2",
+              teamAIsWinner
+                ? "border-emerald-500/20 bg-emerald-500/10"
+                : "border-white/10 bg-white/5",
+            )}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">
+                {teamALabel}
+              </p>
+              {teamAIsWinner ? (
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                  Winner
                 </span>
-              </div>
-            ))}
+              ) : null}
+            </div>
+          </div>
+
+          <div className="px-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            vs
+          </div>
+
+          <div
+            className={cn(
+              "rounded-xl border px-3 py-2",
+              teamBIsWinner
+                ? "border-emerald-500/20 bg-emerald-500/10"
+                : "border-white/10 bg-white/5",
+            )}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">
+                {teamBLabel}
+              </p>
+              {teamBIsWinner ? (
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                  Winner
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
