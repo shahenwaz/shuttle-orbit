@@ -1,5 +1,7 @@
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { RecordMatchResultForm } from "@/components/admin/results/record-match-result-form";
+import { EmptyState } from "@/components/shared/empty-state";
+import { MatchCard } from "@/components/tournaments/match-card";
 import { formatTeamName } from "@/lib/utils/format";
 
 type MatchRow = {
@@ -7,6 +9,9 @@ type MatchRow = {
   roundLabel: string | null;
   status: string;
   scoreSummary: string | null;
+  winnerId: string | null;
+  teamAId: string;
+  teamBId: string;
   teamA: {
     teamName: string | null;
     player1: {
@@ -46,17 +51,15 @@ export function ResultsGroupList({
 }: ResultsGroupListProps) {
   if (groups.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No groups available yet. Create groups and fixtures first.
-      </p>
+      <EmptyState message="No groups available yet. Create groups and fixtures first." />
     );
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3 sm:gap-4">
       {groups.map((group) => (
         <div key={group.id} className="surface-panel p-4">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4">
             <h4 className="text-base font-semibold text-foreground">
               {group.name}
             </h4>
@@ -66,11 +69,9 @@ export function ResultsGroupList({
           </div>
 
           {group.matches.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No fixtures generated yet for this group.
-            </p>
+            <EmptyState message="No fixtures generated yet for this group." />
           ) : (
-            <div className="grid gap-3">
+            <div className="grid gap-1.5 sm:gap-2">
               {group.matches.map((match) => {
                 const teamALabel = formatTeamName(
                   match.teamA.player1.fullName,
@@ -87,35 +88,11 @@ export function ResultsGroupList({
                 return (
                   <div
                     key={match.id}
-                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                    className="space-y-2 rounded-2xl border border-white/10 bg-white/4 p-2.5"
                   >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-foreground">
-                            {match.roundLabel ?? "Match"}
-                          </p>
-                          <span className="rounded-full border border-white/10 bg-background/60 px-2.5 py-1 text-xs text-muted-foreground">
-                            {match.status}
-                          </span>
-                          {match.scoreSummary ? (
-                            <span className="rounded-full border border-white/10 bg-background/60 px-2.5 py-1 text-xs text-foreground">
-                              {match.scoreSummary}
-                            </span>
-                          ) : null}
-                        </div>
+                    <MatchCard match={match} />
 
-                        <div className="space-y-1">
-                          <p className="text-sm text-foreground">
-                            {teamALabel}
-                          </p>
-                          <p className="text-xs text-muted-foreground">vs</p>
-                          <p className="text-sm text-foreground">
-                            {teamBLabel}
-                          </p>
-                        </div>
-                      </div>
-
+                    <div className="flex justify-end">
                       <CreateSheet
                         triggerLabel={
                           match.status === "completed"
