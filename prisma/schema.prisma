@@ -44,15 +44,18 @@ model TournamentCategory {
   name          String
   code          String
   rulesSummary  String?
+  fixtureTemplateKey String?
+  fixtureConfig      Json?
   status        String    @default("draft")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
   tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   stages        Stage[]
   teamEntries   TeamEntry[]
   matches       Match[]
   playerStats   PlayerTournamentStat[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@unique([tournamentId, code])
 }
