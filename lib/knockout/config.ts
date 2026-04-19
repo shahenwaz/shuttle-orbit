@@ -31,6 +31,10 @@ export const KNOCKOUT_STAGE_DEFINITIONS: Record<
   },
 };
 
+export function getKnockoutStageDefinition(stageType: KnockoutStageType) {
+  return KNOCKOUT_STAGE_DEFINITIONS[stageType];
+}
+
 export function getKnockoutMatchSlots(
   stageType: KnockoutStageType,
 ): KnockoutMatchSlot[] {
@@ -42,11 +46,13 @@ export function getKnockoutMatchSlots(
         { matchNumber: 3, slotA: "QF3-A", slotB: "QF3-B" },
         { matchNumber: 4, slotA: "QF4-A", slotB: "QF4-B" },
       ];
+
     case "semi_final":
       return [
         { matchNumber: 1, slotA: "SF1-A", slotB: "SF1-B" },
         { matchNumber: 2, slotA: "SF2-A", slotB: "SF2-B" },
       ];
+
     case "final":
       return [{ matchNumber: 1, slotA: "F-A", slotB: "F-B" }];
   }

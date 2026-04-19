@@ -13,3 +13,9 @@ export type KnockoutMatchSlot = {
   slotA: string;
   slotB: string;
 };
+
+export type KnockoutStageSeed = {
+  stageType: KnockoutStageType;
+  stageName: string;
+  matches: KnockoutMatchSlot[];
+};
