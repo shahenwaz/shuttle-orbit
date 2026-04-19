@@ -3,8 +3,9 @@
 import { useActionState } from "react";
 
 import { removeGroupMembershipAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
+import { EmptyState } from "@/components/shared/empty-state";
+import { TeamCard } from "@/components/tournaments/team-card";
 import { Button } from "@/components/ui/button";
-import { formatTeamName } from "@/lib/utils/format";
 
 type GroupMembershipRow = {
   id: string;
@@ -42,14 +43,12 @@ export function GroupsOverview({
 }: GroupsOverviewProps) {
   if (groups.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No groups created yet. Add the first group for this category.
-      </p>
+      <EmptyState message="No groups created yet. Add the first group for this category." />
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
       {groups.map((group) => (
         <div key={group.id} className="surface-panel p-4">
           <div className="space-y-3">
@@ -72,9 +71,7 @@ export function GroupsOverview({
             </div>
 
             {group.memberships.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No teams assigned yet.
-              </p>
+              <EmptyState message="No teams assigned yet." />
             ) : (
               <div className="space-y-2">
                 {group.memberships.map((membership) => (
@@ -114,29 +111,35 @@ function MembershipCard({
   const team = membership.teamEntry;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <p className="font-medium text-foreground">
-            {formatTeamName(
-              team.player1.fullName,
-              team.player2.fullName,
-              team.teamName,
-            )}
+    <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-2.5">
+      <TeamCard
+        team={{
+          id: team.id,
+          teamName: team.teamName,
+          player1: {
+            fullName: team.player1.fullName,
+            nickname: team.player1.nickname,
+          },
+          player2: {
+            fullName: team.player2.fullName,
+            nickname: team.player2.nickname,
+          },
+        }}
+        badgeLabel="Group team"
+      />
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        {state.message ? (
+          <p
+            className={`text-sm ${
+              state.success ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            {state.message}
           </p>
-          <p className="text-sm text-muted-foreground">
-            @{team.player1.nickname} · @{team.player2.nickname}
-          </p>
-          {state.message ? (
-            <p
-              className={`text-sm ${
-                state.success ? "text-emerald-400" : "text-red-400"
-              }`}
-            >
-              {state.message}
-            </p>
-          ) : null}
-        </div>
+        ) : (
+          <div />
+        )}
 
         <form action={formAction}>
           <input type="hidden" name="tournamentId" value={tournamentId} />

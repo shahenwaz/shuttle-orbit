@@ -44,6 +44,8 @@ model TournamentCategory {
   name          String
   code          String
   rulesSummary  String?
+  knockoutStartStage String?
+  knockoutConfig     Json?
   status        String    @default("draft")
 
   tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
