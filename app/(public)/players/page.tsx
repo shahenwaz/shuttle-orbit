@@ -1,8 +1,6 @@
-import Link from "next/link";
-
 import { PageContainer } from "@/components/layout/page-container";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PlayerCard } from "@/components/tournaments/player-card";
+import { PlayersDirectory } from "@/components/players/players-directory";
 import { getPlayersDirectory } from "@/lib/player/queries";
 
 export default async function PlayersPage() {
@@ -26,23 +24,11 @@ export default async function PlayersPage() {
         </div>
       </section>
 
-      <section className="space-y-3 sm:space-y-4">
-        {players.length === 0 ? (
-          <EmptyState message="No players available yet." />
-        ) : (
-          <div className="grid gap-1.5 sm:gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {players.map((player) => (
-              <Link
-                key={player.id}
-                href={`/players/${player.id}`}
-                className="block transition hover:-translate-y-0.5"
-              >
-                <PlayerCard player={player} />
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+      {players.length === 0 ? (
+        <EmptyState message="No players available yet." />
+      ) : (
+        <PlayersDirectory players={players} />
+      )}
     </PageContainer>
   );
 }
