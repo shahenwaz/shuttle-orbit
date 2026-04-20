@@ -1,10 +1,10 @@
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
+import { AdminPlayerCard } from "@/components/admin/players/admin-player-card";
 import { CreatePlayerForm } from "@/components/admin/players/create-player-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { CompactStatRow } from "@/components/shared/stats/compact-stat-row";
-import { PlayerCard } from "@/components/tournaments/player-card";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 
@@ -49,7 +49,7 @@ export default async function AdminPlayersPage() {
       ) : (
         <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2 lg:grid-cols-3">
           {players.map((player) => (
-            <PlayerCard key={player.id} player={player} />
+            <AdminPlayerCard key={player.id} player={player} />
           ))}
         </div>
       )}
