@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type CreateDialogProps = {
   triggerLabel: string;
@@ -20,6 +21,8 @@ type CreateDialogProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
+  triggerClassName?: string;
+  triggerIcon?: React.ReactNode;
 };
 
 export function CreateDialog({
@@ -30,12 +33,17 @@ export function CreateDialog({
   open,
   onOpenChange,
   hideTrigger = false,
+  triggerClassName,
+  triggerIcon,
 }: CreateDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!hideTrigger ? (
         <DialogTrigger asChild>
-          <Button>{triggerLabel}</Button>
+          <Button className={cn(triggerClassName)}>
+            {triggerIcon ? <span className="mr-1">{triggerIcon}</span> : null}
+            {triggerLabel}
+          </Button>
         </DialogTrigger>
       ) : null}
 

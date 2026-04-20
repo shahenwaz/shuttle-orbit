@@ -12,12 +12,16 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type CreateSheetProps = {
   triggerLabel: string;
   title: string;
   description?: string;
   children: React.ReactNode;
+  triggerClassName?: string;
+  hideIcon?: boolean;
+  triggerIcon?: React.ReactNode;
 };
 
 export function CreateSheet({
@@ -25,12 +29,19 @@ export function CreateSheet({
   title,
   description,
   children,
+  triggerClassName,
+  hideIcon = false,
+  triggerIcon,
 }: CreateSheetProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button className={cn(triggerClassName)}>
+          {triggerIcon ? (
+            <span className="mr-1">{triggerIcon}</span>
+          ) : !hideIcon ? (
+            <Plus className="mr-1 h-3.5 w-3.5" />
+          ) : null}
           {triggerLabel}
         </Button>
       </SheetTrigger>
