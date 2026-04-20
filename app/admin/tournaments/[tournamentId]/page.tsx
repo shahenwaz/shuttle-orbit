@@ -15,9 +15,10 @@ import { SectionCard } from "@/components/admin/section-card";
 import { CreateCategoryForm } from "@/components/admin/tournaments/create-category-form";
 import { EditTournamentForm } from "@/components/admin/tournaments/edit-tournament-form";
 import { TournamentCategoriesList } from "@/components/admin/tournaments/tournament-categories-list";
-import { PageContainer } from "@/components/layout/page-container";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { CompactStatRow } from "@/components/shared/stats/compact-stat-row";
+import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
@@ -27,15 +28,6 @@ type AdminTournamentDetailPageProps = {
     tournamentId: string;
   }>;
 };
-
-const baseActionPillClassName =
-  "h-auto rounded-full border px-3 py-1.5 text-[11px] font-medium shadow-none transition";
-
-const backActionPillClassName = `${baseActionPillClassName} border-white/10 bg-background/70 text-foreground hover:bg-white/8 hover:text-foreground`;
-
-const editActionPillClassName = `${baseActionPillClassName} border-sky-500/20 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15 hover:text-sky-50`;
-
-const addActionPillClassName = `${baseActionPillClassName} border-emerald-500/20 bg-emerald-500/12 text-emerald-100 hover:bg-emerald-500/18 hover:text-emerald-50`;
 
 export default async function AdminTournamentDetailPage({
   params,
@@ -130,7 +122,7 @@ export default async function AdminTournamentDetailPage({
               asChild
               variant="outline"
               size="sm"
-              className={backActionPillClassName}
+              className={actionPillButtonClassName({ variant: "neutral" })}
             >
               <Link href="/admin/tournaments">
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" />
@@ -142,7 +134,7 @@ export default async function AdminTournamentDetailPage({
               triggerLabel="Edit tour"
               title="Edit tournament"
               description="Update tournament details and mark it completed when finished."
-              triggerClassName={editActionPillClassName}
+              triggerClassName={actionPillButtonClassName({ variant: "edit" })}
               triggerIcon={<Pencil className="h-3.5 w-3.5" />}
             >
               <EditTournamentForm
@@ -161,7 +153,9 @@ export default async function AdminTournamentDetailPage({
               triggerLabel="Add category"
               title="Create category"
               description="Add divisions like B, C, Mixed, or any custom format."
-              triggerClassName={addActionPillClassName}
+              triggerClassName={actionPillButtonClassName({
+                variant: "create",
+              })}
               triggerIcon={<FolderPlus className="h-3.5 w-3.5" />}
             >
               <CreateCategoryForm tournamentId={tournament.id} />
