@@ -14,6 +14,20 @@ export type CreatePlayerActionState = {
   };
 };
 
+export type UpdatePlayerActionState = {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    fullName?: string[];
+    nickname?: string[];
+  };
+};
+
+export type DeletePlayerActionState = {
+  success: boolean;
+  message: string;
+};
+
 export async function createPlayerAction(
   _prevState: CreatePlayerActionState,
   formData: FormData,
@@ -36,12 +50,8 @@ export async function createPlayerAction(
   const { fullName, nickname } = parsed.data;
 
   const existingPlayer = await prisma.player.findUnique({
-    where: {
-      nickname,
-    },
-    select: {
-      id: true,
-    },
+    where: { nickname },
+    select: { id: true },
   });
 
   if (existingPlayer) {
@@ -69,15 +79,6 @@ export async function createPlayerAction(
     fieldErrors: {},
   };
 }
-
-export type UpdatePlayerActionState = {
-  success: boolean;
-  message: string;
-  fieldErrors?: {
-    fullName?: string[];
-    nickname?: string[];
-  };
-};
 
 export async function updatePlayerAction(
   _prevState: UpdatePlayerActionState,
@@ -132,9 +133,7 @@ export async function updatePlayerAction(
   }
 
   await prisma.player.update({
-    where: {
-      id: playerId,
-    },
+    where: { id: playerId },
     data: {
       fullName,
       nickname,
@@ -150,11 +149,30 @@ export async function updatePlayerAction(
   };
 }
 
-export async function deletePlayerAction(formData: FormData) {
+export async function deletePlayerAction(
+  formData: FormData,
+): Promise<DeletePlayerActionState> {
   const playerId = formData.get("playerId");
 
   if (typeof playerId !== "string" || !playerId) {
-    return;
+    return {
+      success: false,
+      message: "Invalid player.",
+    };
+  }
+
+  const usageCount = await prisma.teamEntry.count({
+    where: {
+      OR: [{ player1Id: playerId }, { player2Id: playerId }],
+    },
+  });
+
+  if (usageCount > 0) {
+    return {
+      success: false,
+      message:
+        "This player cannot be deleted because they are already used in teams or tournament history.",
+    };
   }
 
   await prisma.player.delete({
@@ -164,4 +182,9 @@ export async function deletePlayerAction(formData: FormData) {
   });
 
   revalidatePath("/admin/players");
+
+  return {
+    success: true,
+    message: "Player removed successfully.",
+  };
 }
