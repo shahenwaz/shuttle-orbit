@@ -209,10 +209,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           </SectionMetaLine>
 
           {category.stages.map((stage) => (
-            <div
-              key={stage.id}
-              className="rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4"
-            >
+            <div key={stage.id} className="surface-card p-3 sm:p-4">
               <div className="mb-3 sm:mb-4">
                 <h3 className="text-sm font-semibold text-foreground sm:text-base">
                   {stage.name}

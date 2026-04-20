@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
-import { SectionCard } from "@/components/admin/section-card";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { CreateTeamEntryForm } from "@/components/admin/teams/create-team-entry-form";
 import { TeamEntriesList } from "@/components/admin/teams/team-entries-list";
 import { PageContainer } from "@/components/layout/page-container";
@@ -91,16 +89,6 @@ export default async function AdminCategoryTeamsPage({
         categoryName={`${category.name} teams`}
         description={`Manage doubles teams for this category inside ${tournament.name}.`}
         activeTab="teams"
-        stats={
-          <>
-            <CompactStatPill
-              label="Teams"
-              value={category._count.teamEntries}
-            />
-            <CompactStatPill label="Stages" value={category._count.stages} />
-            <CompactStatPill label="Matches" value={category._count.matches} />
-          </>
-        }
         actions={
           <CreateSheet
             triggerLabel="Add team"
@@ -116,16 +104,11 @@ export default async function AdminCategoryTeamsPage({
         }
       />
 
-      <SectionCard
-        title="Category teams"
-        description="Existing team entries for this tournament category."
-      >
-        <TeamEntriesList
-          tournamentId={tournament.id}
-          categoryId={category.id}
-          teams={category.teamEntries}
-        />
-      </SectionCard>
+      <TeamEntriesList
+        tournamentId={tournament.id}
+        categoryId={category.id}
+        teams={category.teamEntries}
+      />
     </PageContainer>
   );
 }

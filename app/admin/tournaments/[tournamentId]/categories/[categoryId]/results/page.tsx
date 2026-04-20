@@ -2,9 +2,8 @@ import { notFound } from "next/navigation";
 
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { ResultsGroupList } from "@/components/admin/results/results-group-list";
-import { SectionCard } from "@/components/admin/section-card";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
+import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 
 type AdminCategoryResultsPageProps = {
@@ -121,16 +120,11 @@ export default async function AdminCategoryResultsPage({
         }
       />
 
-      <SectionCard
-        title="Group results"
-        description="Record and edit match results for the default group stage."
-      >
-        <ResultsGroupList
-          tournamentId={tournament.id}
-          categoryId={category.id}
-          groups={groups}
-        />
-      </SectionCard>
+      <ResultsGroupList
+        tournamentId={tournament.id}
+        categoryId={category.id}
+        groups={groups}
+      />
     </PageContainer>
   );
 }

@@ -156,7 +156,7 @@
 
 @layer utilities {
   .surface-card {
-    @apply rounded-2xl border border-white/10 bg-card/90 shadow-lg shadow-black/20 backdrop-blur-sm;
+    @apply rounded-2xl border border-white/10 bg-white/3 backdrop-blur-sm;
   }
 
   .surface-panel {

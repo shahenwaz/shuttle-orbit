@@ -4,7 +4,6 @@ import { CreateSheet } from "@/components/admin/create-sheet";
 import { FixturesGroupList } from "@/components/admin/fixtures/fixtures-group-list";
 import { GenerateGroupFixturesForm } from "@/components/admin/fixtures/generate-group-fixtures-form";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
-import { SectionCard } from "@/components/admin/section-card";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
@@ -151,16 +150,11 @@ export default async function AdminCategoryFixturesPage({
         }
       />
 
-      <SectionCard
-        title="Group fixtures"
-        description="Fixtures currently generated for the default group stage."
-      >
-        <FixturesGroupList
-          tournamentId={tournament.id}
-          categoryId={category.id}
-          groups={groups}
-        />
-      </SectionCard>
+      <FixturesGroupList
+        tournamentId={tournament.id}
+        categoryId={category.id}
+        groups={groups}
+      />
     </PageContainer>
   );
 }

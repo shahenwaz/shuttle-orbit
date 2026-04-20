@@ -14,14 +14,14 @@ export function CompactStatPill({
   return (
     <div
       className={cn(
-        "flex min-w-18 flex-col items-center justify-center rounded-md border border-white/10 bg-white/5 p-1.5 text-center sm:min-w-24",
+        "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] sm:px-3 sm:text-xs",
         className,
       )}
     >
-      <span className="text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">
+      <span className="font-medium uppercase tracking-widest text-muted-foreground">
         {label}
       </span>
-      <span className="mt-1 text-lg font-bold leading-none text-foreground sm:text-xl">
+      <span className="text-xs font-bold leading-none text-foreground sm:text-sm">
         {value}
       </span>
     </div>

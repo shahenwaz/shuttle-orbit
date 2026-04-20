@@ -27,15 +27,6 @@ type TeamEntriesListProps = {
   teams: TeamEntryRow[];
 };
 
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case "confirmed":
-      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
-    default:
-      return "border-sky-500/20 bg-sky-500/10 text-sky-300";
-  }
-}
-
 export function TeamEntriesList({
   tournamentId,
   categoryId,
@@ -76,17 +67,7 @@ function TeamEntryCard({
   });
 
   return (
-    <div className="space-y-2 rounded-2xl border border-white/10 bg-white/4 p-2.5">
-      <div className="flex items-start justify-between gap-2">
-        <span
-          className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] ${getStatusBadgeClass(
-            team.status,
-          )}`}
-        >
-          {team.status}
-        </span>
-      </div>
-
+    <div>
       <TeamCard
         team={{
           id: team.id,
@@ -103,7 +84,7 @@ function TeamEntryCard({
         badgeLabel="Team"
       />
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
         {state.message ? (
           <p
             className={`text-sm ${
@@ -122,7 +103,7 @@ function TeamEntryCard({
           <input type="hidden" name="teamEntryId" value={team.id} />
           <Button
             type="submit"
-            variant="outline"
+            variant="destructive"
             size="sm"
             disabled={isPending}
           >

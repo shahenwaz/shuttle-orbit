@@ -181,16 +181,11 @@ export default async function AdminCategoryGroupsPage({
       />
 
       <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <SectionCard
-          title="Groups overview"
-          description="Current groups and assigned teams for the default group stage."
-        >
-          <GroupsOverview
-            tournamentId={tournament.id}
-            categoryId={category.id}
-            groups={groups}
-          />
-        </SectionCard>
+        <GroupsOverview
+          tournamentId={tournament.id}
+          categoryId={category.id}
+          groups={groups}
+        />
 
         <SectionCard
           title="Unassigned teams"

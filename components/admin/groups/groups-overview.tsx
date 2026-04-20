@@ -50,26 +50,32 @@ export function GroupsOverview({
   return (
     <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
       {groups.map((group) => (
-        <div key={group.id} className="surface-panel p-4">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h4 className="text-base font-semibold text-foreground">
-                  {group.name}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Order {group.groupOrder}
-                </p>
-              </div>
+        <div key={group.id} className="surface-card overflow-hidden">
+          <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                {group.name}
+              </h4>
 
-              <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center">
-                <p className="text-xs text-muted-foreground">Teams</p>
-                <p className="mt-1 text-base font-semibold">
-                  {group.memberships.length}
-                </p>
-              </div>
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                ⁜
+              </span>
+
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                Order {group.groupOrder}
+              </span>
+
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                ⁜
+              </span>
+
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                {group.memberships.length} teams
+              </span>
             </div>
+          </div>
 
+          <div className="p-4 sm:p-5">
             {group.memberships.length === 0 ? (
               <EmptyState message="No teams assigned yet." />
             ) : (
@@ -111,7 +117,7 @@ function MembershipCard({
   const team = membership.teamEntry;
 
   return (
-    <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-2.5">
+    <div>
       <TeamCard
         team={{
           id: team.id,
@@ -125,10 +131,10 @@ function MembershipCard({
             nickname: team.player2.nickname,
           },
         }}
-        badgeLabel="Group team"
+        badgeLabel="team"
       />
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
         {state.message ? (
           <p
             className={`text-sm ${
@@ -147,7 +153,7 @@ function MembershipCard({
           <input type="hidden" name="membershipId" value={membership.id} />
           <Button
             type="submit"
-            variant="outline"
+            variant="destructive"
             size="sm"
             disabled={isPending}
           >
