@@ -40,7 +40,7 @@ export default async function AdminPage() {
   const stats = await getAdminDashboardStats();
 
   return (
-    <PageContainer className="space-y-8">
+    <PageContainer className="space-y-4">
       <AdminShellHeader
         activeItem="overview"
         title="Admin overview"
@@ -48,7 +48,7 @@ export default async function AdminPage() {
       />
 
       <CompactStatRow>
-        <CompactStatPill label="Tournaments" value={stats.tournamentCount} />
+        <CompactStatPill label="Tour" value={stats.tournamentCount} />
         <CompactStatPill label="Players" value={stats.playerCount} />
         <CompactStatPill label="Teams" value={stats.teamCount} />
         <CompactStatPill label="Matches" value={stats.matchCount} />

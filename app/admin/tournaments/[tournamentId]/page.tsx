@@ -98,9 +98,9 @@ export default async function AdminTournamentDetailPage({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             <Button asChild variant="outline" size="sm">
-              <Link href="/admin/tournaments">Back to tournaments</Link>
+              <Link href="/admin/tournaments">Back</Link>
             </Button>
 
             <Button asChild variant="outline" size="sm">

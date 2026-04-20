@@ -26,7 +26,7 @@ export default async function AdminPlayersPage() {
   ]);
 
   return (
-    <PageContainer className="space-y-8">
+    <PageContainer className="space-y-4">
       <AdminShellHeader
         activeItem="players"
         title="Player management"

@@ -9,6 +9,7 @@ import { PlayerCard } from "@/components/tournaments/player-card";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
 import { EmptyState } from "@/components/shared/empty-state";
+import { SectionTabs } from "@/components/shared/section-tabs";
 
 type CategoryTabsViewProps = {
   category: {
@@ -134,29 +135,11 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
 
   return (
     <section className="space-y-4 sm:space-y-5">
-      <div className="overflow-x-auto pb-1">
-        <div className="inline-flex min-w-max gap-1.5 rounded-2xl border border-white/10 bg-white/4 p-1">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={[
-                  "rounded-xl px-3 py-2 text-xs font-medium transition sm:px-4 sm:text-sm",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-white/6 hover:text-foreground",
-                ].join(" ")}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <SectionTabs
+        activeKey={activeTab}
+        items={tabs}
+        onChange={(key) => setActiveTab(key as TabKey)}
+      />
 
       {activeTab === "players" ? (
         <div className="space-y-3 sm:space-y-4">

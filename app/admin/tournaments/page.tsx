@@ -34,7 +34,7 @@ export default async function AdminTournamentsPage() {
   ]);
 
   return (
-    <PageContainer className="space-y-8">
+    <PageContainer className="space-y-4">
       <AdminShellHeader
         activeItem="tournaments"
         title="Tournament management"

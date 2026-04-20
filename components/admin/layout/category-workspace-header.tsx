@@ -31,10 +31,14 @@ export function CategoryWorkspaceHeader({
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="outline" size="sm">
           <Link href={`/admin/tournaments/${tournamentId}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to tournament
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Back
           </Link>
         </Button>
+      </div>
+
+      <div className="text-[16px] uppercase tracking-[0.22em] text-primary sm:text-xs">
+        {tournamentName}
       </div>
 
       <CategoryOpsNav
@@ -45,10 +49,6 @@ export function CategoryWorkspaceHeader({
 
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-3">
-          <div className="inline-flex rounded-xl border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
-            {tournamentName}
-          </div>
-
           <div className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {categoryName}
