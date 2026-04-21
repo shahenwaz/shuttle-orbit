@@ -1,9 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 
-import { removeGroupMembershipAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
+import {
+  deleteGroupAction,
+  removeGroupMembershipAction,
+  type DeleteGroupActionState,
+} from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { EditGroupForm } from "@/components/admin/groups/edit-group-form";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -50,7 +54,12 @@ type SimpleGroupActionState = {
   message: string;
 };
 
-const initialState: SimpleGroupActionState = {
+const initialMembershipState: SimpleGroupActionState = {
+  success: false,
+  message: "",
+};
+
+const initialDeleteGroupState: DeleteGroupActionState = {
   success: false,
   message: "",
 };
@@ -90,6 +99,11 @@ function GroupCard({
   group: GroupRow;
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteState, setDeleteState] = useState<DeleteGroupActionState>(
+    initialDeleteGroupState,
+  );
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   return (
     <div className="surface-card overflow-hidden">
@@ -134,6 +148,17 @@ function GroupCard({
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit group
               </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onSelect={() => {
+                  setDeleteState(initialDeleteGroupState);
+                  setIsDeleteOpen(true);
+                }}
+                className="cursor-pointer"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete group
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -174,6 +199,68 @@ function GroupCard({
           }}
         />
       </CreateDialog>
+
+      <CreateDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Delete group"
+        description="This will only work if the group has no assigned teams."
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.currentTarget);
+
+            startDeleteTransition(async () => {
+              const result = await deleteGroupAction(formData);
+              setDeleteState(result);
+
+              if (result.success) {
+                setIsDeleteOpen(false);
+              }
+            });
+          }}
+        >
+          <input type="hidden" name="tournamentId" value={tournamentId} />
+          <input type="hidden" name="categoryId" value={categoryId} />
+          <input type="hidden" name="groupId" value={group.id} />
+
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete{" "}
+            <span className="font-medium text-foreground">{group.name}</span>?
+          </p>
+
+          {deleteState.message ? (
+            <div
+              className={`rounded-xl border px-3 py-2 text-sm ${
+                deleteState.success
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  : "border-red-500/20 bg-red-500/10 text-red-300"
+              }`}
+            >
+              {deleteState.message}
+            </div>
+          ) : null}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button type="submit" variant="destructive" disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete group"}
+            </Button>
+          </div>
+        </form>
+      </CreateDialog>
     </div>
   );
 }
@@ -187,79 +274,128 @@ function MembershipCard({
   categoryId: string;
   membership: GroupMembershipRow;
 }) {
-  const [state, formAction] = useActionState(
-    removeGroupMembershipAction,
-    initialState,
+  const [isUnassignOpen, setIsUnassignOpen] = useState(false);
+  const [unassignState, setUnassignState] = useState<SimpleGroupActionState>(
+    initialMembershipState,
   );
+  const [isUnassigning, startUnassignTransition] = useTransition();
 
   const team = membership.teamEntry;
 
   return (
-    <div className="space-y-1.5">
-      <div className="relative">
-        <div className="absolute right-2 top-2 z-10">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 cursor-pointer rounded-full text-muted-foreground hover:bg-white/6 hover:text-foreground focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0"
-              >
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">Open membership actions</span>
-              </Button>
-            </DropdownMenuTrigger>
+    <div className="relative">
+      <div className="absolute right-2 top-2 z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 cursor-pointer rounded-full text-muted-foreground hover:bg-white/6 hover:text-foreground focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0"
+            >
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Open membership actions</span>
+            </Button>
+          </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-40">
-              <form action={formAction}>
-                <input type="hidden" name="tournamentId" value={tournamentId} />
-                <input type="hidden" name="categoryId" value={categoryId} />
-                <input
-                  type="hidden"
-                  name="membershipId"
-                  value={membership.id}
-                />
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <button
-                    type="submit"
-                    className="flex w-full cursor-pointer items-center"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Unassign team
-                  </button>
-                </DropdownMenuItem>
-              </form>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <TeamCard
-          team={{
-            id: team.id,
-            teamName: team.teamName,
-            player1: {
-              fullName: team.player1.fullName,
-              nickname: team.player1.nickname,
-            },
-            player2: {
-              fullName: team.player2.fullName,
-              nickname: team.player2.nickname,
-            },
-          }}
-          badgeLabel="team"
-        />
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem
+              onSelect={() => {
+                setUnassignState(initialMembershipState);
+                setIsUnassignOpen(true);
+              }}
+              className="cursor-pointer"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Unassign team
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {state.message ? (
-        <p
-          className={`text-sm ${
-            state.success ? "text-emerald-400" : "text-red-400"
-          }`}
+      <TeamCard
+        team={{
+          id: team.id,
+          teamName: team.teamName,
+          player1: {
+            fullName: team.player1.fullName,
+            nickname: team.player1.nickname,
+          },
+          player2: {
+            fullName: team.player2.fullName,
+            nickname: team.player2.nickname,
+          },
+        }}
+        badgeLabel="team"
+      />
+
+      <CreateDialog
+        open={isUnassignOpen}
+        onOpenChange={setIsUnassignOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Unassign team"
+        description="This will remove the team from the current group."
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.currentTarget);
+
+            startUnassignTransition(async () => {
+              const result = await removeGroupMembershipAction(
+                initialMembershipState,
+                formData,
+              );
+              setUnassignState(result);
+
+              if (result.success) {
+                setIsUnassignOpen(false);
+              }
+            });
+          }}
         >
-          {state.message}
-        </p>
-      ) : null}
+          <input type="hidden" name="tournamentId" value={tournamentId} />
+          <input type="hidden" name="categoryId" value={categoryId} />
+          <input type="hidden" name="membershipId" value={membership.id} />
+
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to unassign this team from the group?
+          </p>
+
+          {unassignState.message ? (
+            <div
+              className={`rounded-xl border px-3 py-2 text-sm ${
+                unassignState.success
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  : "border-red-500/20 bg-red-500/10 text-red-300"
+              }`}
+            >
+              {unassignState.message}
+            </div>
+          ) : null}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsUnassignOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={isUnassigning}
+            >
+              {isUnassigning ? "Unassigning..." : "Unassign team"}
+            </Button>
+          </div>
+        </form>
+      </CreateDialog>
     </div>
   );
 }

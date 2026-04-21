@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
+import { Users2 } from "lucide-react";
 
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { CreateTeamEntryForm } from "@/components/admin/teams/create-team-entry-form";
 import { TeamEntriesList } from "@/components/admin/teams/team-entries-list";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
+import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 
@@ -33,6 +36,16 @@ export default async function AdminCategoryTeamsPage({
         tournamentId,
       },
       include: {
+        stages: {
+          select: {
+            id: true,
+            groups: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
         teamEntries: {
           orderBy: {
             createdAt: "asc",
@@ -56,7 +69,6 @@ export default async function AdminCategoryTeamsPage({
           select: {
             teamEntries: true,
             matches: true,
-            stages: true,
           },
         },
       },
@@ -80,6 +92,11 @@ export default async function AdminCategoryTeamsPage({
     notFound();
   }
 
+  const totalGroups = category.stages.reduce(
+    (sum, stage) => sum + stage.groups.length,
+    0,
+  );
+
   return (
     <PageContainer className="space-y-6">
       <CategoryWorkspaceHeader
@@ -89,11 +106,27 @@ export default async function AdminCategoryTeamsPage({
         categoryName={`${category.name} teams`}
         description={`Manage doubles teams for this category inside ${tournament.name}.`}
         activeTab="teams"
+        stats={
+          <>
+            <CompactStatPill
+              label="Teams"
+              value={category._count.teamEntries}
+            />
+            <CompactStatPill label="Groups" value={totalGroups} />
+            <CompactStatPill label="Matches" value={category._count.matches} />
+          </>
+        }
         actions={
           <CreateSheet
             triggerLabel="Add team"
             title="Create team"
             description="Select two unique players. Each player can only appear once in the same category."
+            triggerClassName={actionPillButtonClassName({
+              variant: "create",
+              className:
+                "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+            })}
+            triggerIcon={<Users2 className="h-3.5 w-3.5" />}
           >
             <CreateTeamEntryForm
               tournamentId={tournament.id}

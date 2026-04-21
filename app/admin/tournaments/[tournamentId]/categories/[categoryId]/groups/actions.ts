@@ -551,3 +551,83 @@ export async function updateGroupAction(
     fieldErrors: {},
   };
 }
+
+// The deleteGroupAction is defined here instead of in the edit-group-form file to keep all group related actions in one place, as they share some validation logic and types.
+
+export type DeleteGroupActionState = {
+  success: boolean;
+  message: string;
+};
+
+export async function deleteGroupAction(
+  formData: FormData,
+): Promise<DeleteGroupActionState> {
+  const tournamentId = formData.get("tournamentId");
+  const categoryId = formData.get("categoryId");
+  const groupId = formData.get("groupId");
+
+  if (
+    typeof tournamentId !== "string" ||
+    typeof categoryId !== "string" ||
+    typeof groupId !== "string"
+  ) {
+    return {
+      success: false,
+      message: "Invalid group deletion request.",
+    };
+  }
+
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      stage: {
+        categoryId,
+        category: {
+          tournamentId,
+        },
+      },
+    },
+    include: {
+      memberships: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  if (!group) {
+    return {
+      success: false,
+      message: "Group not found.",
+    };
+  }
+
+  if (group.memberships.length > 0) {
+    return {
+      success: false,
+      message: "Unassign all teams from this group before deleting it.",
+    };
+  }
+
+  await prisma.group.delete({
+    where: {
+      id: groupId,
+    },
+  });
+
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
+
+  return {
+    success: true,
+    message: "Group deleted successfully.",
+  };
+}

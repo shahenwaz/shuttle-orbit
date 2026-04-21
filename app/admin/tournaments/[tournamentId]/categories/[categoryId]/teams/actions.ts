@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
 import { createTeamEntrySchema } from "@/lib/validations/team-entry";
-import { z } from "zod";
 
 export type CreateTeamEntryActionState = {
   success: boolean;
@@ -157,7 +157,6 @@ export async function createTeamEntryAction(
 }
 
 export async function removeTeamEntryAction(
-  _prevState: RemoveTeamEntryActionState,
   formData: FormData,
 ): Promise<RemoveTeamEntryActionState> {
   const rawValues = {
@@ -195,11 +194,46 @@ export async function removeTeamEntryAction(
     };
   }
 
-  await prisma.teamEntry.delete({
+  const groupMembershipCount = await prisma.groupMembership.count({
     where: {
-      id: teamEntryId,
+      teamEntryId,
     },
   });
+
+  if (groupMembershipCount > 0) {
+    return {
+      success: false,
+      message: "This team is already assigned to a group. Unassign it first.",
+    };
+  }
+
+  const matchUsageCount = await prisma.match.count({
+    where: {
+      OR: [{ teamAId: teamEntryId }, { teamBId: teamEntryId }],
+    },
+  });
+
+  if (matchUsageCount > 0) {
+    return {
+      success: false,
+      message:
+        "This team cannot be removed because fixtures or results already exist for it.",
+    };
+  }
+
+  try {
+    await prisma.teamEntry.delete({
+      where: {
+        id: teamEntryId,
+      },
+    });
+  } catch {
+    return {
+      success: false,
+      message:
+        "This team cannot be removed because it is linked to tournament records.",
+    };
+  }
 
   revalidateTeamPaths(tournamentId, categoryId);
 
