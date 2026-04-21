@@ -279,3 +279,86 @@ export async function createGroupMatchAction(
     fieldErrors: {},
   };
 }
+
+// Note: We only allow deleting matches that have no recorded result to prevent accidental loss of important data.
+
+export type DeleteMatchActionState = {
+  success: boolean;
+  message: string;
+};
+
+const deleteMatchSchema = z.object({
+  tournamentId: z.cuid(),
+  categoryId: z.cuid(),
+  matchId: z.cuid(),
+});
+
+export async function deleteMatchAction(
+  formData: FormData,
+): Promise<DeleteMatchActionState> {
+  const rawValues = {
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    matchId: formData.get("matchId"),
+  };
+
+  const parsed = deleteMatchSchema.safeParse(rawValues);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Invalid match removal request.",
+    };
+  }
+
+  const { tournamentId, categoryId, matchId } = parsed.data;
+
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      tournamentId,
+      categoryId,
+    },
+    include: {
+      sets: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  if (!match) {
+    return {
+      success: false,
+      message: "Match not found.",
+    };
+  }
+
+  const hasRecordedResult =
+    match.status === "completed" ||
+    match.winnerId !== null ||
+    match.scoreSummary !== null ||
+    match.sets.length > 0;
+
+  if (hasRecordedResult) {
+    return {
+      success: false,
+      message:
+        "This match already has a recorded result and cannot be removed.",
+    };
+  }
+
+  await prisma.match.delete({
+    where: {
+      id: matchId,
+    },
+  });
+
+  revalidateFixturePaths(tournamentId, categoryId);
+
+  return {
+    success: true,
+    message: "Match removed successfully.",
+  };
+}
