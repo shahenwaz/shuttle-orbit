@@ -7,6 +7,7 @@ import {
   assignTeamToGroupAction,
   type AssignTeamToGroupActionState,
 } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -109,15 +110,19 @@ export function AssignTeamToGroupForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={isPending} className="min-w-40">
+      <Button
+        type="submit"
+        disabled={isPending}
+        className={actionPillButtonClassName({ variant: "link" })}
+      >
         {isPending ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
             Assigning...
           </>
         ) : (
           <>
-            <MoveRight className="mr-2 h-4 w-4" />
+            <MoveRight className="mr-1 h-3.5 w-3.5" />
             Assign team
           </>
         )}

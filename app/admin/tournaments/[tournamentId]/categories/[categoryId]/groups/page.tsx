@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { FolderPlus, MoveRight } from "lucide-react";
 
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
@@ -6,9 +7,11 @@ import { AssignTeamToGroupForm } from "@/components/admin/groups/assign-team-to-
 import { CreateGroupForm } from "@/components/admin/groups/create-group-form";
 import { GroupsOverview } from "@/components/admin/groups/groups-overview";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
-import { SectionCard } from "@/components/admin/section-card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
+import { TeamCard } from "@/components/tournaments/team-card";
 import { prisma } from "@/lib/db/prisma";
 import { formatTeamName } from "@/lib/utils/format";
 
@@ -111,7 +114,11 @@ export default async function AdminCategoryGroupsPage({
     ),
   );
 
-  const teamOptions = category.teamEntries.map((team) => ({
+  const unassignedTeams = category.teamEntries.filter(
+    (team) => !assignedTeamIds.has(team.id),
+  );
+
+  const teamOptions = unassignedTeams.map((team) => ({
     id: team.id,
     label: formatTeamName(
       team.player1.fullName,
@@ -124,10 +131,6 @@ export default async function AdminCategoryGroupsPage({
     id: group.id,
     name: group.name,
   }));
-
-  const unassignedTeams = category.teamEntries.filter(
-    (team) => !assignedTeamIds.has(team.id),
-  );
 
   return (
     <PageContainer className="space-y-6">
@@ -157,6 +160,12 @@ export default async function AdminCategoryGroupsPage({
               triggerLabel="Add group"
               title="Create group"
               description="Create groups like B1, B2, or C1 for this category."
+              triggerClassName={actionPillButtonClassName({
+                variant: "create",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<FolderPlus className="h-3.5 w-3.5" />}
             >
               <CreateGroupForm
                 tournamentId={tournament.id}
@@ -167,7 +176,13 @@ export default async function AdminCategoryGroupsPage({
             <CreateSheet
               triggerLabel="Assign team"
               title="Assign team to group"
-              description="Assign or move a category team into one of the available groups."
+              description="Assign an unplaced category team into one of the available groups."
+              triggerClassName={actionPillButtonClassName({
+                variant: "link",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<MoveRight className="h-3.5 w-3.5" />}
             >
               <AssignTeamToGroupForm
                 tournamentId={tournament.id}
@@ -187,33 +202,50 @@ export default async function AdminCategoryGroupsPage({
           groups={groups}
         />
 
-        <SectionCard
-          title="Unassigned teams"
-          description="Teams not yet placed into any group in the current group stage."
-        >
-          {unassignedTeams.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              All teams are currently assigned to groups.
-            </p>
-          ) : (
-            <div className="grid gap-3">
-              {unassignedTeams.map((team) => (
-                <div key={team.id} className="surface-panel p-4">
-                  <p className="font-medium text-foreground">
-                    {formatTeamName(
-                      team.player1.fullName,
-                      team.player2.fullName,
-                      team.teamName,
-                    )}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    @{team.player1.nickname} · @{team.player2.nickname}
-                  </p>
-                </div>
-              ))}
+        <div className="surface-card overflow-hidden">
+          <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                Unassigned teams
+              </h4>
+
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                ⁜
+              </span>
+
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                {unassignedTeams.length} teams
+              </span>
             </div>
-          )}
-        </SectionCard>
+          </div>
+
+          <div className="p-4 sm:p-5">
+            {unassignedTeams.length === 0 ? (
+              <EmptyState message="All teams are currently assigned to groups." />
+            ) : (
+              <div className="grid gap-2">
+                {unassignedTeams.map((team) => (
+                  <TeamCard
+                    key={team.id}
+                    team={{
+                      id: team.id,
+                      teamName: team.teamName,
+                      player1: {
+                        fullName: team.player1.fullName,
+                        nickname: team.player1.nickname,
+                      },
+                      player2: {
+                        fullName: team.player2.fullName,
+                        nickname: team.player2.nickname,
+                      },
+                    }}
+                    badgeLabel="team"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </section>
     </PageContainer>
   );

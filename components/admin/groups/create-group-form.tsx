@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 
 type CreateGroupFormProps = {
   tournamentId: string;
@@ -74,7 +75,11 @@ export function CreateGroupForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={isPending} className="min-w-36">
+      <Button
+        type="submit"
+        disabled={isPending}
+        className={actionPillButtonClassName({ variant: "create" })}
+      >
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

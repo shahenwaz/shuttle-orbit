@@ -431,3 +431,123 @@ export async function resetGroupFixturesAction(
     message: "Group fixtures reset successfully.",
   };
 }
+
+// The updateGroupAction is defined here instead of in the edit-group-form file to keep all group related actions in one place, as they share some validation logic and types.
+
+export type UpdateGroupActionState = {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    name?: string[];
+    groupOrder?: string[];
+  };
+};
+
+export async function updateGroupAction(
+  _prevState: UpdateGroupActionState,
+  formData: FormData,
+): Promise<UpdateGroupActionState> {
+  const tournamentId = formData.get("tournamentId");
+  const categoryId = formData.get("categoryId");
+  const groupId = formData.get("groupId");
+  const name = formData.get("name");
+  const groupOrder = formData.get("groupOrder");
+
+  if (
+    typeof tournamentId !== "string" ||
+    typeof categoryId !== "string" ||
+    typeof groupId !== "string" ||
+    typeof name !== "string" ||
+    typeof groupOrder !== "string"
+  ) {
+    return {
+      success: false,
+      message: "Invalid form submission.",
+    };
+  }
+
+  const trimmedName = name.trim();
+  const parsedOrder = Number(groupOrder);
+
+  if (!trimmedName) {
+    return {
+      success: false,
+      message: "Please fix the form errors.",
+      fieldErrors: {
+        name: ["Group name is required."],
+      },
+    };
+  }
+
+  if (!Number.isInteger(parsedOrder) || parsedOrder < 1) {
+    return {
+      success: false,
+      message: "Please fix the form errors.",
+      fieldErrors: {
+        groupOrder: ["Group order must be a positive whole number."],
+      },
+    };
+  }
+
+  const existingGroup = await prisma.group.findUnique({
+    where: {
+      id: groupId,
+    },
+    select: {
+      id: true,
+      stageId: true,
+    },
+  });
+
+  if (!existingGroup) {
+    return {
+      success: false,
+      message: "Group not found.",
+    };
+  }
+
+  const duplicateName = await prisma.group.findFirst({
+    where: {
+      stageId: existingGroup.stageId,
+      name: trimmedName,
+      NOT: {
+        id: groupId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (duplicateName) {
+    return {
+      success: false,
+      message: "Please fix the form errors.",
+      fieldErrors: {
+        name: [
+          "Another group with this name already exists in the same stage.",
+        ],
+      },
+    };
+  }
+
+  await prisma.group.update({
+    where: {
+      id: groupId,
+    },
+    data: {
+      name: trimmedName,
+      groupOrder: parsedOrder,
+    },
+  });
+
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+
+  return {
+    success: true,
+    message: "Group updated successfully.",
+    fieldErrors: {},
+  };
+}
