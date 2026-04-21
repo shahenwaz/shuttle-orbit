@@ -59,37 +59,120 @@ export function RecordMatchResultForm({
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor={`teamAScore-${matchId}`}>{teamALabel}</Label>
-          <Input
-            id={`teamAScore-${matchId}`}
-            name="teamAScore"
-            type="number"
-            min={0}
-            placeholder="Enter score"
-          />
-          {state.fieldErrors?.teamAScore ? (
-            <p className="text-sm text-red-400">
-              {state.fieldErrors.teamAScore[0]}
-            </p>
-          ) : null}
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-white/10 bg-background/40 p-4">
+          <p className="mb-3 text-sm font-medium text-foreground">Set 1</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor={`set1TeamAScore-${matchId}`}>{teamALabel}</Label>
+              <Input
+                id={`set1TeamAScore-${matchId}`}
+                name="set1TeamAScore"
+                type="number"
+                min={0}
+                placeholder="Enter score"
+              />
+              {state.fieldErrors?.set1TeamAScore ? (
+                <p className="text-sm text-red-400">
+                  {state.fieldErrors.set1TeamAScore[0]}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`set1TeamBScore-${matchId}`}>{teamBLabel}</Label>
+              <Input
+                id={`set1TeamBScore-${matchId}`}
+                name="set1TeamBScore"
+                type="number"
+                min={0}
+                placeholder="Enter score"
+              />
+              {state.fieldErrors?.set1TeamBScore ? (
+                <p className="text-sm text-red-400">
+                  {state.fieldErrors.set1TeamBScore[0]}
+                </p>
+              ) : null}
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={`teamBScore-${matchId}`}>{teamBLabel}</Label>
-          <Input
-            id={`teamBScore-${matchId}`}
-            name="teamBScore"
-            type="number"
-            min={0}
-            placeholder="Enter score"
-          />
-          {state.fieldErrors?.teamBScore ? (
-            <p className="text-sm text-red-400">
-              {state.fieldErrors.teamBScore[0]}
-            </p>
-          ) : null}
+        <div className="rounded-2xl border border-white/10 bg-background/40 p-4">
+          <p className="mb-3 text-sm font-medium text-foreground">
+            Set 2 <span className="text-muted-foreground">(optional)</span>
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor={`set2TeamAScore-${matchId}`}>{teamALabel}</Label>
+              <Input
+                id={`set2TeamAScore-${matchId}`}
+                name="set2TeamAScore"
+                type="number"
+                min={0}
+                placeholder="Leave empty if not needed"
+              />
+              {state.fieldErrors?.set2TeamAScore ? (
+                <p className="text-sm text-red-400">
+                  {state.fieldErrors.set2TeamAScore[0]}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`set2TeamBScore-${matchId}`}>{teamBLabel}</Label>
+              <Input
+                id={`set2TeamBScore-${matchId}`}
+                name="set2TeamBScore"
+                type="number"
+                min={0}
+                placeholder="Leave empty if not needed"
+              />
+              {state.fieldErrors?.set2TeamBScore ? (
+                <p className="text-sm text-red-400">
+                  {state.fieldErrors.set2TeamBScore[0]}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-background/40 p-4">
+          <p className="mb-3 text-sm font-medium text-foreground">
+            Set 3 <span className="text-muted-foreground">(optional)</span>
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor={`set3TeamAScore-${matchId}`}>{teamALabel}</Label>
+              <Input
+                id={`set3TeamAScore-${matchId}`}
+                name="set3TeamAScore"
+                type="number"
+                min={0}
+                placeholder="Leave empty if not needed"
+              />
+              {state.fieldErrors?.set3TeamAScore ? (
+                <p className="text-sm text-red-400">
+                  {state.fieldErrors.set3TeamAScore[0]}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`set3TeamBScore-${matchId}`}>{teamBLabel}</Label>
+              <Input
+                id={`set3TeamBScore-${matchId}`}
+                name="set3TeamBScore"
+                type="number"
+                min={0}
+                placeholder="Leave empty if not needed"
+              />
+              {state.fieldErrors?.set3TeamBScore ? (
+                <p className="text-sm text-red-400">
+                  {state.fieldErrors.set3TeamBScore[0]}
+                </p>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
 
