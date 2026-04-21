@@ -7,6 +7,7 @@ import {
   generateGroupFixturesAction,
   type GenerateGroupFixturesActionState,
 } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/fixtures/actions";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -77,15 +78,19 @@ export function GenerateGroupFixturesForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={isPending} className="min-w-44">
+      <Button
+        type="submit"
+        disabled={isPending}
+        className={actionPillButtonClassName({ variant: "link" })}
+      >
         {isPending ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
             Generating...
           </>
         ) : (
           <>
-            <CalendarRange className="mr-2 h-4 w-4" />
+            <CalendarRange className="mr-1 h-3.5 w-3.5" />
             Generate fixtures
           </>
         )}
