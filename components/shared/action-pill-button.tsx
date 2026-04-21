@@ -9,8 +9,8 @@ export const actionPillButtonVariants = cva(
       variant: {
         neutral:
           "border-white/10 bg-background/70 text-foreground hover:bg-white/8 hover:text-foreground",
-        link: "border-violet-500/20 bg-violet-500/12 text-violet-100 hover:bg-violet-500/18 hover:text-violet-50",
-        edit: "border-sky-500/20 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15 hover:text-sky-50",
+        link: "border-sky-500/20 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15 hover:text-sky-50",
+        edit: "border-violet-500/20 bg-violet-500/12 text-violet-100 hover:bg-violet-500/18 hover:text-violet-50",
         create:
           "border-emerald-500/20 bg-emerald-500/12 text-emerald-100 hover:bg-emerald-500/18 hover:text-emerald-50",
         danger:

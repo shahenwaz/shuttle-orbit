@@ -11,7 +11,6 @@ import {
 
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
-import { SectionCard } from "@/components/admin/section-card";
 import { CreateCategoryForm } from "@/components/admin/tournaments/create-category-form";
 import { EditTournamentForm } from "@/components/admin/tournaments/edit-tournament-form";
 import { TournamentCategoriesList } from "@/components/admin/tournaments/tournament-categories-list";
@@ -42,9 +41,18 @@ export default async function AdminTournamentDetailPage({
           code: "asc",
         },
         include: {
+          stages: {
+            select: {
+              id: true,
+              groups: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
           _count: {
             select: {
-              stages: true,
               teamEntries: true,
               matches: true,
             },
@@ -164,15 +172,10 @@ export default async function AdminTournamentDetailPage({
         </div>
       </section>
 
-      <SectionCard
-        title="Tournament categories"
-        description="Categories define the competition divisions inside this event."
-      >
-        <TournamentCategoriesList
-          tournamentId={tournament.id}
-          categories={tournament.categories}
-        />
-      </SectionCard>
+      <TournamentCategoriesList
+        tournamentId={tournament.id}
+        categories={tournament.categories}
+      />
     </PageContainer>
   );
 }
