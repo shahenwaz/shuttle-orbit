@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { ClipboardCheck } from "lucide-react";
 
+import { KnockoutStageList } from "@/components/admin/knockout/knockout-stage-list";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { ResultsGroupList } from "@/components/admin/results/results-group-list";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
+import { formatTeamName } from "@/lib/utils/format";
 
 type AdminCategoryResultsPageProps = {
   params: Promise<{
@@ -33,10 +35,26 @@ export default async function AdminCategoryResultsPage({
         tournamentId,
       },
       include: {
-        stages: {
-          where: {
-            stageOrder: 1,
+        teamEntries: {
+          orderBy: {
+            createdAt: "asc",
           },
+          include: {
+            player1: {
+              select: {
+                fullName: true,
+                nickname: true,
+              },
+            },
+            player2: {
+              select: {
+                fullName: true,
+                nickname: true,
+              },
+            },
+          },
+        },
+        stages: {
           include: {
             groups: {
               orderBy: {
@@ -84,6 +102,51 @@ export default async function AdminCategoryResultsPage({
                 },
               },
             },
+            matches: {
+              where: {
+                groupId: null,
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
+              include: {
+                teamA: {
+                  include: {
+                    player1: {
+                      select: {
+                        fullName: true,
+                        nickname: true,
+                      },
+                    },
+                    player2: {
+                      select: {
+                        fullName: true,
+                        nickname: true,
+                      },
+                    },
+                  },
+                },
+                teamB: {
+                  include: {
+                    player1: {
+                      select: {
+                        fullName: true,
+                        nickname: true,
+                      },
+                    },
+                    player2: {
+                      select: {
+                        fullName: true,
+                        nickname: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            stageOrder: "asc",
           },
         },
         _count: {
@@ -100,14 +163,32 @@ export default async function AdminCategoryResultsPage({
     notFound();
   }
 
-  const groupStage = category.stages[0] ?? null;
-  const groups = groupStage?.groups ?? [];
-  const completedMatches = groups.reduce(
-    (sum, group) =>
+  const primaryGroupStage =
+    category.stages.find((stage) => stage.groups.length > 0) ??
+    category.stages.find((stage) => stage.stageOrder === 1) ??
+    null;
+
+  const groups = primaryGroupStage?.groups ?? [];
+
+  const knockoutStages = category.stages.filter((stage) =>
+    ["quarter_final", "semi_final", "final"].includes(stage.stageType),
+  );
+
+  const completedMatches = category.stages.reduce(
+    (sum, stage) =>
       sum +
-      group.matches.filter((match) => match.status === "completed").length,
+      stage.matches.filter((match) => match.status === "completed").length,
     0,
   );
+
+  const teamOptions = category.teamEntries.map((team) => ({
+    id: team.id,
+    label: formatTeamName(
+      team.player1.fullName,
+      team.player2.fullName,
+      team.teamName,
+    ),
+  }));
 
   return (
     <PageContainer className="space-y-6">
@@ -116,7 +197,7 @@ export default async function AdminCategoryResultsPage({
         categoryId={category.id}
         tournamentName={tournament.name}
         categoryName={`${category.name} results`}
-        description="Record match scores, update winners, and keep standings accurate for this category."
+        description="Record group and knockout match scores, update winners, and keep standings accurate."
         activeTab="results"
         stats={
           <>
@@ -137,6 +218,21 @@ export default async function AdminCategoryResultsPage({
         tournamentId={tournament.id}
         categoryId={category.id}
         groups={groups}
+      />
+
+      <KnockoutStageList
+        tournamentId={tournament.id}
+        categoryId={category.id}
+        teams={teamOptions}
+        stages={knockoutStages}
+        mode="results"
+        knockoutStartStageType={
+          (category.knockoutStartStage as
+            | "quarter_final"
+            | "semi_final"
+            | "final"
+            | null) ?? null
+        }
       />
     </PageContainer>
   );

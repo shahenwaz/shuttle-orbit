@@ -19,3 +19,16 @@ export type KnockoutStageSeed = {
   stageName: string;
   matches: KnockoutMatchSlot[];
 };
+
+export type KnockoutAdvanceTarget =
+  | {
+      nextStageType: "semi_final";
+      nextMatchNumber: 1 | 2;
+      nextSlot: "teamAId" | "teamBId";
+    }
+  | {
+      nextStageType: "final";
+      nextMatchNumber: 1;
+      nextSlot: "teamAId" | "teamBId";
+    }
+  | null;

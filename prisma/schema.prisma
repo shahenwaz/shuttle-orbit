@@ -134,8 +134,8 @@ model Match {
   stageId      String
   groupId      String?
   roundLabel   String?
-  teamAId      String
-  teamBId      String
+  teamAId      String?
+  teamBId      String?
   winnerId     String?
   status       String   @default("scheduled")
   scheduledAt  DateTime?
@@ -147,8 +147,8 @@ model Match {
   category     TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   stage        Stage              @relation(fields: [stageId], references: [id], onDelete: Cascade)
   group        Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  teamA        TeamEntry          @relation("MatchTeamA", fields: [teamAId], references: [id], onDelete: Restrict)
-  teamB        TeamEntry          @relation("MatchTeamB", fields: [teamBId], references: [id], onDelete: Restrict)
+  teamA        TeamEntry?         @relation("MatchTeamA", fields: [teamAId], references: [id], onDelete: Restrict)
+  teamB        TeamEntry?         @relation("MatchTeamB", fields: [teamBId], references: [id], onDelete: Restrict)
   winner       TeamEntry?         @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
   sets         MatchSet[]
 }

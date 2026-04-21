@@ -8,8 +8,8 @@ type MatchCardProps = {
     roundLabel: string | null;
     scoreSummary: string | null;
     winnerId: string | null;
-    teamAId: string;
-    teamBId: string;
+    teamAId: string | null;
+    teamBId: string | null;
     teamA: {
       teamName: string | null;
       player1: {
@@ -18,7 +18,7 @@ type MatchCardProps = {
       player2: {
         fullName: string;
       };
-    };
+    } | null;
     teamB: {
       teamName: string | null;
       player1: {
@@ -27,7 +27,7 @@ type MatchCardProps = {
       player2: {
         fullName: string;
       };
-    };
+    } | null;
   };
 };
 
@@ -50,20 +50,26 @@ function getScoreParts(scoreSummary: string | null) {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
-  const teamALabel = formatTeamName(
-    match.teamA.player1.fullName,
-    match.teamA.player2.fullName,
-    match.teamA.teamName,
-  );
+  const teamALabel = match.teamA
+    ? formatTeamName(
+        match.teamA.player1.fullName,
+        match.teamA.player2.fullName,
+        match.teamA.teamName,
+      )
+    : "TBD";
 
-  const teamBLabel = formatTeamName(
-    match.teamB.player1.fullName,
-    match.teamB.player2.fullName,
-    match.teamB.teamName,
-  );
+  const teamBLabel = match.teamB
+    ? formatTeamName(
+        match.teamB.player1.fullName,
+        match.teamB.player2.fullName,
+        match.teamB.teamName,
+      )
+    : "TBD";
 
-  const teamAIsWinner = match.winnerId === match.teamAId;
-  const teamBIsWinner = match.winnerId === match.teamBId;
+  const teamAIsWinner =
+    match.winnerId != null && match.winnerId === match.teamAId;
+  const teamBIsWinner =
+    match.winnerId != null && match.winnerId === match.teamBId;
   const parsedScore = getScoreParts(match.scoreSummary);
   const hasCompletedScore =
     match.status === "completed" &&
@@ -83,7 +89,7 @@ export function MatchCard({ match }: MatchCardProps) {
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
             <p
               className={cn(
-                "truncate text-[11px] sm:text-sm",
+                "truncate text-xs sm:text-sm",
                 teamAIsWinner
                   ? "font-semibold text-foreground"
                   : "font-medium text-muted-foreground",
@@ -113,7 +119,7 @@ export function MatchCard({ match }: MatchCardProps) {
 
             <p
               className={cn(
-                "truncate text-right text-[11px] sm:text-sm",
+                "truncate text-right text-xs sm:text-sm",
                 teamBIsWinner
                   ? "font-semibold text-foreground"
                   : "font-medium text-muted-foreground",
@@ -126,7 +132,7 @@ export function MatchCard({ match }: MatchCardProps) {
         ) : (
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
             <p
-              className="truncate text-[11px] font-medium text-foreground sm:text-sm"
+              className="truncate text-xs font-medium text-foreground sm:text-sm"
               title={teamALabel}
             >
               {teamALabel}
@@ -137,7 +143,7 @@ export function MatchCard({ match }: MatchCardProps) {
             </div>
 
             <p
-              className="truncate text-right text-[11px] font-medium text-foreground sm:text-sm"
+              className="truncate text-right text-xs font-medium text-foreground sm:text-sm"
               title={teamBLabel}
             >
               {teamBLabel}

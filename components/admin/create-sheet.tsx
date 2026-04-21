@@ -22,6 +22,9 @@ type CreateSheetProps = {
   triggerClassName?: string;
   hideIcon?: boolean;
   triggerIcon?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 };
 
 export function CreateSheet({
@@ -32,19 +35,24 @@ export function CreateSheet({
   triggerClassName,
   hideIcon = false,
   triggerIcon,
+  open,
+  onOpenChange,
+  hideTrigger = false,
 }: CreateSheetProps) {
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button className={cn(triggerClassName)}>
-          {triggerIcon ? (
-            <span className="mr-1">{triggerIcon}</span>
-          ) : !hideIcon ? (
-            <Plus className="mr-1 h-3.5 w-3.5" />
-          ) : null}
-          {triggerLabel}
-        </Button>
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      {!hideTrigger ? (
+        <SheetTrigger asChild>
+          <Button className={cn(triggerClassName)}>
+            {triggerIcon ? (
+              <span className="mr-1">{triggerIcon}</span>
+            ) : !hideIcon ? (
+              <Plus className="mr-1 h-3.5 w-3.5" />
+            ) : null}
+            {triggerLabel}
+          </Button>
+        </SheetTrigger>
+      ) : null}
 
       <SheetContent
         side="right"

@@ -8,6 +8,7 @@ import { actionPillButtonClassName } from "@/components/shared/action-pill-butto
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { CompactStatRow } from "@/components/shared/stats/compact-stat-row";
 import { Button } from "@/components/ui/button";
+import { GitBranch } from "lucide-react";
 
 type TournamentCategoryRow = {
   id: string;
@@ -98,6 +99,23 @@ export function TournamentCategoriesList({
                     }}
                   />
                 </CreateDialog>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className={actionPillButtonClassName({
+                    variant: "link",
+                    className: "w-full justify-center sm:w-auto",
+                  })}
+                >
+                  <Link
+                    href={`/admin/tournaments/${tournamentId}/categories/${category.id}`}
+                  >
+                    <GitBranch className="mr-1 h-3.5 w-3.5" />
+                    Knockout
+                  </Link>
+                </Button>
 
                 <Button
                   asChild

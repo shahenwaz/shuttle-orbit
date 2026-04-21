@@ -13,26 +13,30 @@ type MatchRow = {
   status: string;
   scoreSummary: string | null;
   winnerId: string | null;
-  teamAId: string;
-  teamBId: string;
+  teamAId: string | null;
+  teamBId: string | null;
   teamA: {
     teamName: string | null;
     player1: {
       fullName: string;
+      nickname: string;
     };
     player2: {
       fullName: string;
+      nickname: string;
     };
-  };
+  } | null;
   teamB: {
     teamName: string | null;
     player1: {
       fullName: string;
+      nickname: string;
     };
     player2: {
       fullName: string;
+      nickname: string;
     };
-  };
+  } | null;
 };
 
 type GroupResultRow = {
@@ -98,15 +102,15 @@ export function ResultsGroupList({
                 <div className="grid gap-1.5 sm:gap-2 xl:grid-cols-2">
                   {group.matches.map((match) => {
                     const teamALabel = formatTeamName(
-                      match.teamA.player1.fullName,
-                      match.teamA.player2.fullName,
-                      match.teamA.teamName,
+                      match.teamA?.player1.fullName ?? "",
+                      match.teamA?.player2.fullName ?? "",
+                      match.teamA?.teamName ?? "",
                     );
 
                     const teamBLabel = formatTeamName(
-                      match.teamB.player1.fullName,
-                      match.teamB.player2.fullName,
-                      match.teamB.teamName,
+                      match.teamB?.player1.fullName ?? "",
+                      match.teamB?.player2.fullName ?? "",
+                      match.teamB?.teamName ?? "",
                     );
 
                     return (

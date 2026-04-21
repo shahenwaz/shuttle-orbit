@@ -29,8 +29,8 @@ type MatchRow = {
   status: string;
   scoreSummary: string | null;
   winnerId: string | null;
-  teamAId: string;
-  teamBId: string;
+  teamAId: string | null;
+  teamBId: string | null;
   teamA: {
     teamName: string | null;
     player1: {
@@ -41,7 +41,7 @@ type MatchRow = {
       fullName: string;
       nickname: string;
     };
-  };
+  } | null;
   teamB: {
     teamName: string | null;
     player1: {
@@ -52,7 +52,7 @@ type MatchRow = {
       fullName: string;
       nickname: string;
     };
-  };
+  } | null;
 };
 
 type GroupFixtureRow = {

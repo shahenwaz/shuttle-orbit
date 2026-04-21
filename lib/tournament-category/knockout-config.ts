@@ -1,39 +1,27 @@
 import { prisma } from "@/lib/db/prisma";
-import { buildKnockoutStageSeeds } from "@/lib/knockout/helpers";
 import type { KnockoutStageType } from "@/lib/knockout/types";
 
-export type StoredKnockoutConfig = {
-  startStageType: KnockoutStageType;
-  stages: Array<{
-    stageType: KnockoutStageType;
-    stageName: string;
-    matches: Array<{
-      matchNumber: number;
-      slotA: string;
-      slotB: string;
-    }>;
-  }>;
-};
-
-export async function saveCategoryKnockoutConfig(args: {
+type SaveCategoryKnockoutConfigArgs = {
   categoryId: string;
   startStageType: KnockoutStageType;
-}) {
-  const config: StoredKnockoutConfig = {
-    startStageType: args.startStageType,
-    stages: buildKnockoutStageSeeds(args.startStageType),
-  };
+};
 
+export async function saveCategoryKnockoutConfig({
+  categoryId,
+  startStageType,
+}: SaveCategoryKnockoutConfigArgs) {
   return prisma.tournamentCategory.update({
-    where: { id: args.categoryId },
+    where: {
+      id: categoryId,
+    },
     data: {
-      knockoutStartStage: args.startStageType,
-      knockoutConfig: config,
+      knockoutStartStage: startStageType,
+      knockoutConfig: {
+        startStageType,
+      },
     },
     select: {
       id: true,
-      code: true,
-      name: true,
       knockoutStartStage: true,
       knockoutConfig: true,
     },
@@ -42,11 +30,13 @@ export async function saveCategoryKnockoutConfig(args: {
 
 export async function getCategoryKnockoutConfig(categoryId: string) {
   return prisma.tournamentCategory.findUnique({
-    where: { id: categoryId },
+    where: {
+      id: categoryId,
+    },
     select: {
       id: true,
-      code: true,
       name: true,
+      code: true,
       knockoutStartStage: true,
       knockoutConfig: true,
     },

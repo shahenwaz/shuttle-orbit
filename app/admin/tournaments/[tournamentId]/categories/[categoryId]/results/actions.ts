@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
+import { getAdvanceTarget } from "@/lib/knockout/helpers";
 
 export type RecordMatchResultActionState = {
   success: boolean;
@@ -74,10 +75,13 @@ export async function recordMatchResultAction(
       tournamentId,
       categoryId,
     },
-    select: {
-      id: true,
-      teamAId: true,
-      teamBId: true,
+    include: {
+      stage: {
+        select: {
+          id: true,
+          stageType: true,
+        },
+      },
     },
   });
 
@@ -85,6 +89,13 @@ export async function recordMatchResultAction(
     return {
       success: false,
       message: "Match not found.",
+    };
+  }
+
+  if (!match.teamAId || !match.teamBId) {
+    return {
+      success: false,
+      message: "Both teams must be assigned before recording a result.",
     };
   }
 
@@ -115,6 +126,63 @@ export async function recordMatchResultAction(
       },
     }),
   ]);
+
+  if (
+    match.stage.stageType === "quarter_final" ||
+    match.stage.stageType === "semi_final" ||
+    match.stage.stageType === "final"
+  ) {
+    const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
+
+    const target = getAdvanceTarget(
+      match.stage.stageType as "quarter_final" | "semi_final" | "final",
+      matchNumber,
+    );
+
+    if (target) {
+      const nextStage = await prisma.stage.findFirst({
+        where: {
+          categoryId,
+          stageType: target.nextStageType,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (nextStage) {
+        let nextRoundLabel: string;
+
+        if (target.nextStageType === "final") {
+          nextRoundLabel = "Final";
+        } else {
+          nextRoundLabel = `Semi Final ${target.nextMatchNumber}`;
+        }
+
+        const nextMatch = await prisma.match.findFirst({
+          where: {
+            categoryId,
+            stageId: nextStage.id,
+            roundLabel: nextRoundLabel,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (nextMatch) {
+          await prisma.match.update({
+            where: {
+              id: nextMatch.id,
+            },
+            data: {
+              [target.nextSlot]: winnerId,
+            },
+          });
+        }
+      }
+    }
+  }
 
   revalidateResultPaths(tournamentId, categoryId);
 
