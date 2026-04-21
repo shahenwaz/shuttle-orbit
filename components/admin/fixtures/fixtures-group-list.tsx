@@ -206,7 +206,7 @@ function FixtureGroupCard({
         {group.matches.length === 0 ? (
           <EmptyState message="No fixtures generated yet for this group." />
         ) : (
-          <div className="grid gap-1.5 sm:gap-2">
+          <div className="grid gap-1.5 sm:gap-2 xl:grid-cols-2">
             {group.matches.map((match) => (
               <div key={match.id}>
                 <MatchCard match={match} />

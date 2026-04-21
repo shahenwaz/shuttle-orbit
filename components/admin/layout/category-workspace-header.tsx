@@ -27,7 +27,7 @@ export function CategoryWorkspaceHeader({
   actions,
 }: CategoryWorkspaceHeaderProps) {
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 sm:space-y-5">
       <Button
         asChild
         variant="outline"
@@ -64,12 +64,14 @@ export function CategoryWorkspaceHeader({
       </div>
 
       {stats || actions ? (
-        <div className="flex flex-col gap-1.5 sm:gap-2">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           {stats ? (
             <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
               {stats}
             </div>
-          ) : null}
+          ) : (
+            <div />
+          )}
 
           {actions ? (
             <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">

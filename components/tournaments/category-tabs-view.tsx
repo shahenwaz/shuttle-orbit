@@ -207,7 +207,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
               {stage.matches.length === 0 ? (
                 <EmptyState message="No matches generated yet." />
               ) : (
-                <div className="grid gap-1.5 sm:gap-2">
+                <div className="grid gap-1.5 sm:gap-2 lg:grid-cols-2">
                   {stage.matches.map((match) => (
                     <MatchCard key={match.id} match={match} />
                   ))}

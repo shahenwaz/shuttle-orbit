@@ -195,14 +195,14 @@ export default async function AdminCategoryGroupsPage({
         }
       />
 
-      <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
         <GroupsOverview
           tournamentId={tournament.id}
           categoryId={category.id}
           groups={groups}
         />
 
-        <div className="surface-card overflow-hidden">
+        <div className="surface-card overflow-hidden xl:self-start">
           <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
