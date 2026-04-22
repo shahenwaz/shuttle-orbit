@@ -39,7 +39,7 @@ export function CreatePlayerForm() {
           <Input
             id="fullName"
             name="fullName"
-            placeholder="e.g. Shahenwaz Muzahid"
+            placeholder="e.g. SHAHENWAZ MUZAHID"
             className="h-11 rounded-2xl border-white/10 bg-background/50"
           />
           {state.fieldErrors?.fullName ? (
