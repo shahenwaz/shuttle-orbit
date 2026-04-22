@@ -697,6 +697,120 @@ export async function createCategoryGroupStageAction(
   };
 }
 
+// The updateCategoryStageAction is defined here instead of in the edit-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
+
+export type UpdateCategoryStageActionState = {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    stageName?: string[];
+  };
+};
+
+const updateCategoryStageSchema = z.object({
+  tournamentId: z.cuid(),
+  categoryId: z.cuid(),
+  stageId: z.cuid(),
+  stageName: z
+    .string()
+    .trim()
+    .min(2, "Stage name is required.")
+    .max(80, "Stage name is too long."),
+});
+
+export async function updateCategoryStageAction(
+  _prevState: UpdateCategoryStageActionState,
+  formData: FormData,
+): Promise<UpdateCategoryStageActionState> {
+  const parsed = updateCategoryStageSchema.safeParse({
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    stageId: formData.get("stageId"),
+    stageName: formData.get("stageName"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Please fix the form errors.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { tournamentId, categoryId, stageId, stageName } = parsed.data;
+
+  const stage = await prisma.stage.findFirst({
+    where: {
+      id: stageId,
+      categoryId,
+      category: {
+        tournamentId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!stage) {
+    return {
+      success: false,
+      message: "Stage not found.",
+    };
+  }
+
+  const duplicateStage = await prisma.stage.findFirst({
+    where: {
+      categoryId,
+      id: {
+        not: stageId,
+      },
+      name: {
+        equals: stageName,
+        mode: "insensitive",
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (duplicateStage) {
+    return {
+      success: false,
+      message: "A stage with this name already exists.",
+      fieldErrors: {
+        stageName: ["Choose a different stage name."],
+      },
+    };
+  }
+
+  await prisma.stage.update({
+    where: {
+      id: stageId,
+    },
+    data: {
+      name: stageName,
+    },
+  });
+
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
+
+  return {
+    success: true,
+    message: "Stage updated successfully.",
+    fieldErrors: {},
+  };
+}
+
 // The deleteCategoryStageAction is defined here instead of in the edit-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
 
 export type DeleteCategoryStageActionState = {

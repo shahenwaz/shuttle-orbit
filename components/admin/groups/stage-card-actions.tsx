@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 import { deleteCategoryStageAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
+import { EditStageForm } from "@/components/admin/groups/edit-stage-form";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -40,6 +41,7 @@ export function StageCardActions({
   const [deleteState, setDeleteState] =
     useState<DeleteStageActionState>(initialState);
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   return (
     <>
@@ -58,6 +60,14 @@ export function StageCardActions({
 
         <DropdownMenuContent align="end" className="w-40">
           <DropdownMenuItem
+            onSelect={() => setIsEditOpen(true)}
+            className="cursor-pointer"
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit stage
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
             onSelect={() => {
               setDeleteState(initialState);
               setIsDeleteOpen(true);
@@ -69,6 +79,25 @@ export function StageCardActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <CreateDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Edit stage"
+        description="Rename this stage."
+      >
+        <EditStageForm
+          tournamentId={tournamentId}
+          categoryId={categoryId}
+          stage={{
+            id: stageId,
+            name: stageName,
+          }}
+          onSuccess={() => setIsEditOpen(false)}
+        />
+      </CreateDialog>
 
       <CreateDialog
         open={isDeleteOpen}
