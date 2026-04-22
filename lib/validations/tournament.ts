@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const tournamentStatusValues = ["upcoming", "completed"] as const;
+export const tournamentStatusValues = ["Upcoming", "Completed"] as const;
 
 export const tournamentBaseSchema = z.object({
   name: z
