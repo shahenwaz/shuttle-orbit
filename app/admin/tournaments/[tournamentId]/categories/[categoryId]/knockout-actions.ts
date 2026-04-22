@@ -20,6 +20,7 @@ export async function saveKnockoutStageSelection(args: {
   await saveCategoryKnockoutConfig({
     categoryId,
     startStageType,
+    includeThirdPlace: true,
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/categories/${categoryId}`);

@@ -190,11 +190,15 @@ export default async function AdminCategoryFixturesPage({
 
   const groupStages = category.stages.filter(
     (stage) =>
-      !["quarter_final", "semi_final", "final"].includes(stage.stageType),
+      !["quarter_final", "semi_final", "final", "third_place"].includes(
+        stage.stageType,
+      ),
   );
 
   const knockoutStages = category.stages.filter((stage) =>
-    ["quarter_final", "semi_final", "final"].includes(stage.stageType),
+    ["quarter_final", "semi_final", "final", "third_place"].includes(
+      stage.stageType,
+    ),
   );
 
   const totalGroups = groupStages.reduce(

@@ -15,7 +15,10 @@ export function getStageDisplayPriority(stage: StageForDisplayOrder) {
     return 1000;
   }
 
-  if (normalizedName.includes("third place")) {
+  if (
+    stage.stageType === "third_place" ||
+    normalizedName.includes("third place")
+  ) {
     return 950;
   }
 
@@ -27,9 +30,6 @@ export function getStageDisplayPriority(stage: StageForDisplayOrder) {
     return 800;
   }
 
-  // All non-knockout stages share the same base priority.
-  // Their relative order is resolved by the stageOrder tiebreak
-  // in sortStagesForDisplay (ascending: lower stageOrder = shown first).
   return 100;
 }
 
@@ -44,9 +44,6 @@ export function sortStagesForDisplay<T extends StageForDisplayOrder>(
       return priorityDiff;
     }
 
-    // Tiebreak: ascending stageOrder so earlier-created stages appear first.
-    // Knockout stages always have distinct priorities (1000/950/900/800),
-    // so this tiebreak only ever applies to group-type stages.
     return a.stageOrder - b.stageOrder;
   });
 }

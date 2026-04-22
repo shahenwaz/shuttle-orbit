@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
-import { getAdvanceTarget } from "@/lib/knockout/helpers";
+import { getAdvanceTarget, getConsolationTarget } from "@/lib/knockout/helpers";
 
 export type RecordMatchResultActionState = {
   success: boolean;
@@ -17,6 +17,11 @@ export type RecordMatchResultActionState = {
     set3TeamAScore?: string[];
     set3TeamBScore?: string[];
   };
+};
+
+export type ResetMatchResultActionState = {
+  success: boolean;
+  message: string;
 };
 
 const optionalScoreSchema = z.preprocess((value) => {
@@ -37,6 +42,12 @@ const recordMatchResultSchema = z.object({
   set2TeamBScore: optionalScoreSchema,
   set3TeamAScore: optionalScoreSchema,
   set3TeamBScore: optionalScoreSchema,
+});
+
+const resetMatchResultSchema = z.object({
+  tournamentId: z.cuid(),
+  categoryId: z.cuid(),
+  matchId: z.cuid(),
 });
 
 function revalidateResultPaths(tournamentId: string, categoryId: string) {
@@ -232,6 +243,8 @@ export async function recordMatchResultAction(
   }
 
   const winnerId = teamASetWins > teamBSetWins ? match.teamAId : match.teamBId;
+  const loserId = winnerId === match.teamAId ? match.teamBId : match.teamAId;
+
   const scoreSummary =
     sets.length === 1
       ? `${sets[0].teamAScore} - ${sets[0].teamBScore}`
@@ -268,20 +281,25 @@ export async function recordMatchResultAction(
   if (
     match.stage.stageType === "quarter_final" ||
     match.stage.stageType === "semi_final" ||
-    match.stage.stageType === "final"
+    match.stage.stageType === "final" ||
+    match.stage.stageType === "third_place"
   ) {
     const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
 
-    const target = getAdvanceTarget(
-      match.stage.stageType as "quarter_final" | "semi_final" | "final",
+    const winnerTarget = getAdvanceTarget(
+      match.stage.stageType as
+        | "quarter_final"
+        | "semi_final"
+        | "final"
+        | "third_place",
       matchNumber,
     );
 
-    if (target) {
+    if (winnerTarget) {
       const nextStage = await prisma.stage.findFirst({
         where: {
           categoryId,
-          stageType: target.nextStageType,
+          stageType: winnerTarget.nextStageType,
         },
         select: {
           id: true,
@@ -290,9 +308,9 @@ export async function recordMatchResultAction(
 
       if (nextStage) {
         const nextRoundLabel =
-          target.nextStageType === "final"
+          winnerTarget.nextStageType === "final"
             ? "Final"
-            : `Semi Final ${target.nextMatchNumber}`;
+            : `Semi Final ${winnerTarget.nextMatchNumber}`;
 
         const nextMatch = await prisma.match.findFirst({
           where: {
@@ -311,7 +329,52 @@ export async function recordMatchResultAction(
               id: nextMatch.id,
             },
             data: {
-              [target.nextSlot]: winnerId,
+              [winnerTarget.nextSlot]: winnerId,
+            },
+          });
+        }
+      }
+    }
+
+    const consolationTarget = getConsolationTarget(
+      match.stage.stageType as
+        | "quarter_final"
+        | "semi_final"
+        | "final"
+        | "third_place",
+      matchNumber,
+    );
+
+    if (consolationTarget && loserId) {
+      const thirdPlaceStage = await prisma.stage.findFirst({
+        where: {
+          categoryId,
+          stageType: consolationTarget.nextStageType,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (thirdPlaceStage) {
+        const thirdPlaceMatch = await prisma.match.findFirst({
+          where: {
+            categoryId,
+            stageId: thirdPlaceStage.id,
+            roundLabel: "Third Place",
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (thirdPlaceMatch) {
+          await prisma.match.update({
+            where: {
+              id: thirdPlaceMatch.id,
+            },
+            data: {
+              [consolationTarget.nextSlot]: loserId,
             },
           });
         }
@@ -328,28 +391,23 @@ export async function recordMatchResultAction(
   };
 }
 
-export type ResetMatchResultActionState = {
-  success: boolean;
-  message: string;
-};
-
 export async function resetMatchResultAction(
   formData: FormData,
 ): Promise<ResetMatchResultActionState> {
-  const tournamentId = formData.get("tournamentId");
-  const categoryId = formData.get("categoryId");
-  const matchId = formData.get("matchId");
+  const parsed = resetMatchResultSchema.safeParse({
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    matchId: formData.get("matchId"),
+  });
 
-  if (
-    typeof tournamentId !== "string" ||
-    typeof categoryId !== "string" ||
-    typeof matchId !== "string"
-  ) {
+  if (!parsed.success) {
     return {
       success: false,
       message: "Invalid result reset request.",
     };
   }
+
+  const { tournamentId, categoryId, matchId } = parsed.data;
 
   const match = await prisma.match.findFirst({
     where: {
@@ -394,17 +452,39 @@ export async function resetMatchResultAction(
   const isKnockoutStage =
     match.stage.stageType === "quarter_final" ||
     match.stage.stageType === "semi_final" ||
-    match.stage.stageType === "final";
+    match.stage.stageType === "final" ||
+    match.stage.stageType === "third_place";
 
   if (isKnockoutStage && match.winnerId) {
     const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
 
-    const target = getAdvanceTarget(
-      match.stage.stageType as "quarter_final" | "semi_final" | "final",
+    const winnerTarget = getAdvanceTarget(
+      match.stage.stageType as
+        | "quarter_final"
+        | "semi_final"
+        | "final"
+        | "third_place",
       matchNumber,
     );
 
-    if (target) {
+    const consolationTarget = getConsolationTarget(
+      match.stage.stageType as
+        | "quarter_final"
+        | "semi_final"
+        | "final"
+        | "third_place",
+      matchNumber,
+    );
+
+    const downstreamTargets = [winnerTarget, consolationTarget].filter(
+      Boolean,
+    ) as Array<{
+      nextStageType: "semi_final" | "final" | "third_place";
+      nextMatchNumber: 1 | 2;
+      nextSlot: "teamAId" | "teamBId";
+    }>;
+
+    for (const target of downstreamTargets) {
       const nextStage = await prisma.stage.findFirst({
         where: {
           categoryId,
@@ -415,59 +495,63 @@ export async function resetMatchResultAction(
         },
       });
 
-      if (nextStage) {
-        const nextRoundLabel =
-          target.nextStageType === "final"
-            ? "Final"
+      if (!nextStage) {
+        continue;
+      }
+
+      const nextRoundLabel =
+        target.nextStageType === "final"
+          ? "Final"
+          : target.nextStageType === "third_place"
+            ? "Third Place"
             : `Semi Final ${target.nextMatchNumber}`;
 
-        const nextMatch = await prisma.match.findFirst({
-          where: {
-            categoryId,
-            stageId: nextStage.id,
-            roundLabel: nextRoundLabel,
-          },
-          include: {
-            sets: {
-              select: {
-                id: true,
-              },
+      const nextMatch = await prisma.match.findFirst({
+        where: {
+          categoryId,
+          stageId: nextStage.id,
+          roundLabel: nextRoundLabel,
+        },
+        include: {
+          sets: {
+            select: {
+              id: true,
             },
           },
+        },
+      });
+
+      if (!nextMatch) {
+        continue;
+      }
+
+      const nextMatchHasRecordedResult =
+        nextMatch.status === "completed" ||
+        nextMatch.winnerId !== null ||
+        nextMatch.scoreSummary !== null ||
+        nextMatch.sets.length > 0;
+
+      if (nextMatchHasRecordedResult) {
+        return {
+          success: false,
+          message:
+            "You cannot reset this result because a downstream knockout match already has a recorded result.",
+        };
+      }
+
+      const shouldClearAdvancedTeam =
+        (target.nextSlot === "teamAId" && nextMatch.teamAId !== null) ||
+        (target.nextSlot === "teamBId" && nextMatch.teamBId !== null);
+
+      if (shouldClearAdvancedTeam) {
+        await prisma.match.update({
+          where: {
+            id: nextMatch.id,
+          },
+          data: {
+            [target.nextSlot]: null,
+          },
         });
-
-        if (nextMatch) {
-          const nextMatchHasRecordedResult =
-            nextMatch.status === "completed" ||
-            nextMatch.winnerId !== null ||
-            nextMatch.scoreSummary !== null ||
-            nextMatch.sets.length > 0;
-
-          if (nextMatchHasRecordedResult) {
-            return {
-              success: false,
-              message:
-                "You cannot reset this result because the next knockout match already has a recorded result.",
-            };
-          }
-
-          const shouldClearAdvancedTeam =
-            (target.nextSlot === "teamAId" &&
-              nextMatch.teamAId === match.winnerId) ||
-            (target.nextSlot === "teamBId" &&
-              nextMatch.teamBId === match.winnerId);
-
-          if (shouldClearAdvancedTeam) {
-            await prisma.match.update({
-              where: {
-                id: nextMatch.id,
-              },
-              data: {
-                [target.nextSlot]: null,
-              },
-            });
-          }
-        }
       }
     }
   }

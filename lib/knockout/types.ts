@@ -1,4 +1,8 @@
-export type KnockoutStageType = "quarter_final" | "semi_final" | "final";
+export type KnockoutStageType =
+  | "quarter_final"
+  | "semi_final"
+  | "final"
+  | "third_place";
 
 export type KnockoutStageDefinition = {
   type: KnockoutStageType;
@@ -32,3 +36,9 @@ export type KnockoutAdvanceTarget =
       nextSlot: "teamAId" | "teamBId";
     }
   | null;
+
+export type KnockoutConsolationTarget = {
+  nextStageType: "third_place";
+  nextMatchNumber: 1;
+  nextSlot: "teamAId" | "teamBId";
+} | null;

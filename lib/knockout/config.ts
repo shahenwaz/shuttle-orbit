@@ -4,10 +4,7 @@ import type {
   KnockoutStageType,
 } from "@/lib/knockout/types";
 
-export const KNOCKOUT_STAGE_DEFINITIONS: Record<
-  KnockoutStageType,
-  KnockoutStageDefinition
-> = {
+const STAGE_DEFINITIONS: Record<KnockoutStageType, KnockoutStageDefinition> = {
   quarter_final: {
     type: "quarter_final",
     label: "Quarter Final",
@@ -29,31 +26,34 @@ export const KNOCKOUT_STAGE_DEFINITIONS: Record<
     matchCount: 1,
     nextStageType: null,
   },
+  third_place: {
+    type: "third_place",
+    label: "Third Place",
+    teamSlots: 2,
+    matchCount: 1,
+    nextStageType: null,
+  },
+};
+
+const STAGE_MATCH_SLOTS: Record<KnockoutStageType, KnockoutMatchSlot[]> = {
+  quarter_final: [
+    { matchNumber: 1, slotA: "QF1-A", slotB: "QF1-B" },
+    { matchNumber: 2, slotA: "QF2-A", slotB: "QF2-B" },
+    { matchNumber: 3, slotA: "QF3-A", slotB: "QF3-B" },
+    { matchNumber: 4, slotA: "QF4-A", slotB: "QF4-B" },
+  ],
+  semi_final: [
+    { matchNumber: 1, slotA: "SF1-A", slotB: "SF1-B" },
+    { matchNumber: 2, slotA: "SF2-A", slotB: "SF2-B" },
+  ],
+  final: [{ matchNumber: 1, slotA: "F-A", slotB: "F-B" }],
+  third_place: [{ matchNumber: 1, slotA: "TP-A", slotB: "TP-B" }],
 };
 
 export function getKnockoutStageDefinition(stageType: KnockoutStageType) {
-  return KNOCKOUT_STAGE_DEFINITIONS[stageType];
+  return STAGE_DEFINITIONS[stageType];
 }
 
-export function getKnockoutMatchSlots(
-  stageType: KnockoutStageType,
-): KnockoutMatchSlot[] {
-  switch (stageType) {
-    case "quarter_final":
-      return [
-        { matchNumber: 1, slotA: "QF1-A", slotB: "QF1-B" },
-        { matchNumber: 2, slotA: "QF2-A", slotB: "QF2-B" },
-        { matchNumber: 3, slotA: "QF3-A", slotB: "QF3-B" },
-        { matchNumber: 4, slotA: "QF4-A", slotB: "QF4-B" },
-      ];
-
-    case "semi_final":
-      return [
-        { matchNumber: 1, slotA: "SF1-A", slotB: "SF1-B" },
-        { matchNumber: 2, slotA: "SF2-A", slotB: "SF2-B" },
-      ];
-
-    case "final":
-      return [{ matchNumber: 1, slotA: "F-A", slotB: "F-B" }];
-  }
+export function getKnockoutMatchSlots(stageType: KnockoutStageType) {
+  return STAGE_MATCH_SLOTS[stageType];
 }

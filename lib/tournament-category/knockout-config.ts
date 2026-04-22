@@ -4,11 +4,13 @@ import type { KnockoutStageType } from "@/lib/knockout/types";
 type SaveCategoryKnockoutConfigArgs = {
   categoryId: string;
   startStageType: KnockoutStageType;
+  includeThirdPlace: boolean;
 };
 
 export async function saveCategoryKnockoutConfig({
   categoryId,
   startStageType,
+  includeThirdPlace,
 }: SaveCategoryKnockoutConfigArgs) {
   return prisma.tournamentCategory.update({
     where: {
@@ -18,6 +20,7 @@ export async function saveCategoryKnockoutConfig({
       knockoutStartStage: startStageType,
       knockoutConfig: {
         startStageType,
+        includeThirdPlace,
       },
     },
     select: {
