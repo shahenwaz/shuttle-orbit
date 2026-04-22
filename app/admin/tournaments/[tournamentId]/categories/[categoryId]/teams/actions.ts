@@ -203,7 +203,8 @@ export async function removeTeamEntryAction(
   if (groupMembershipCount > 0) {
     return {
       success: false,
-      message: "This team is already assigned to a group. Unassign it first.",
+      message:
+        "This team is assigned inside this category. Remove it from groups first.",
     };
   }
 

@@ -1,11 +1,17 @@
-import { PenSquare } from "lucide-react";
+"use client";
 
+import { useState, useTransition } from "react";
+import { PenSquare, Undo2 } from "lucide-react";
+
+import { resetMatchResultAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/results/actions";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { RecordMatchResultForm } from "@/components/admin/results/record-match-result-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { MatchCard } from "@/components/tournaments/match-card";
+import { Button } from "@/components/ui/button";
 import { formatTeamName } from "@/lib/utils/format";
+import { CreateDialog } from "../create-dialog";
 
 type MatchRow = {
   id: string;
@@ -101,51 +107,31 @@ export function ResultsGroupList({
               ) : (
                 <div className="grid gap-1.5 sm:gap-2 xl:grid-cols-2">
                   {group.matches.map((match) => {
-                    const teamALabel = formatTeamName(
-                      match.teamA?.player1.fullName ?? "",
-                      match.teamA?.player2.fullName ?? "",
-                      match.teamA?.teamName ?? "",
-                    );
+                    const teamALabel = match.teamA
+                      ? formatTeamName(
+                          match.teamA.player1.fullName,
+                          match.teamA.player2.fullName,
+                          match.teamA.teamName,
+                        )
+                      : "TBD";
 
-                    const teamBLabel = formatTeamName(
-                      match.teamB?.player1.fullName ?? "",
-                      match.teamB?.player2.fullName ?? "",
-                      match.teamB?.teamName ?? "",
-                    );
+                    const teamBLabel = match.teamB
+                      ? formatTeamName(
+                          match.teamB.player1.fullName,
+                          match.teamB.player2.fullName,
+                          match.teamB.teamName,
+                        )
+                      : "TBD";
 
                     return (
-                      <div key={match.id} className="space-y-2">
-                        <MatchCard match={match} />
-
-                        <div className="flex justify-end">
-                          <CreateSheet
-                            triggerLabel={
-                              match.status === "completed"
-                                ? "Edit result"
-                                : "Record result"
-                            }
-                            title="Record match result"
-                            description="Enter the match score carefully. This updates the winner and standings."
-                            triggerClassName={actionPillButtonClassName({
-                              variant:
-                                match.status === "completed"
-                                  ? "edit"
-                                  : "create",
-                              className:
-                                "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-                            })}
-                            triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
-                          >
-                            <RecordMatchResultForm
-                              tournamentId={tournamentId}
-                              categoryId={categoryId}
-                              matchId={match.id}
-                              teamALabel={teamALabel}
-                              teamBLabel={teamBLabel}
-                            />
-                          </CreateSheet>
-                        </div>
-                      </div>
+                      <GroupResultMatchCard
+                        key={match.id}
+                        tournamentId={tournamentId}
+                        categoryId={categoryId}
+                        match={match}
+                        teamALabel={teamALabel}
+                        teamBLabel={teamBLabel}
+                      />
                     );
                   })}
                 </div>
@@ -154,6 +140,133 @@ export function ResultsGroupList({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function GroupResultMatchCard({
+  tournamentId,
+  categoryId,
+  match,
+  teamALabel,
+  teamBLabel,
+}: {
+  tournamentId: string;
+  categoryId: string;
+  match: MatchRow;
+  teamALabel: string;
+  teamBLabel: string;
+}) {
+  const [isResultOpen, setIsResultOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState(false);
+  const [isResetPending, startResetTransition] = useTransition();
+
+  return (
+    <div className="space-y-2">
+      <MatchCard match={match} />
+
+      <div className="flex flex-wrap justify-end gap-1.5">
+        <CreateSheet
+          open={isResultOpen}
+          onOpenChange={setIsResultOpen}
+          triggerLabel={
+            match.status === "completed" ? "Edit result" : "Record result"
+          }
+          title="Record match result"
+          description="Enter the match score carefully. This updates the winner and standings."
+          triggerClassName={actionPillButtonClassName({
+            variant: match.status === "completed" ? "edit" : "create",
+            className:
+              "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+          })}
+          triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
+        >
+          <RecordMatchResultForm
+            tournamentId={tournamentId}
+            categoryId={categoryId}
+            matchId={match.id}
+            teamALabel={teamALabel}
+            teamBLabel={teamBLabel}
+          />
+        </CreateSheet>
+
+        {match.status === "completed" ? (
+          <CreateDialog
+            open={isResetOpen}
+            onOpenChange={setIsResetOpen}
+            triggerLabel="Reset result"
+            title="Reset match result"
+            description="This will clear the saved score and set the match back to scheduled."
+            triggerClassName={actionPillButtonClassName({
+              variant: "neutral",
+              className:
+                "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+            })}
+            triggerIcon={<Undo2 className="h-3.5 w-3.5" />}
+          >
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+
+                const formData = new FormData();
+                formData.set("tournamentId", tournamentId);
+                formData.set("categoryId", categoryId);
+                formData.set("matchId", match.id);
+
+                setResetMessage("");
+                setResetError(false);
+
+                startResetTransition(async () => {
+                  const result = await resetMatchResultAction(formData);
+                  setResetError(!result.success);
+                  setResetMessage(result.message);
+
+                  if (result.success) {
+                    setIsResetOpen(false);
+                  }
+                });
+              }}
+            >
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to reset this match result?
+              </p>
+
+              {resetMessage ? (
+                <div
+                  className={`rounded-xl border px-3 py-2 text-sm ${
+                    resetError
+                      ? "border-red-500/20 bg-red-500/10 text-red-300"
+                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  }`}
+                >
+                  {resetMessage}
+                </div>
+              ) : null}
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsResetOpen(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={isResetPending}
+                >
+                  {isResetPending ? "Resetting..." : "Reset result"}
+                </Button>
+              </div>
+            </form>
+          </CreateDialog>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -189,7 +189,7 @@ export default async function AdminCategoryFixturesPage({
   }
 
   const groupStages = category.stages.filter(
-    (stage) => stage.stageType === "group_stage",
+    (stage) => stage.stageType === "group_stage" || stage.groups.length > 0,
   );
 
   const groups = groupStages
