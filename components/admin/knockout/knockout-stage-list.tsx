@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreVertical, PenSquare, RotateCcw, Users2 } from "lucide-react";
-
+import {
+  MoreVertical,
+  PenSquare,
+  RotateCcw,
+  Undo2,
+  Users2,
+} from "lucide-react";
 import { resetKnockoutMatchTeamsAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/knockout-actions";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { AssignKnockoutMatchForm } from "@/components/admin/knockout/assign-knockout-match-form";
@@ -19,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatTeamName } from "@/lib/utils/format";
 import type { KnockoutStageType } from "@/lib/knockout/types";
+import { resetMatchResultAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/results/actions";
 
 type KnockoutStageListProps = {
   tournamentId: string;
@@ -172,9 +178,12 @@ function KnockoutMatchCard({
 }) {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [isResultOpen, setIsResultOpen] = useState(false);
-  const [resetMessage, setResetMessage] = useState("");
-  const [resetError, setResetError] = useState(false);
-  const [isResetPending, startResetTransition] = useTransition();
+  const [resultResetMessage, setResultResetMessage] = useState("");
+  const [resultResetError, setResultResetError] = useState(false);
+  const [resetTeamsMessage, setResetTeamsMessage] = useState("");
+  const [resetTeamsError, setResetTeamsError] = useState(false);
+  const [isResetTeamsPending, startResetTeamsTransition] = useTransition();
+  const [isResetResultPending, startResetResultTransition] = useTransition();
 
   return (
     <div className="relative space-y-2">
@@ -196,8 +205,8 @@ function KnockoutMatchCard({
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem
                 onSelect={() => {
-                  setResetMessage("");
-                  setResetError(false);
+                  setResetTeamsMessage("");
+                  setResetTeamsError(false);
                   setIsAssignOpen(true);
                 }}
                 className="cursor-pointer"
@@ -208,10 +217,10 @@ function KnockoutMatchCard({
 
               <DropdownMenuItem
                 onSelect={() => {
-                  setResetMessage("");
-                  setResetError(false);
+                  setResetTeamsMessage("");
+                  setResetTeamsError(false);
 
-                  startResetTransition(async () => {
+                  startResetTeamsTransition(async () => {
                     try {
                       await resetKnockoutMatchTeamsAction({
                         tournamentId,
@@ -219,13 +228,13 @@ function KnockoutMatchCard({
                         matchId: match.id,
                       });
 
-                      setResetError(false);
-                      setResetMessage(
+                      setResetTeamsError(false);
+                      setResetTeamsMessage(
                         "Knockout match teams reset successfully.",
                       );
                     } catch (error) {
-                      setResetError(true);
-                      setResetMessage(
+                      setResetTeamsError(true);
+                      setResetTeamsMessage(
                         error instanceof Error
                           ? error.message
                           : "Failed to reset knockout match teams.",
@@ -234,7 +243,7 @@ function KnockoutMatchCard({
                   });
                 }}
                 className="cursor-pointer"
-                disabled={isResetPending}
+                disabled={isResetTeamsPending}
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset teams
@@ -246,18 +255,28 @@ function KnockoutMatchCard({
 
       <MatchCard match={match} />
 
-      {resetMessage ? (
+      {resetTeamsMessage ? (
         <p
           className={`text-sm ${
-            resetError ? "text-red-400" : "text-emerald-400"
+            resetTeamsError ? "text-red-400" : "text-emerald-400"
           }`}
         >
-          {resetMessage}
+          {resetTeamsMessage}
+        </p>
+      ) : null}
+
+      {resultResetMessage ? (
+        <p
+          className={`text-sm ${
+            resultResetError ? "text-red-400" : "text-emerald-400"
+          }`}
+        >
+          {resultResetMessage}
         </p>
       ) : null}
 
       {mode === "results" ? (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-1.5">
           <CreateSheet
             open={isResultOpen}
             onOpenChange={setIsResultOpen}
@@ -281,6 +300,42 @@ function KnockoutMatchCard({
               teamBLabel={teamBLabel}
             />
           </CreateSheet>
+
+          {match.status === "completed" ? (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+
+                const formData = new FormData();
+                formData.set("tournamentId", tournamentId);
+                formData.set("categoryId", categoryId);
+                formData.set("matchId", match.id);
+
+                setResultResetMessage("");
+                setResultResetError(false);
+
+                startResetResultTransition(async () => {
+                  const result = await resetMatchResultAction(formData);
+
+                  setResultResetError(!result.success);
+                  setResultResetMessage(result.message);
+                });
+              }}
+            >
+              <Button
+                type="submit"
+                disabled={isResetResultPending}
+                className={actionPillButtonClassName({
+                  variant: "neutral",
+                  className:
+                    "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+                })}
+              >
+                <Undo2 className="mr-1 h-3.5 w-3.5" />
+                Reset result
+              </Button>
+            </form>
+          ) : null}
         </div>
       ) : null}
 

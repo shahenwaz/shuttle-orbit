@@ -327,3 +327,173 @@ export async function recordMatchResultAction(
     fieldErrors: {},
   };
 }
+
+export type ResetMatchResultActionState = {
+  success: boolean;
+  message: string;
+};
+
+export async function resetMatchResultAction(
+  formData: FormData,
+): Promise<ResetMatchResultActionState> {
+  const tournamentId = formData.get("tournamentId");
+  const categoryId = formData.get("categoryId");
+  const matchId = formData.get("matchId");
+
+  if (
+    typeof tournamentId !== "string" ||
+    typeof categoryId !== "string" ||
+    typeof matchId !== "string"
+  ) {
+    return {
+      success: false,
+      message: "Invalid result reset request.",
+    };
+  }
+
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      tournamentId,
+      categoryId,
+    },
+    include: {
+      stage: {
+        select: {
+          stageType: true,
+        },
+      },
+      sets: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  if (!match) {
+    return {
+      success: false,
+      message: "Match not found.",
+    };
+  }
+
+  const hasRecordedResult =
+    match.status === "completed" ||
+    match.winnerId !== null ||
+    match.scoreSummary !== null ||
+    match.sets.length > 0;
+
+  if (!hasRecordedResult) {
+    return {
+      success: false,
+      message: "This match does not have a recorded result yet.",
+    };
+  }
+
+  const isKnockoutStage =
+    match.stage.stageType === "quarter_final" ||
+    match.stage.stageType === "semi_final" ||
+    match.stage.stageType === "final";
+
+  if (isKnockoutStage && match.winnerId) {
+    const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
+
+    const target = getAdvanceTarget(
+      match.stage.stageType as "quarter_final" | "semi_final" | "final",
+      matchNumber,
+    );
+
+    if (target) {
+      const nextStage = await prisma.stage.findFirst({
+        where: {
+          categoryId,
+          stageType: target.nextStageType,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (nextStage) {
+        const nextRoundLabel =
+          target.nextStageType === "final"
+            ? "Final"
+            : `Semi Final ${target.nextMatchNumber}`;
+
+        const nextMatch = await prisma.match.findFirst({
+          where: {
+            categoryId,
+            stageId: nextStage.id,
+            roundLabel: nextRoundLabel,
+          },
+          include: {
+            sets: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        });
+
+        if (nextMatch) {
+          const nextMatchHasRecordedResult =
+            nextMatch.status === "completed" ||
+            nextMatch.winnerId !== null ||
+            nextMatch.scoreSummary !== null ||
+            nextMatch.sets.length > 0;
+
+          if (nextMatchHasRecordedResult) {
+            return {
+              success: false,
+              message:
+                "You cannot reset this result because the next knockout match already has a recorded result.",
+            };
+          }
+
+          const shouldClearAdvancedTeam =
+            (target.nextSlot === "teamAId" &&
+              nextMatch.teamAId === match.winnerId) ||
+            (target.nextSlot === "teamBId" &&
+              nextMatch.teamBId === match.winnerId);
+
+          if (shouldClearAdvancedTeam) {
+            await prisma.match.update({
+              where: {
+                id: nextMatch.id,
+              },
+              data: {
+                [target.nextSlot]: null,
+              },
+            });
+          }
+        }
+      }
+    }
+  }
+
+  await prisma.$transaction([
+    prisma.match.update({
+      where: {
+        id: match.id,
+      },
+      data: {
+        winnerId: null,
+        scoreSummary: null,
+        status: "scheduled",
+      },
+    }),
+    prisma.matchSet.deleteMany({
+      where: {
+        matchId: match.id,
+      },
+    }),
+  ]);
+
+  revalidateResultPaths(tournamentId, categoryId);
+
+  return {
+    success: true,
+    message: "Match result reset successfully.",
+  };
+}
