@@ -7,6 +7,7 @@ import {
   MapPin,
   Pencil,
   Trophy,
+  Trash2,
 } from "lucide-react";
 
 import { CreateDialog } from "@/components/admin/create-dialog";
@@ -21,6 +22,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
+import { deleteTournamentAction } from "@/app/admin/tournaments/actions";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
@@ -167,6 +169,42 @@ export default async function AdminTournamentDetailPage({
               triggerIcon={<FolderPlus className="h-3.5 w-3.5" />}
             >
               <CreateCategoryForm tournamentId={tournament.id} />
+            </CreateDialog>
+
+            <CreateDialog
+              triggerLabel="Delete tournament"
+              title="Delete tournament"
+              description="This only works if the tournament has no categories."
+              triggerClassName={actionPillButtonClassName({
+                variant: "neutral",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<Trash2 className="h-3.5 w-3.5" />}
+            >
+              <form
+                className="space-y-4"
+                action={async (formData) => {
+                  "use server";
+                  await deleteTournamentAction(formData);
+                }}
+              >
+                <input
+                  type="hidden"
+                  name="tournamentId"
+                  value={tournament.id}
+                />
+
+                <p className="text-sm text-muted-foreground">
+                  Delete this tournament only after removing all categories.
+                </p>
+
+                <div className="flex justify-end">
+                  <Button type="submit" variant="destructive">
+                    Delete tournament
+                  </Button>
+                </div>
+              </form>
             </CreateDialog>
           </div>
         </div>
