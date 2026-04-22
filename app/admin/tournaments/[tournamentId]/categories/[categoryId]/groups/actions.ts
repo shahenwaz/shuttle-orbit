@@ -40,37 +40,6 @@ const resetGroupFixturesSchema = z.object({
   groupId: z.cuid({ error: "Invalid group id." }),
 });
 
-async function getOrCreateDefaultGroupStage(categoryId: string) {
-  const existingStage = await prisma.stage.findFirst({
-    where: {
-      categoryId,
-      stageOrder: 1,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (existingStage) {
-    return existingStage;
-  }
-
-  return prisma.stage.create({
-    data: {
-      categoryId,
-      name: "Group Stage",
-      stageType: "round_robin",
-      stageOrder: 1,
-      configJson: {
-        generatedByAdmin: true,
-      },
-    },
-    select: {
-      id: true,
-    },
-  });
-}
-
 function revalidateGroupAdminPaths(tournamentId: string, categoryId: string) {
   revalidatePath(`/admin/tournaments/${tournamentId}`);
   revalidatePath(
@@ -92,14 +61,13 @@ export async function createGroupAction(
   _prevState: CreateGroupActionState,
   formData: FormData,
 ): Promise<CreateGroupActionState> {
-  const rawValues = {
+  const parsed = createGroupSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
+    stageId: formData.get("stageId"),
     name: formData.get("name"),
     groupOrder: formData.get("groupOrder"),
-  };
-
-  const parsed = createGroupSchema.safeParse(rawValues);
+  });
 
   if (!parsed.success) {
     return {
@@ -109,77 +77,62 @@ export async function createGroupAction(
     };
   }
 
-  const { tournamentId, categoryId, name, groupOrder } = parsed.data;
+  const { tournamentId, categoryId, stageId, name, groupOrder } = parsed.data;
 
-  const category = await prisma.tournamentCategory.findFirst({
+  const stage = await prisma.stage.findFirst({
     where: {
-      id: categoryId,
-      tournamentId,
+      id: stageId,
+      categoryId,
+      category: {
+        tournamentId,
+      },
     },
     select: {
       id: true,
     },
   });
 
-  if (!category) {
+  if (!stage) {
     return {
       success: false,
-      message: "Category not found.",
+      message: "Stage not found for this category.",
     };
   }
 
-  const stage = await getOrCreateDefaultGroupStage(categoryId);
-  const normalizedGroupName = name.trim().toUpperCase();
-
-  const existingGroupByName = await prisma.group.findFirst({
+  const duplicateGroup = await prisma.group.findFirst({
     where: {
-      stageId: stage.id,
-      name: normalizedGroupName,
+      stageId,
+      OR: [{ name }, { groupOrder }],
     },
     select: {
       id: true,
     },
   });
 
-  if (existingGroupByName) {
+  if (duplicateGroup) {
     return {
       success: false,
-      message: "A group with this name already exists.",
-      fieldErrors: {
-        name: ["Use a different group name."],
-      },
-    };
-  }
-
-  const existingGroupByOrder = await prisma.group.findFirst({
-    where: {
-      stageId: stage.id,
-      groupOrder,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (existingGroupByOrder) {
-    return {
-      success: false,
-      message: "This group order is already used.",
-      fieldErrors: {
-        groupOrder: ["Choose a different group order."],
-      },
+      message: "This group name or order already exists in the selected stage.",
     };
   }
 
   await prisma.group.create({
     data: {
-      stageId: stage.id,
-      name: normalizedGroupName,
+      stageId,
+      name,
       groupOrder,
     },
   });
 
-  revalidateGroupAdminPaths(tournamentId, categoryId);
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
 
   return {
     success: true,
@@ -629,5 +582,207 @@ export async function deleteGroupAction(
   return {
     success: true,
     message: "Group deleted successfully.",
+  };
+}
+
+// The createCategoryGroupStageAction is defined here instead of in the create-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
+
+export type CreateCategoryGroupStageActionState = {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    stageName?: string[];
+  };
+};
+
+const createCategoryGroupStageSchema = z.object({
+  tournamentId: z.cuid(),
+  categoryId: z.cuid(),
+  stageName: z
+    .string()
+    .trim()
+    .min(2, "Stage name is required.")
+    .max(80, "Stage name is too long."),
+});
+
+export async function createCategoryGroupStageAction(
+  _prevState: CreateCategoryGroupStageActionState,
+  formData: FormData,
+): Promise<CreateCategoryGroupStageActionState> {
+  const parsed = createCategoryGroupStageSchema.safeParse({
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    stageName: formData.get("stageName"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Please fix the form errors.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { tournamentId, categoryId, stageName } = parsed.data;
+
+  const category = await prisma.tournamentCategory.findFirst({
+    where: {
+      id: categoryId,
+      tournamentId,
+    },
+    include: {
+      stages: {
+        orderBy: {
+          stageOrder: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+          stageType: true,
+          stageOrder: true,
+        },
+      },
+    },
+  });
+
+  if (!category) {
+    return {
+      success: false,
+      message: "Category not found.",
+    };
+  }
+
+  const duplicateStage = category.stages.find(
+    (stage) =>
+      stage.name.trim().toLowerCase() === stageName.trim().toLowerCase(),
+  );
+
+  if (duplicateStage) {
+    return {
+      success: false,
+      message: "A stage with this name already exists.",
+      fieldErrors: {
+        stageName: ["Choose a different stage name."],
+      },
+    };
+  }
+
+  const nextStageOrder =
+    category.stages.reduce((max, stage) => Math.max(max, stage.stageOrder), 0) +
+    1;
+
+  await prisma.stage.create({
+    data: {
+      categoryId,
+      name: stageName,
+      stageType: "group_stage",
+      stageOrder: nextStageOrder,
+    },
+  });
+
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
+
+  return {
+    success: true,
+    message: "Stage created successfully.",
+    fieldErrors: {},
+  };
+}
+
+// The deleteCategoryStageAction is defined here instead of in the edit-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
+
+export type DeleteCategoryStageActionState = {
+  success: boolean;
+  message: string;
+};
+
+const deleteCategoryStageSchema = z.object({
+  tournamentId: z.cuid(),
+  categoryId: z.cuid(),
+  stageId: z.cuid(),
+});
+
+export async function deleteCategoryStageAction(
+  formData: FormData,
+): Promise<DeleteCategoryStageActionState> {
+  const parsed = deleteCategoryStageSchema.safeParse({
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+    stageId: formData.get("stageId"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Invalid stage deletion request.",
+    };
+  }
+
+  const { tournamentId, categoryId, stageId } = parsed.data;
+
+  const stage = await prisma.stage.findFirst({
+    where: {
+      id: stageId,
+      categoryId,
+      category: {
+        tournamentId,
+      },
+    },
+    include: {
+      groups: {
+        select: {
+          id: true,
+        },
+      },
+      matches: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  if (!stage) {
+    return {
+      success: false,
+      message: "Stage not found.",
+    };
+  }
+
+  if (stage.groups.length > 0 || stage.matches.length > 0) {
+    return {
+      success: false,
+      message:
+        "This stage cannot be deleted yet. Remove its groups and matches first.",
+    };
+  }
+
+  await prisma.stage.delete({
+    where: {
+      id: stageId,
+    },
+  });
+
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/groups`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
+  );
+  revalidatePath(
+    `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
+  );
+
+  return {
+    success: true,
+    message: "Stage deleted successfully.",
   };
 }

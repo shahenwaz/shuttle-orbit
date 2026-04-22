@@ -19,6 +19,7 @@ type TeamOption = {
 type GroupOption = {
   id: string;
   name: string;
+  stageName?: string;
 };
 
 type AssignTeamToGroupFormProps = {
@@ -88,7 +89,9 @@ export function AssignTeamToGroupForm({
             </option>
             {groups.map((group) => (
               <option key={group.id} value={group.id}>
-                {group.name}
+                {group.stageName
+                  ? `${group.stageName} · ${group.name}`
+                  : group.name}
               </option>
             ))}
           </select>

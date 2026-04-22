@@ -3,6 +3,7 @@ import { z } from "zod";
 export const createGroupSchema = z.object({
   tournamentId: z.cuid({ error: "Invalid tournament id." }),
   categoryId: z.cuid({ error: "Invalid category id." }),
+  stageId: z.cuid(),
   name: z
     .string()
     .trim()

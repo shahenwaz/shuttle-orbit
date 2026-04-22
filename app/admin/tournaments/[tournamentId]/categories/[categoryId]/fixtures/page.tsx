@@ -12,6 +12,7 @@ import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 import { formatTeamName } from "@/lib/utils/format";
+import { EmptyState } from "@/components/shared/empty-state";
 
 type AdminCategoryFixturesPageProps = {
   params: Promise<{
@@ -187,12 +188,13 @@ export default async function AdminCategoryFixturesPage({
     notFound();
   }
 
-  const primaryGroupStage =
-    category.stages.find((stage) => stage.groups.length > 0) ??
-    category.stages.find((stage) => stage.stageOrder === 1) ??
-    null;
+  const groupStages = category.stages.filter(
+    (stage) => stage.stageType === "group_stage",
+  );
 
-  const groups = primaryGroupStage?.groups ?? [];
+  const groups = groupStages
+    .flatMap((stage) => stage.groups)
+    .sort((a, b) => a.groupOrder - b.groupOrder);
 
   const knockoutStages = category.stages.filter((stage) =>
     ["quarter_final", "semi_final", "final"].includes(stage.stageType),
@@ -278,11 +280,39 @@ export default async function AdminCategoryFixturesPage({
         }
       />
 
-      <FixturesGroupList
-        tournamentId={tournament.id}
-        categoryId={category.id}
-        groups={groups}
-      />
+      {groupStages.length === 0 ? (
+        <EmptyState message="No group stages available yet." />
+      ) : (
+        <div className="grid gap-6">
+          {groupStages.map((stage) => (
+            <section key={stage.id} className="space-y-4">
+              <div className="surface-card overflow-hidden">
+                <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <h3 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                      {stage.name}
+                    </h3>
+
+                    <span className="text-xs text-muted-foreground sm:text-sm">
+                      ⁜
+                    </span>
+
+                    <span className="text-xs text-muted-foreground sm:text-sm">
+                      {stage.groups.length} groups
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <FixturesGroupList
+                tournamentId={tournament.id}
+                categoryId={category.id}
+                groups={stage.groups}
+              />
+            </section>
+          ))}
+        </div>
+      )}
 
       <KnockoutStageList
         tournamentId={tournament.id}
