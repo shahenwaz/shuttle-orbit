@@ -1,82 +1,77 @@
 import { prisma } from "@/lib/db/prisma";
 
-export async function getPlayersDirectory() {
-  return prisma.player.findMany({
-    orderBy: {
-      fullName: "asc",
-    },
-    select: {
-      id: true,
-      fullName: true,
-      nickname: true,
-    },
+function getCategoryCodeRank(code: string) {
+  const normalized = code.trim().toUpperCase();
+
+  switch (normalized) {
+    case "A":
+      return 300;
+    case "B":
+      return 200;
+    case "C":
+      return 100;
+    default:
+      return 0;
+  }
+}
+
+function sortCategoryCodes(codes: string[]) {
+  return [...codes].sort((a, b) => {
+    const rankDiff = getCategoryCodeRank(b) - getCategoryCodeRank(a);
+
+    if (rankDiff !== 0) {
+      return rankDiff;
+    }
+
+    return a.localeCompare(b);
   });
 }
 
-export async function getPlayerProfile(playerId: string) {
-  const player = await prisma.player.findUnique({
-    where: { id: playerId },
+export async function getPlayersDirectory() {
+  const players = await prisma.player.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
     select: {
       id: true,
       fullName: true,
       nickname: true,
-      isActive: true,
       createdAt: true,
-    },
-  });
-
-  if (!player) {
-    return null;
-  }
-
-  const teamEntries = await prisma.teamEntry.findMany({
-    where: {
-      OR: [{ player1Id: playerId }, { player2Id: playerId }],
-    },
-    include: {
-      category: {
+      teamEntriesAsPlayer1: {
         select: {
-          id: true,
-          code: true,
-          name: true,
-          tournament: {
+          category: {
             select: {
-              id: true,
-              slug: true,
-              name: true,
-              eventDate: true,
+              code: true,
             },
           },
         },
       },
-      player1: {
+      teamEntriesAsPlayer2: {
         select: {
-          id: true,
-          fullName: true,
-          nickname: true,
+          category: {
+            select: {
+              code: true,
+            },
+          },
         },
       },
-      player2: {
-        select: {
-          id: true,
-          fullName: true,
-          nickname: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
     },
   });
 
-  const appearances = [...teamEntries].sort(
-    (a, b) =>
-      b.category.tournament.eventDate.getTime() -
-      a.category.tournament.eventDate.getTime(),
-  );
+  return players.map((player) => {
+    const categoryCodes = Array.from(
+      new Set([
+        ...player.teamEntriesAsPlayer1.map((entry) => entry.category.code),
+        ...player.teamEntriesAsPlayer2.map((entry) => entry.category.code),
+      ]),
+    );
 
-  return {
-    player,
-    appearances,
-  };
+    return {
+      id: player.id,
+      fullName: player.fullName,
+      nickname: player.nickname,
+      createdAt: player.createdAt,
+      categoryCodes: sortCategoryCodes(categoryCodes),
+    };
+  });
 }
