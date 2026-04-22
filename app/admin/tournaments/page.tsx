@@ -22,7 +22,6 @@ export default async function AdminTournamentsPage() {
         slug: true,
         location: true,
         eventDate: true,
-        status: true,
         description: true,
         _count: {
           select: {
@@ -53,7 +52,7 @@ export default async function AdminTournamentsPage() {
           <CreateSheet
             triggerLabel="Add tournament"
             title="Create tournament"
-            description="Create a single-day tournament shell with location, status, and summary."
+            description="Create a single-day tournament shell with location, and summary."
             triggerClassName={actionPillButtonClassName({
               variant: "create",
               className:

@@ -48,7 +48,6 @@ export async function createTournamentAction(
     name: formData.get("name"),
     location: formData.get("location"),
     eventDate: formData.get("eventDate"),
-    status: formData.get("status"),
     description: formData.get("description"),
   };
 
@@ -62,7 +61,7 @@ export async function createTournamentAction(
     };
   }
 
-  const { name, location, eventDate, status, description } = parsed.data;
+  const { name, location, eventDate, description } = parsed.data;
 
   const slug = await generateUniqueTournamentSlug(name);
 
@@ -72,7 +71,6 @@ export async function createTournamentAction(
       slug,
       location: location || null,
       eventDate: toUtcMidday(eventDate),
-      status,
       description: description || null,
     },
   });

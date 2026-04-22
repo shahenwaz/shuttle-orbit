@@ -100,7 +100,6 @@ export async function createTournamentCategoryAction(
       name,
       code: normalizedCode,
       rulesSummary: rulesSummary || null,
-      status: "draft",
     },
   });
 
@@ -127,7 +126,6 @@ export async function updateTournamentAction(
     name: formData.get("name"),
     location: formData.get("location"),
     eventDate: formData.get("eventDate"),
-    status: formData.get("status"),
     description: formData.get("description"),
   };
 
@@ -141,8 +139,7 @@ export async function updateTournamentAction(
     };
   }
 
-  const { tournamentId, name, location, eventDate, status, description } =
-    parsed.data;
+  const { tournamentId, name, location, eventDate, description } = parsed.data;
 
   const existingTournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
@@ -164,7 +161,6 @@ export async function updateTournamentAction(
       name,
       location: location || null,
       eventDate: toUtcMidday(eventDate),
-      status,
       description: description || null,
     },
   });

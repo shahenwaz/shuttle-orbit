@@ -20,7 +20,6 @@ type TournamentCardActionsProps = {
     name: string;
     location: string | null;
     eventDate: Date;
-    status: "upcoming" | "completed";
     description: string | null;
     categoryCount: number;
   };
@@ -96,7 +95,6 @@ export function TournamentCardActions({
             name: tournament.name,
             location: tournament.location,
             eventDate: tournament.eventDate,
-            status: tournament.status,
             description: tournament.description,
           }}
         />

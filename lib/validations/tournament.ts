@@ -21,7 +21,6 @@ export const tournamentBaseSchema = z.object({
     .refine((value) => !Number.isNaN(new Date(value).getTime()), {
       message: "Event date is invalid.",
     }),
-  status: z.enum(tournamentStatusValues),
   description: z
     .string()
     .trim()

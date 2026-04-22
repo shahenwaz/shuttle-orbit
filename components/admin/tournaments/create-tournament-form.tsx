@@ -71,11 +71,6 @@ export function CreateTournamentForm() {
               </option>
             ))}
           </select>
-          {state.fieldErrors?.status ? (
-            <p className="text-sm text-red-400">
-              {state.fieldErrors.status[0]}
-            </p>
-          ) : null}
         </div>
 
         <div className="space-y-2 md:col-span-2">

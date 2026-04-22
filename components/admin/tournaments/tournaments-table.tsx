@@ -17,7 +17,6 @@ type TournamentRow = {
   slug: string;
   location: string | null;
   eventDate: Date;
-  status: string;
   description: string | null;
   _count: {
     categories: number;
@@ -29,15 +28,6 @@ type TournamentRow = {
 type TournamentsTableProps = {
   tournaments: TournamentRow[];
 };
-
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case "completed":
-      return "border-violet-500/20 bg-violet-500/10 text-violet-300";
-    default:
-      return "border-sky-500/20 bg-sky-500/10 text-sky-300";
-  }
-}
 
 export function TournamentsTable({ tournaments }: TournamentsTableProps) {
   if (tournaments.length === 0) {
@@ -53,19 +43,9 @@ export function TournamentsTable({ tournaments }: TournamentsTableProps) {
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
               <div className="min-w-0 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                    {tournament.name}
-                  </h4>
-
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(
-                      tournament.status,
-                    )}`}
-                  >
-                    {tournament.status}
-                  </span>
-                </div>
+                <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                  {tournament.name}
+                </h4>
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:text-sm">
                   <div className="inline-flex items-center gap-1.5">
@@ -92,7 +72,6 @@ export function TournamentsTable({ tournaments }: TournamentsTableProps) {
                   name: tournament.name,
                   location: tournament.location,
                   eventDate: tournament.eventDate,
-                  status: tournament.status as "upcoming" | "completed",
                   description: tournament.description,
                   categoryCount: tournament._count.categories,
                 }}

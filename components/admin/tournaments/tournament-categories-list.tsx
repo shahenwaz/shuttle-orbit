@@ -33,7 +33,6 @@ type TournamentCategoryRow = {
   name: string;
   code: string;
   rulesSummary: string | null;
-  status: string;
   stages: Array<{
     id: string;
     groups: Array<{
