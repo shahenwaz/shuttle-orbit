@@ -3,13 +3,14 @@
 import { useMemo, useState } from "react";
 import { Layers3, Swords, User, Users } from "lucide-react";
 
+import { EmptyState } from "@/components/shared/empty-state";
+import { SectionTabs } from "@/components/shared/section-tabs";
 import { GroupStandingsTable } from "@/components/tournaments/group-standings-table";
 import { MatchCard } from "@/components/tournaments/match-card";
 import { PlayerCard } from "@/components/tournaments/player-card";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
-import { EmptyState } from "@/components/shared/empty-state";
-import { SectionTabs } from "@/components/shared/section-tabs";
+import { sortStagesForDisplay } from "@/lib/tournament/stage-display-order";
 
 type CategoryTabsViewProps = {
   category: {
@@ -31,6 +32,7 @@ type CategoryTabsViewProps = {
       id: string;
       name: string;
       stageType: string;
+      stageOrder: number;
       groups: Array<{
         id: string;
         name: string;
@@ -51,18 +53,18 @@ type CategoryTabsViewProps = {
         roundLabel: string | null;
         scoreSummary: string | null;
         winnerId: string | null;
-        teamAId: string;
-        teamBId: string;
+        teamAId: string | null;
+        teamBId: string | null;
         teamA: {
           teamName: string | null;
           player1: { fullName: string };
           player2: { fullName: string };
-        };
+        } | null;
         teamB: {
           teamName: string | null;
           player1: { fullName: string };
           player2: { fullName: string };
-        };
+        } | null;
         sets: Array<{
           setNumber: number;
           teamAScore: number;
@@ -114,6 +116,24 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
   const players = useMemo(
     () => getUniquePlayers(category.teamEntries),
     [category.teamEntries],
+  );
+
+  const orderedStages = useMemo(
+    () => sortStagesForDisplay(category.stages),
+    [category.stages],
+  );
+
+  const orderedMatchStages = useMemo(
+    () => orderedStages.filter((stage) => stage.matches.length > 0),
+    [orderedStages],
+  );
+
+  const stagesWithGroups = useMemo(
+    () =>
+      orderedStages.filter(
+        (stage) => stage.groups.length > 0 && stage.matches.length > 0,
+      ),
+    [orderedStages],
   );
 
   const totalMatches = useMemo(
@@ -191,30 +211,30 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
             match{totalMatches === 1 ? "" : "es"} across all stages
           </SectionMetaLine>
 
-          {category.stages.map((stage) => (
-            <div key={stage.id} className="surface-card p-3 sm:p-4">
-              <div className="mb-3 sm:mb-4">
-                <h3 className="text-sm font-semibold text-foreground sm:text-base">
-                  {stage.name}
-                </h3>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
-                  {stage.stageType.replaceAll("_", " ")} ·{" "}
-                  {stage.matches.length} match
-                  {stage.matches.length === 1 ? "" : "es"}
-                </p>
-              </div>
+          {orderedMatchStages.length === 0 ? (
+            <EmptyState message="No matches available yet." />
+          ) : (
+            orderedMatchStages.map((stage) => (
+              <div key={stage.id} className="surface-card p-3 sm:p-4">
+                <div className="mb-3 sm:mb-4">
+                  <h3 className="text-sm font-semibold text-foreground sm:text-base">
+                    {stage.name}
+                  </h3>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
+                    {stage.stageType.replaceAll("_", " ")} ·{" "}
+                    {stage.matches.length} match
+                    {stage.matches.length === 1 ? "" : "es"}
+                  </p>
+                </div>
 
-              {stage.matches.length === 0 ? (
-                <EmptyState message="No matches generated yet." />
-              ) : (
                 <div className="grid gap-1.5 sm:gap-2 lg:grid-cols-2">
                   {stage.matches.map((match) => (
                     <MatchCard key={match.id} match={match} />
                   ))}
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            ))
+          )}
         </div>
       ) : null}
 
@@ -226,34 +246,42 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
             group{totalGroups === 1 ? "" : "s"} across all stages
           </SectionMetaLine>
 
-          {category.stages.map((stage) => (
-            <div
-              key={stage.id}
-              className="rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4"
-            >
-              <div className="mb-2.5 flex items-center justify-between gap-3 sm:mb-3">
-                <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
-                    {stage.name}
-                  </h3>
-                  <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
-                    {stage.stageType.replaceAll("_", " ")}
-                  </p>
+          {stagesWithGroups.length === 0 ? (
+            <EmptyState message="No group standings available yet." />
+          ) : (
+            stagesWithGroups.map((stage) => (
+              <div
+                key={stage.id}
+                className="rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4"
+              >
+                <div className="mb-2.5 flex items-center justify-between gap-3 sm:mb-3">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
+                      {stage.name}
+                    </h3>
+                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
+                      {stage.stageType.replaceAll("_", " ")}
+                    </p>
+                  </div>
+
+                  <span className="shrink-0 rounded-full border border-white/10 bg-background/60 px-2 py-1 text-[10px] font-medium text-muted-foreground sm:text-[11px]">
+                    {stage.groups.length} group
+                    {stage.groups.length === 1 ? "" : "s"}
+                  </span>
                 </div>
 
-                <span className="shrink-0 rounded-full border border-white/10 bg-background/60 px-2 py-1 text-[10px] font-medium text-muted-foreground sm:text-[11px]">
-                  {stage.groups.length} group
-                  {stage.groups.length === 1 ? "" : "s"}
-                </span>
-              </div>
-
-              {stage.groups.length === 0 ? (
-                <EmptyState message="No group standings available for this stage." />
-              ) : (
                 <div className="space-y-3 sm:space-y-4">
                   {stage.groups.map((group) => {
                     const groupMatches = stage.matches.filter(
                       (match) => match.groupId === group.id,
+                    );
+
+                    const validGroupMatches = groupMatches.filter(
+                      (match) =>
+                        match.teamAId &&
+                        match.teamBId &&
+                        match.teamA &&
+                        match.teamB,
                     );
 
                     const standings = computeGroupStandings(
@@ -261,19 +289,19 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
                         id: membership.id,
                         teamEntry: membership.teamEntry,
                       })),
-                      groupMatches.map((match) => ({
+                      validGroupMatches.map((match) => ({
                         id: match.id,
                         status: match.status,
-                        teamAId: match.teamAId,
-                        teamBId: match.teamBId,
+                        teamAId: match.teamAId as string,
+                        teamBId: match.teamBId as string,
                         winnerId: match.winnerId,
                         teamA: {
-                          id: match.teamAId,
-                          ...match.teamA,
+                          id: match.teamAId as string,
+                          ...match.teamA!,
                         },
                         teamB: {
-                          id: match.teamBId,
-                          ...match.teamB,
+                          id: match.teamBId as string,
+                          ...match.teamB!,
                         },
                         sets: match.sets,
                       })),
@@ -299,9 +327,9 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
                     );
                   })}
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            ))
+          )}
         </div>
       ) : null}
     </section>

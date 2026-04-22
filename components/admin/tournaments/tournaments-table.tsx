@@ -37,7 +37,7 @@ export function TournamentsTable({ tournaments }: TournamentsTableProps) {
   }
 
   return (
-    <div className="grid gap-3 sm:gap-4">
+    <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
       {tournaments.map((tournament) => (
         <div key={tournament.id} className="surface-card p-4 sm:p-5">
           <div className="space-y-3 sm:space-y-4">

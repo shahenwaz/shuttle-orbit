@@ -4,11 +4,11 @@ import { ClipboardCheck } from "lucide-react";
 import { KnockoutStageList } from "@/components/admin/knockout/knockout-stage-list";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { ResultsGroupList } from "@/components/admin/results/results-group-list";
+import { EmptyState } from "@/components/shared/empty-state";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 import { formatTeamName } from "@/lib/utils/format";
-import { EmptyState } from "@/components/shared/empty-state";
 
 type AdminCategoryResultsPageProps = {
   params: Promise<{
@@ -165,13 +165,17 @@ export default async function AdminCategoryResultsPage({
   }
 
   const groupStages = category.stages.filter(
-    (stage) => stage.stageType === "group_stage" || stage.groups.length > 0,
+    (stage) =>
+      !["quarter_final", "semi_final", "final"].includes(stage.stageType),
   );
-
-  const groups = groupStages.flatMap((stage) => stage.groups);
 
   const knockoutStages = category.stages.filter((stage) =>
     ["quarter_final", "semi_final", "final"].includes(stage.stageType),
+  );
+
+  const totalGroups = groupStages.reduce(
+    (sum, stage) => sum + stage.groups.length,
+    0,
   );
 
   const completedMatches = category.stages.reduce(
@@ -201,7 +205,7 @@ export default async function AdminCategoryResultsPage({
         activeTab="results"
         stats={
           <>
-            <CompactStatPill label="Groups" value={groups.length} />
+            <CompactStatPill label="Groups" value={totalGroups} />
             <CompactStatPill label="Matches" value={category._count.matches} />
             <CompactStatPill label="Done" value={completedMatches} />
           </>

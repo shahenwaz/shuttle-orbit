@@ -108,7 +108,8 @@ export default async function AdminCategoryGroupsPage({
   }
 
   const groupStages = category.stages.filter(
-    (stage) => stage.stageType === "group_stage" || stage.groups.length > 0,
+    (stage) =>
+      !["quarter_final", "semi_final", "final"].includes(stage.stageType),
   );
 
   const teamOptions = category.teamEntries.map((team) => ({

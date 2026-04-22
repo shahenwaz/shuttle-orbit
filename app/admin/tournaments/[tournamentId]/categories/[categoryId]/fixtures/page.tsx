@@ -7,12 +7,12 @@ import { FixturesGroupList } from "@/components/admin/fixtures/fixtures-group-li
 import { GenerateGroupFixturesForm } from "@/components/admin/fixtures/generate-group-fixtures-form";
 import { KnockoutStageList } from "@/components/admin/knockout/knockout-stage-list";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
+import { EmptyState } from "@/components/shared/empty-state";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 import { formatTeamName } from "@/lib/utils/format";
-import { EmptyState } from "@/components/shared/empty-state";
 
 type AdminCategoryFixturesPageProps = {
   params: Promise<{
@@ -189,23 +189,27 @@ export default async function AdminCategoryFixturesPage({
   }
 
   const groupStages = category.stages.filter(
-    (stage) => stage.stageType === "group_stage" || stage.groups.length > 0,
+    (stage) =>
+      !["quarter_final", "semi_final", "final"].includes(stage.stageType),
   );
-
-  const groups = groupStages
-    .flatMap((stage) => stage.groups)
-    .sort((a, b) => a.groupOrder - b.groupOrder);
 
   const knockoutStages = category.stages.filter((stage) =>
     ["quarter_final", "semi_final", "final"].includes(stage.stageType),
   );
 
-  const groupOptions = groups.map((group) => ({
-    id: group.id,
-    name: group.name,
-    teamCount: group.memberships.length,
-    matchCount: group.matches.length,
-  }));
+  const totalGroups = groupStages.reduce(
+    (sum, stage) => sum + stage.groups.length,
+    0,
+  );
+
+  const groupOptions = groupStages.flatMap((stage) =>
+    stage.groups.map((group) => ({
+      id: group.id,
+      name: `${stage.name} · ${group.name}`,
+      teamCount: group.memberships.length,
+      matchCount: group.matches.length,
+    })),
+  );
 
   const teamOptions = category.teamEntries.map((team) => ({
     id: team.id,
@@ -227,7 +231,7 @@ export default async function AdminCategoryFixturesPage({
         activeTab="fixtures"
         stats={
           <>
-            <CompactStatPill label="Groups" value={groups.length} />
+            <CompactStatPill label="Groups" value={totalGroups} />
             <CompactStatPill
               label="Teams"
               value={category._count.teamEntries}
