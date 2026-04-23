@@ -5,8 +5,7 @@ import { useMemo, useState } from "react";
 import { Filter, Search } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
-import { PlayerCard } from "@/components/tournaments/player-card";
-import { Input } from "@/components/ui/input";
+import { PlayerCard } from "@/components/players/player-card";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 type PlayersDirectoryProps = {
   players: Array<{
@@ -109,7 +110,7 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name, nickname, or category"
-            className="h-10 rounded-xl border-white/10 bg-white/4 pl-10 text-sm placeholder:text-muted-foreground/50"
+            className="h-10 rounded-md border-white/10 bg-white/4 pl-10 text-sm placeholder:text-muted-foreground/50"
           />
         </div>
 
@@ -119,11 +120,12 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
               type="button"
               variant="outline"
               size="icon"
-              className={`relative h-10 w-10 shrink-0 rounded-xl transition focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0 ${
+              className={cn(
+                "relative h-10 w-10 shrink-0 rounded-md transition focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 focus:ring-offset-0",
                 hasActiveFilters
                   ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/15"
-                  : "border-white/10 bg-white/4 text-muted-foreground hover:bg-white/6 hover:text-foreground"
-              }`}
+                  : "border-white/10 bg-white/4 text-muted-foreground hover:bg-white/6 hover:text-foreground",
+              )}
             >
               <Filter className="h-4 w-4" />
               <span className="sr-only">Open player filters</span>
@@ -132,7 +134,7 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
 
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
+            className="w-56 rounded-md border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
           >
             <DropdownMenuLabel className="px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground/80">
               Sort players
@@ -144,21 +146,21 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
             >
               <DropdownMenuRadioItem
                 value="recent"
-                className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
+                className="cursor-pointer rounded-md text-sm text-foreground focus:bg-white/8"
               >
                 Recently added
               </DropdownMenuRadioItem>
 
               <DropdownMenuRadioItem
                 value="name-asc"
-                className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
+                className="cursor-pointer rounded-md text-sm text-foreground focus:bg-white/8"
               >
                 Name A → Z
               </DropdownMenuRadioItem>
 
               <DropdownMenuRadioItem
                 value="name-desc"
-                className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
+                className="cursor-pointer rounded-md text-sm text-foreground focus:bg-white/8"
               >
                 Name Z → A
               </DropdownMenuRadioItem>
@@ -178,28 +180,28 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
             >
               <DropdownMenuRadioItem
                 value="all"
-                className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+                className="cursor-pointer rounded-md text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
               >
                 All players
               </DropdownMenuRadioItem>
 
               <DropdownMenuRadioItem
                 value="A"
-                className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+                className="cursor-pointer rounded-md text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
               >
                 Category A
               </DropdownMenuRadioItem>
 
               <DropdownMenuRadioItem
                 value="B"
-                className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+                className="cursor-pointer rounded-md text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
               >
                 Category B
               </DropdownMenuRadioItem>
 
               <DropdownMenuRadioItem
                 value="C"
-                className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+                className="cursor-pointer rounded-md text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
               >
                 Category C
               </DropdownMenuRadioItem>
@@ -208,12 +210,11 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
         </DropdownMenu>
       </div>
 
-      {hasActiveFilters ? (
-        <p className="text-xs text-muted-foreground">
-          {getSortLabel(sortKey)}
-          {categoryFilter !== "all" ? ` · Category ${categoryFilter}` : ""}
-        </p>
-      ) : null}
+      <p className="text-xs text-muted-foreground">
+        {filteredPlayers.length} player{filteredPlayers.length === 1 ? "" : "s"}
+        {hasActiveFilters ? ` · ${getSortLabel(sortKey)}` : ""}
+        {categoryFilter !== "all" ? ` · Category ${categoryFilter}` : ""}
+      </p>
 
       {filteredPlayers.length === 0 ? (
         <EmptyState message="No matching players found." />

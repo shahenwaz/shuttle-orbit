@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { GroupStandingsTable } from "@/components/tournaments/group-standings-table";
 import { MatchCard } from "@/components/tournaments/match-card";
-import { PlayerCard } from "@/components/tournaments/player-card";
+import { PlayerCard } from "@/components/players/player-card";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
 import { sortStagesForDisplay } from "@/lib/tournament/stage-display-order";
