@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { CategoryTabsView } from "@/components/tournaments/category-tabs-view";
-import { Button } from "@/components/ui/button";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
 
 type CategoryDetailPageProps = {
@@ -30,24 +30,23 @@ export default async function CategoryDetailPage({
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
       <section className="space-y-3 sm:space-y-4">
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="h-8 rounded-full px-3 text-xs sm:h-9 sm:px-4 sm:text-sm"
+        <Link
+          href={`/tournaments/${tournament.slug}`}
+          className={actionPillButtonClassName({
+            variant: "neutral",
+            className: "gap-1.5 px-3 py-1.5 text-xs sm:text-sm",
+          })}
         >
-          <Link href={`/tournaments/${tournament.slug}`}>
-            <ArrowLeft className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
-            Back to tournament
-          </Link>
-        </Button>
+          <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span>Back to tournament</span>
+        </Link>
 
-        <div className="space-y-1.5">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-primary sm:text-xs">
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary sm:text-xs">
             {tournament.name}
           </p>
 
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             {category.name}
           </h1>
 
