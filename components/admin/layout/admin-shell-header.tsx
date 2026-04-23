@@ -1,16 +1,13 @@
 import { Shield } from "lucide-react";
 
-import { AdminShellNav } from "@/components/admin/layout/admin-shell-nav";
-
 type AdminShellHeaderProps = {
-  activeItem: "overview" | "players" | "tournaments";
+  activeItem?: "overview" | "players" | "tournaments";
   title: string;
   description: string;
   actions?: React.ReactNode;
 };
 
 export function AdminShellHeader({
-  activeItem,
   title,
   description,
   actions,
@@ -19,7 +16,7 @@ export function AdminShellHeader({
     <section className="space-y-3 sm:space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2 sm:space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
+          <div className="inline-flex items-center gap-2 rounded-xl border border-primary/18 bg-primary/8 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
             <Shield className="h-3.5 w-3.5" />
             Admin workspace
           </div>
@@ -34,8 +31,6 @@ export function AdminShellHeader({
           </div>
         </div>
       </div>
-
-      <AdminShellNav activeItem={activeItem} />
 
       {actions ? (
         <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">

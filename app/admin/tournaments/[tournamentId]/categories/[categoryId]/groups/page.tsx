@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { FolderPlus, Layers3, MoveRight } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { AssignTeamToGroupForm } from "@/components/admin/groups/assign-team-to-group-form";
@@ -261,7 +262,14 @@ export default async function AdminCategoryGroupsPage({
                   </div>
                 </div>
 
-                <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
+                <section
+                  className={cn(
+                    "grid gap-4",
+                    shouldShowUnassignedTeams
+                      ? "xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]"
+                      : "grid-cols-1",
+                  )}
+                >
                   <GroupsOverview
                     tournamentId={tournament.id}
                     categoryId={category.id}
