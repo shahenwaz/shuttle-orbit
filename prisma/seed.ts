@@ -20,145 +20,45 @@ const prisma = new PrismaClient({
   log: ["warn", "error"],
 });
 
+const cGroupPlayers = [
+  { fullName: "MOKSHUD CHOWDHURY", nickname: "mokshud" },
+  { fullName: "ABDUR RAHIM BHUIYAN", nickname: "rahim" },
+  { fullName: "AHMED NAZIR", nickname: "nazir" },
+  { fullName: "SAIFUL ISLAM", nickname: "saiful" },
+  { fullName: "RAHIB AHMED", nickname: "rahib" },
+  { fullName: "TUFAYEL AHMED", nickname: "tufayel" },
+  { fullName: "MD ZAKARIA AHMAD", nickname: "zakaria" },
+  { fullName: "NAHID ISLAM", nickname: "nahid" },
+  { fullName: "MD AKHTHER HUSSAIN", nickname: "akhther" },
+  { fullName: "ABDUL AZIM TOWHID", nickname: "towhid" },
+  { fullName: "WAHIDUL ALAM MURAD", nickname: "murad" },
+  { fullName: "GOLAM MORSHED KAMRUL", nickname: "kamrul" },
+  { fullName: "RAFIQUL ISLAM", nickname: "rafiqul" },
+  { fullName: "MUNWAR HOSSAIN RONY", nickname: "rony" },
+  { fullName: "QAMRUZZAMAN", nickname: "qamrul" },
+  { fullName: "MANIK MONIRUZZAMAN", nickname: "manik" },
+  { fullName: "MD SHARIA HOSSAIN ANIK", nickname: "anik" },
+  { fullName: "MD SHAMIM MIAH", nickname: "shamim" },
+  { fullName: "JAKIR HUSAIN JABUL", nickname: "jakir-jabul" },
+  { fullName: "JAKIR HUSSAIN", nickname: "jakir-hussain" },
+  { fullName: "SHAH ALAM", nickname: "shahalam" },
+  { fullName: "SOWKAT ALI KHAN", nickname: "sowkat" },
+  { fullName: "SALIM JAIGIRDAR", nickname: "salim" },
+  { fullName: "KUHINUR RAHMAN", nickname: "kuhinur" },
+];
+
 async function main() {
-  await prisma.matchSet.deleteMany();
-  await prisma.match.deleteMany();
-  await prisma.groupMembership.deleteMany();
-  await prisma.group.deleteMany();
-  await prisma.stage.deleteMany();
-  await prisma.teamEntry.deleteMany();
-  await prisma.playerTournamentStat.deleteMany();
-  await prisma.rankingLedger.deleteMany();
-  await prisma.tournamentCategory.deleteMany();
-  await prisma.tournament.deleteMany();
-  await prisma.player.deleteMany();
-
-  const players = await prisma.$transaction([
-    prisma.player.create({
-      data: { fullName: "Shahenwaz Muzahid", nickname: "shahenwaz" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Rafi Islam", nickname: "rafi" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Siam Hossain", nickname: "siam" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Nabil Ahmed", nickname: "nabil" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Tahmid Hasan", nickname: "tahmid" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Rakib Chowdhury", nickname: "rakib" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Imran Kabir", nickname: "imran" },
-    }),
-    prisma.player.create({
-      data: { fullName: "Fahim Rahman", nickname: "fahim" },
-    }),
-  ]);
-  const tournament = await prisma.tournament.create({
-    data: {
-      name: "Dublin Community Badminton Cup",
-      slug: "dublin-community-badminton-cup-apr-2026",
-      location: "Dublin",
-      eventDate: new Date("2026-04-21T10:00:00.000Z"),
-      status: "upcoming",
-      description: "Community badminton tournament for Group B and Group C.",
-    },
+  await prisma.player.createMany({
+    data: cGroupPlayers,
+    skipDuplicates: true,
   });
 
-  const categoryB = await prisma.tournamentCategory.create({
-    data: {
-      tournamentId: tournament.id,
-      name: "Group B",
-      code: "B",
-      rulesSummary: "Round robin groups, one set to 21, top teams qualify.",
-      status: "published",
-    },
-  });
-
-  const groupStage = await prisma.stage.create({
-    data: {
-      categoryId: categoryB.id,
-      name: "Group Stage",
-      stageType: "round_robin",
-      stageOrder: 1,
-      configJson: {
-        pointsToWin: 21,
-        qualifiersPerGroup: 2,
-        tieBreakers: ["wins", "pointDifference", "headToHead"],
-      },
-    },
-  });
-
-  const groupB1 = await prisma.group.create({
-    data: {
-      stageId: groupStage.id,
-      name: "B1",
-      groupOrder: 1,
-    },
-  });
-
-  const team1 = await prisma.teamEntry.create({
-    data: {
-      tournamentId: tournament.id,
-      categoryId: categoryB.id,
-      player1Id: players[0].id,
-      player2Id: players[1].id,
-      teamName: "Thunder Smash",
-    },
-  });
-
-  const team2 = await prisma.teamEntry.create({
-    data: {
-      tournamentId: tournament.id,
-      categoryId: categoryB.id,
-      player1Id: players[2].id,
-      player2Id: players[3].id,
-      teamName: "Net Raiders",
-    },
-  });
-
-  await prisma.groupMembership.createMany({
-    data: [
-      { groupId: groupB1.id, teamEntryId: team1.id },
-      { groupId: groupB1.id, teamEntryId: team2.id },
-    ],
-  });
-
-  const match = await prisma.match.create({
-    data: {
-      tournamentId: tournament.id,
-      categoryId: categoryB.id,
-      stageId: groupStage.id,
-      groupId: groupB1.id,
-      roundLabel: "Match 1",
-      teamAId: team1.id,
-      teamBId: team2.id,
-      winnerId: team1.id,
-      status: "completed",
-      scoreSummary: "21-16",
-    },
-  });
-
-  await prisma.matchSet.create({
-    data: {
-      matchId: match.id,
-      setNumber: 1,
-      teamAScore: 21,
-      teamBScore: 16,
-    },
-  });
-
-  console.log("Seed data inserted successfully.");
+  console.log("C Group players seeded successfully.");
 }
 
 main()
   .catch((error) => {
-    console.error(error);
+    console.error("Seed failed:", error);
     process.exit(1);
   })
   .finally(async () => {
