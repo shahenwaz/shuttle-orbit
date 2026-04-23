@@ -62,7 +62,7 @@ export default async function HomePage() {
                 location: featuredTournament.location,
                 categories: featuredTournament.categories.map((category) => ({
                   id: category.id,
-                  name: category.name,
+                  code: category.code,
                 })),
               }
             : null
