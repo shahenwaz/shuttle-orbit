@@ -119,8 +119,13 @@
     background-image:
       radial-gradient(
         circle at top,
-        color-mix(in oklab, var(--primary) 10%, transparent),
-        transparent 26%
+        color-mix(in oklab, var(--primary) 11%, transparent),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 85% 10%,
+        color-mix(in oklab, var(--primary) 5%, transparent),
+        transparent 20%
       ),
       linear-gradient(
         to bottom,
