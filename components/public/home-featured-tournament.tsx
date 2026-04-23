@@ -48,7 +48,7 @@ export function HomeFeaturedTournament({
 
               <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
                 {tournament.description ||
-                  "Tournament setup is ready. Fixtures, categories, and public results can be surfaced from here."}
+                  "Explore the latest tournament, view categories, and follow event progress in one place."}
               </p>
             </div>
 
@@ -91,7 +91,7 @@ export function HomeFeaturedTournament({
         </div>
       ) : (
         <div className="rounded-[1.75rem] border border-white/10 bg-white/4 p-5 text-sm text-muted-foreground sm:p-6">
-          No tournament data found yet.
+          No featured tournament is available right now.
         </div>
       )}
     </section>
