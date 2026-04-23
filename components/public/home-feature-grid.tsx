@@ -25,7 +25,7 @@ export function HomeFeatureGrid({ items }: HomeFeatureGridProps) {
           return (
             <article
               key={item.title}
-              className="rounded-3xl border border-white/10 bg-white/4 p-5 shadow-[0_14px_40px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:bg-white/5"
+              className="rounded-3xl border border-white/10 bg-white/4 p-4 shadow-[0_14px_40px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:bg-white/5 sm:p-5"
             >
               <div className="space-y-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-background/60">

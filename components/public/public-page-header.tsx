@@ -22,7 +22,7 @@ export function PublicPageHeader({
       ) : null}
 
       <div className="space-y-3">
-        <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+        <h1 className="max-w-3xl text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
           {title}
         </h1>
 
