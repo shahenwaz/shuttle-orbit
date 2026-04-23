@@ -227,6 +227,11 @@ export default async function AdminCategoryGroupsPage({
               (team) => !assignedTeamIds.has(team.id),
             );
 
+            const shouldShowUnassignedTeams =
+              stage.stageOrder ===
+                Math.min(...groupStages.map((item) => item.stageOrder)) &&
+              unassignedTeams.length > 0;
+
             return (
               <section key={stage.id} className="space-y-4">
                 <div className="surface-card overflow-hidden">
@@ -263,50 +268,52 @@ export default async function AdminCategoryGroupsPage({
                     groups={stage.groups}
                   />
 
-                  <div className="surface-card overflow-hidden xl:self-start">
-                    <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
-                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                        <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                          Unassigned teams
-                        </h4>
+                  {shouldShowUnassignedTeams ? (
+                    <div className="surface-card overflow-hidden xl:self-start">
+                      <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                          <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                            Unassigned teams
+                          </h4>
 
-                        <span className="text-xs text-muted-foreground sm:text-sm">
-                          ⁜
-                        </span>
+                          <span className="text-xs text-muted-foreground sm:text-sm">
+                            ⁜
+                          </span>
 
-                        <span className="text-xs text-muted-foreground sm:text-sm">
-                          {unassignedTeams.length} teams
-                        </span>
+                          <span className="text-xs text-muted-foreground sm:text-sm">
+                            {unassignedTeams.length} teams
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
+                        {unassignedTeams.length === 0 ? (
+                          <EmptyState message="All category teams are assigned in this stage." />
+                        ) : (
+                          <div className="grid gap-2">
+                            {unassignedTeams.map((team) => (
+                              <TeamCard
+                                key={team.id}
+                                team={{
+                                  id: team.id,
+                                  teamName: team.teamName,
+                                  player1: {
+                                    fullName: team.player1.fullName,
+                                    nickname: team.player1.nickname,
+                                  },
+                                  player2: {
+                                    fullName: team.player2.fullName,
+                                    nickname: team.player2.nickname,
+                                  },
+                                }}
+                                badgeLabel="team"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-
-                    <div className="p-4 sm:p-5">
-                      {unassignedTeams.length === 0 ? (
-                        <EmptyState message="All category teams are assigned in this stage." />
-                      ) : (
-                        <div className="grid gap-2">
-                          {unassignedTeams.map((team) => (
-                            <TeamCard
-                              key={team.id}
-                              team={{
-                                id: team.id,
-                                teamName: team.teamName,
-                                player1: {
-                                  fullName: team.player1.fullName,
-                                  nickname: team.player1.nickname,
-                                },
-                                player2: {
-                                  fullName: team.player2.fullName,
-                                  nickname: team.player2.nickname,
-                                },
-                              }}
-                              badgeLabel="team"
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  ) : null}
                 </section>
               </section>
             );

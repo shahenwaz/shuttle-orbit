@@ -44,6 +44,7 @@ export function sortStagesForDisplay<T extends StageForDisplayOrder>(
       return priorityDiff;
     }
 
-    return a.stageOrder - b.stageOrder;
+    // Later non-knockout stages should appear above earlier ones.
+    return b.stageOrder - a.stageOrder;
   });
 }
