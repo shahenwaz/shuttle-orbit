@@ -18,6 +18,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
+import { RecalculateRankingsButton } from "@/components/admin/rankings/recalculate-rankings-button";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
@@ -152,6 +153,8 @@ export default async function AdminTournamentDetailPage({
             >
               <CreateCategoryForm tournamentId={tournament.id} />
             </CreateDialog>
+
+            <RecalculateRankingsButton tournamentId={tournament.id} />
           </div>
         </div>
       </section>

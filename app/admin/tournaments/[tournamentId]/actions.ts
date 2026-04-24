@@ -12,6 +12,7 @@ import {
   updateTournamentSchema,
   type UpdateTournamentInput,
 } from "@/lib/validations/tournament";
+import { recalculateTournamentRankings } from "@/lib/rankings/recalculate-tournament-rankings";
 
 export type CreateTournamentCategoryActionState = {
   success: boolean;
@@ -281,4 +282,42 @@ export async function updateTournamentCategoryAction(
     message: "Category updated successfully.",
     fieldErrors: {},
   };
+}
+
+export type RecalculateTournamentRankingsActionState = {
+  success: boolean;
+  message: string;
+};
+
+export async function recalculateTournamentRankingsAction(
+  formData: FormData,
+): Promise<RecalculateTournamentRankingsActionState> {
+  const tournamentId = String(formData.get("tournamentId") ?? "").trim();
+
+  if (!tournamentId) {
+    return {
+      success: false,
+      message: "Tournament id is missing.",
+    };
+  }
+
+  try {
+    const result = await recalculateTournamentRankings(tournamentId);
+
+    revalidatePath("/leaderboard");
+    revalidatePath("/players");
+    revalidatePath(`/admin/tournaments/${tournamentId}`);
+
+    return {
+      success: true,
+      message: `Rankings recalculated successfully. ${result.playerStatsCreated} player stats and ${result.rankingLedgerCreated} ledger rows updated.`,
+    };
+  } catch (error) {
+    console.error("Failed to recalculate tournament rankings:", error);
+
+    return {
+      success: false,
+      message: "Failed to recalculate rankings for this tournament.",
+    };
+  }
 }
