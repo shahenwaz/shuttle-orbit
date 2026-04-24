@@ -1,16 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Edit3, MoreVertical, Trash2 } from "lucide-react";
 
 import {
   removeTeamEntryAction,
+  updateTeamEntryNameAction,
   type RemoveTeamEntryActionState,
+  type UpdateTeamEntryNameActionState,
 } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/teams/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +42,11 @@ type TeamEntriesListProps = {
 };
 
 const initialDeleteState: RemoveTeamEntryActionState = {
+  success: false,
+  message: "",
+};
+
+const initialEditState: UpdateTeamEntryNameActionState = {
   success: false,
   message: "",
 };
@@ -78,9 +86,15 @@ function AdminTeamEntryCard({
   team: TeamEntryRow;
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
   const [deleteState, setDeleteState] =
     useState<RemoveTeamEntryActionState>(initialDeleteState);
+  const [editState, setEditState] =
+    useState<UpdateTeamEntryNameActionState>(initialEditState);
+
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [isEditing, startEditTransition] = useTransition();
 
   return (
     <div className="relative">
@@ -91,7 +105,7 @@ function AdminTeamEntryCard({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 cursor-pointer rounded-full text-muted-foreground hover:bg-white/6 hover:text-foreground focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0"
+              className="h-8 w-8 rounded-full text-muted-foreground hover:bg-white/6 hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               <MoreVertical className="h-4 w-4" />
               <span className="sr-only">Open team actions</span>
@@ -99,6 +113,17 @@ function AdminTeamEntryCard({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem
+              onSelect={() => {
+                setEditState(initialEditState);
+                setIsEditOpen(true);
+              }}
+              className="cursor-pointer"
+            >
+              <Edit3 className="mr-2 h-4 w-4" />
+              Edit team
+            </DropdownMenuItem>
+
             <DropdownMenuItem
               onSelect={() => {
                 setDeleteState(initialDeleteState);
@@ -128,6 +153,79 @@ function AdminTeamEntryCard({
         }}
         badgeLabel="team"
       />
+
+      <CreateDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Edit team name"
+        description="Update the display name for this team."
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.currentTarget);
+
+            startEditTransition(async () => {
+              const result = await updateTeamEntryNameAction(formData);
+              setEditState(result);
+
+              if (result.success) {
+                setIsEditOpen(false);
+              }
+            });
+          }}
+        >
+          <input type="hidden" name="tournamentId" value={tournamentId} />
+          <input type="hidden" name="categoryId" value={categoryId} />
+          <input type="hidden" name="teamEntryId" value={team.id} />
+
+          <div className="space-y-2">
+            <label
+              htmlFor={`team-name-${team.id}`}
+              className="text-sm font-medium text-foreground"
+            >
+              Team name
+            </label>
+            <Input
+              id={`team-name-${team.id}`}
+              name="teamName"
+              defaultValue={team.teamName ?? ""}
+              placeholder="Enter team name"
+              maxLength={60}
+            />
+          </div>
+
+          {editState.message ? (
+            <div
+              className={`rounded-xl border px-3 py-2 text-sm ${
+                editState.success
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  : "border-red-500/20 bg-red-500/10 text-red-300"
+              }`}
+            >
+              {editState.message}
+            </div>
+          ) : null}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button type="submit" disabled={isEditing}>
+              {isEditing ? "Saving..." : "Save changes"}
+            </Button>
+          </div>
+        </form>
+      </CreateDialog>
 
       <CreateDialog
         open={isDeleteOpen}

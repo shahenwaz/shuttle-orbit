@@ -243,3 +243,63 @@ export async function removeTeamEntryAction(
     message: "Team removed successfully.",
   };
 }
+
+export type UpdateTeamEntryNameActionState = {
+  success: boolean;
+  message: string;
+};
+
+export async function updateTeamEntryNameAction(
+  formData: FormData,
+): Promise<UpdateTeamEntryNameActionState> {
+  const tournamentId = String(formData.get("tournamentId") ?? "");
+  const categoryId = String(formData.get("categoryId") ?? "");
+  const teamEntryId = String(formData.get("teamEntryId") ?? "");
+  const teamName = String(formData.get("teamName") ?? "").trim();
+
+  if (!tournamentId || !categoryId || !teamEntryId) {
+    return {
+      success: false,
+      message: "Missing team details.",
+    };
+  }
+
+  if (!teamName) {
+    return {
+      success: false,
+      message: "Team name cannot be empty.",
+    };
+  }
+
+  if (teamName.length > 60) {
+    return {
+      success: false,
+      message: "Team name is too long.",
+    };
+  }
+
+  try {
+    await prisma.teamEntry.update({
+      where: {
+        id: teamEntryId,
+      },
+      data: {
+        teamName,
+      },
+    });
+
+    revalidatePath(
+      `/admin/tournaments/${tournamentId}/categories/${categoryId}/teams`,
+    );
+
+    return {
+      success: true,
+      message: "Team name updated successfully.",
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to update team name.",
+    };
+  }
+}
