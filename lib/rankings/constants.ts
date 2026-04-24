@@ -11,9 +11,9 @@ export const RANKING_POINTS_BY_PLACEMENT = {
 
 export const CATEGORY_MULTIPLIERS = {
   A: 1,
-  B: 0.9,
-  C: 0.8,
-  MIXED: 0.85,
+  B: 0.95,
+  C: 0.68,
+  MIXED: 0.82,
   OPEN: 1,
 } as const;
 
