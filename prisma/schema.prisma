@@ -6,29 +6,44 @@ datasource db {
   provider = "postgresql"
 }
 
-model Player {
-  id          String      @id @default(cuid())
-  fullName    String
-  nickname    String      @unique
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+enum RankingScope {
+  UNIVERSAL
+  CATEGORY
+}
 
-  teamEntriesAsPlayer1 TeamEntry[] @relation("TeamEntryPlayer1")
-  teamEntriesAsPlayer2 TeamEntry[] @relation("TeamEntryPlayer2")
+enum PlacementTier {
+  CHAMPION
+  RUNNER_UP
+  THIRD_PLACE
+  FOURTH_PLACE
+  ADVANCED_STAGE
+  GROUP_STAGE
+  PARTICIPATION
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  fullName  String
+  nickname  String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teamEntriesAsPlayer1 TeamEntry[]            @relation("TeamEntryPlayer1")
+  teamEntriesAsPlayer2 TeamEntry[]            @relation("TeamEntryPlayer2")
   rankingLedgers       RankingLedger[]
   tournamentStats      PlayerTournamentStat[]
 }
 
 model Tournament {
-  id          String              @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  slug        String              @unique
+  slug        String   @unique
   location    String?
   eventDate   DateTime
   description String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   categories    TournamentCategory[]
   teamEntries   TeamEntry[]
@@ -38,72 +53,73 @@ model Tournament {
 }
 
 model TournamentCategory {
-  id            String    @id @default(cuid())
-  tournamentId  String
-  name          String
-  code          String
-  rulesSummary  String?
+  id                 String  @id @default(cuid())
+  tournamentId       String
+  name               String
+  code               String
+  rulesSummary       String?
   knockoutStartStage String?
   knockoutConfig     Json?
 
-  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  stages        Stage[]
-  teamEntries   TeamEntry[]
-  matches       Match[]
-  playerStats   PlayerTournamentStat[]
+  tournament  Tournament             @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  stages      Stage[]
+  teamEntries TeamEntry[]
+  matches     Match[]
+  playerStats PlayerTournamentStat[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  rankingLedgers RankingLedger[]
 
   @@unique([tournamentId, code])
 }
 
 model Stage {
-  id          String    @id @default(cuid())
-  categoryId  String
-  name        String
-  stageType   String
-  stageOrder  Int
-  configJson  Json?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  categoryId String
+  name       String
+  stageType  String
+  stageOrder Int
+  configJson Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  category    TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  groups      Group[]
-  matches     Match[]
+  category TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  groups   Group[]
+  matches  Match[]
 
   @@unique([categoryId, stageOrder])
 }
 
 model TeamEntry {
-  id          String   @id @default(cuid())
+  id           String   @id @default(cuid())
   tournamentId String
-  categoryId  String
-  player1Id   String
-  player2Id   String
-  teamName    String?
-  seedNumber  Int?
-  status      String   @default("registered")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  categoryId   String
+  player1Id    String
+  player2Id    String
+  teamName     String?
+  seedNumber   Int?
+  status       String   @default("registered")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  tournament  Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  category    TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  player1     Player             @relation("TeamEntryPlayer1", fields: [player1Id], references: [id], onDelete: Restrict)
-  player2     Player             @relation("TeamEntryPlayer2", fields: [player2Id], references: [id], onDelete: Restrict)
+  tournament       Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  category         TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  player1          Player             @relation("TeamEntryPlayer1", fields: [player1Id], references: [id], onDelete: Restrict)
+  player2          Player             @relation("TeamEntryPlayer2", fields: [player2Id], references: [id], onDelete: Restrict)
   groupMemberships GroupMembership[]
-  homeMatches Match[] @relation("MatchTeamA")
-  awayMatches Match[] @relation("MatchTeamB")
-  wonMatches  Match[] @relation("MatchWinner")
+  homeMatches      Match[]            @relation("MatchTeamA")
+  awayMatches      Match[]            @relation("MatchTeamB")
+  wonMatches       Match[]            @relation("MatchWinner")
 }
 
 model Group {
-  id          String   @id @default(cuid())
-  stageId     String
-  name        String
-  groupOrder  Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  stageId    String
+  name       String
+  groupOrder Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   stage       Stage             @relation(fields: [stageId], references: [id], onDelete: Cascade)
   memberships GroupMembership[]
@@ -115,18 +131,18 @@ model Group {
 
 model GroupMembership {
   id          String   @id @default(cuid())
-  groupId      String
-  teamEntryId  String
-  createdAt    DateTime @default(now())
+  groupId     String
+  teamEntryId String
+  createdAt   DateTime @default(now())
 
-  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  teamEntry    TeamEntry @relation(fields: [teamEntryId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teamEntry TeamEntry @relation(fields: [teamEntryId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, teamEntryId])
 }
 
 model Match {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   tournamentId String
   categoryId   String
   stageId      String
@@ -135,64 +151,81 @@ model Match {
   teamAId      String?
   teamBId      String?
   winnerId     String?
-  status       String   @default("scheduled")
+  status       String    @default("scheduled")
   scheduledAt  DateTime?
   scoreSummary String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  tournament   Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  category     TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  stage        Stage              @relation(fields: [stageId], references: [id], onDelete: Cascade)
-  group        Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  teamA        TeamEntry?         @relation("MatchTeamA", fields: [teamAId], references: [id], onDelete: Restrict)
-  teamB        TeamEntry?         @relation("MatchTeamB", fields: [teamBId], references: [id], onDelete: Restrict)
-  winner       TeamEntry?         @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
-  sets         MatchSet[]
+  tournament Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  category   TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  stage      Stage              @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  group      Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  teamA      TeamEntry?         @relation("MatchTeamA", fields: [teamAId], references: [id], onDelete: Restrict)
+  teamB      TeamEntry?         @relation("MatchTeamB", fields: [teamBId], references: [id], onDelete: Restrict)
+  winner     TeamEntry?         @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  sets       MatchSet[]
 }
 
 model MatchSet {
-  id          String   @id @default(cuid())
-  matchId     String
-  setNumber   Int
-  teamAScore  Int
-  teamBScore  Int
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  matchId    String
+  setNumber  Int
+  teamAScore Int
+  teamBScore Int
+  createdAt  DateTime @default(now())
 
-  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   @@unique([matchId, setNumber])
 }
 
 model RankingLedger {
-  id            String   @id @default(cuid())
-  playerId      String
-  tournamentId  String
-  categoryCode  String
-  pointsAwarded Int
-  reason        String?
-  seasonLabel   String?
-  createdAt     DateTime @default(now())
+  id                 String        @id @default(cuid())
+  playerId           String
+  tournamentId       String
+  categoryId         String
+  scope              RankingScope
+  categoryCode       String
+  placementTier      PlacementTier
+  basePoints         Int
+  multiplierApplied  Decimal       @db.Decimal(5, 2)
+  totalPointsAwarded Int
+  notes              String?
+  createdAt          DateTime      @default(now())
 
-  player        Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player     Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  category   TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, scope])
+  @@index([categoryId, scope])
+  @@index([tournamentId])
 }
 
 model PlayerTournamentStat {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   playerId      String
   tournamentId  String
   categoryId    String
-  matchesPlayed Int      @default(0)
-  matchesWon    Int      @default(0)
+  teamEntryId   String?
+  placementTier PlacementTier
   finishLabel   String?
-  rankingPoints Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  matchesPlayed Int           @default(0)
+  matchesWon    Int           @default(0)
+  setsWon       Int           @default(0)
+  setsLost      Int           @default(0)
+  pointsFor     Int           @default(0)
+  pointsAgainst Int           @default(0)
+  rankingPoints Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  player        Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  tournament    Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  category      TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  player     Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  category   TournamentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([playerId, tournamentId, categoryId])
+  @@index([categoryId, placementTier])
+  @@index([tournamentId])
 }
