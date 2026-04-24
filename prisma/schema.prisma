@@ -14,6 +14,7 @@ enum RankingScope {
 enum PlacementTier {
   CHAMPION
   RUNNER_UP
+  SEMI_FINALIST
   THIRD_PLACE
   FOURTH_PLACE
   ADVANCED_STAGE

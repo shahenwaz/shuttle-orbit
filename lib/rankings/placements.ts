@@ -1,59 +1,13 @@
 import type { PlacementTier } from "@prisma/client";
 
-type PlacementContext = {
-  hasThirdPlaceMatch: boolean;
-  isThirdPlaceWinner?: boolean;
-  isThirdPlaceLoser?: boolean;
-  reachedFinal?: boolean;
-  wonFinal?: boolean;
-  lostFinal?: boolean;
-  reachedAdvancedStage?: boolean;
-  playedAnyMatch?: boolean;
-};
-
-export function getPlacementTierFromContext({
-  hasThirdPlaceMatch,
-  isThirdPlaceWinner = false,
-  isThirdPlaceLoser = false,
-  reachedFinal = false,
-  wonFinal = false,
-  lostFinal = false,
-  reachedAdvancedStage = false,
-  playedAnyMatch = false,
-}: PlacementContext): PlacementTier {
-  if (wonFinal) {
-    return "CHAMPION";
-  }
-
-  if (lostFinal || reachedFinal) {
-    return "RUNNER_UP";
-  }
-
-  if (hasThirdPlaceMatch && isThirdPlaceWinner) {
-    return "THIRD_PLACE";
-  }
-
-  if (hasThirdPlaceMatch && isThirdPlaceLoser) {
-    return "FOURTH_PLACE";
-  }
-
-  if (reachedAdvancedStage) {
-    return "ADVANCED_STAGE";
-  }
-
-  if (playedAnyMatch) {
-    return "GROUP_STAGE";
-  }
-
-  return "PARTICIPATION";
-}
-
 export function getFinishLabel(placementTier: PlacementTier): string {
   switch (placementTier) {
     case "CHAMPION":
       return "Champion";
     case "RUNNER_UP":
       return "Runner-up";
+    case "SEMI_FINALIST":
+      return "Semi-finalist";
     case "THIRD_PLACE":
       return "3rd Place";
     case "FOURTH_PLACE":
@@ -66,4 +20,38 @@ export function getFinishLabel(placementTier: PlacementTier): string {
     default:
       return "Participation";
   }
+}
+
+export function normalizeRoundLabel(roundLabel: string | null | undefined) {
+  return (roundLabel ?? "").trim().toLowerCase();
+}
+
+export function isThirdPlaceRound(roundLabel: string | null | undefined) {
+  const normalized = normalizeRoundLabel(roundLabel);
+
+  return (
+    normalized.includes("3rd") ||
+    normalized.includes("third") ||
+    normalized.includes("bronze")
+  );
+}
+
+export function isSemiFinalRound(roundLabel: string | null | undefined) {
+  const normalized = normalizeRoundLabel(roundLabel);
+
+  return normalized.includes("semi");
+}
+
+export function isFinalRound(roundLabel: string | null | undefined) {
+  const normalized = normalizeRoundLabel(roundLabel);
+
+  if (!normalized.includes("final")) {
+    return false;
+  }
+
+  if (isSemiFinalRound(normalized) || isThirdPlaceRound(normalized)) {
+    return false;
+  }
+
+  return true;
 }
