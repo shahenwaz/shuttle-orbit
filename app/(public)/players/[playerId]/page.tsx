@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, Shapes, Trophy } from "lucide-react";
+import { ArrowLeft, Shapes, Trophy } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PlayerAppearanceCard } from "@/components/players/player-appearance-card";
+import { ProfileSummaryCard } from "@/components/players/profile-summary-card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { TeamCard } from "@/components/tournaments/team-card";
 import { Button } from "@/components/ui/button";
 import { getPlayerProfile } from "@/lib/player/queries";
-import { formatDate } from "@/lib/utils/format";
 
 type PlayerProfilePageProps = {
   params: Promise<{
@@ -25,11 +25,16 @@ export default async function PlayerProfilePage({
     notFound();
   }
 
-  const { player, appearances } = profile;
+  const { player, appearances, rankingSummary } = profile;
 
   const uniqueTournaments = new Set(
     appearances.map((entry) => entry.category.tournament.id),
   ).size;
+
+  const bestCategoryEntry = rankingSummary.categoryRankings[0] ?? null;
+  const bestCategoryDisplay = bestCategoryEntry
+    ? `${bestCategoryEntry.categoryCode} · #${bestCategoryEntry.rank ?? "—"}`
+    : "—";
 
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
@@ -47,16 +52,18 @@ export default async function PlayerProfilePage({
         </Button>
 
         <div className="space-y-1.5">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-primary sm:text-xs">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/80">
             Player profile
           </p>
 
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-            {player.fullName}
-            <span className="pl-2 text-sm font-medium text-muted-foreground sm:text-base">
+          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+              {player.fullName}
+            </h1>
+            <span className="text-xs font-medium text-muted-foreground sm:text-sm">
               @{player.nickname}
             </span>
-          </h1>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground sm:text-xs">
@@ -76,11 +83,37 @@ export default async function PlayerProfilePage({
 
       <section className="space-y-3 sm:space-y-4">
         <div className="space-y-1">
+          <h2 className="text-base font-semibold tracking-tight sm:text-lg">
+            Ranking summary
+          </h2>
+          <p className="max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
+            Current universal standing and category-based ranking snapshot.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          <ProfileSummaryCard
+            label="Rank"
+            value={rankingSummary.universalRank ?? "—"}
+          />
+
+          <ProfileSummaryCard
+            label="Points"
+            value={rankingSummary.universalPoints}
+          />
+
+          <ProfileSummaryCard label="Best" value={bestCategoryDisplay} />
+        </div>
+      </section>
+
+      <section className="space-y-3 sm:space-y-4">
+        <div className="space-y-1">
           <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
             Tournament appearances
           </h2>
           <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
-            Teams and categories this player has appeared in so far.
+            Teams, categories, and ranking outcomes recorded for this player so
+            far.
           </p>
         </div>
 
@@ -89,51 +122,7 @@ export default async function PlayerProfilePage({
         ) : (
           <div className="space-y-3 sm:space-y-4">
             {appearances.map((entry) => (
-              <div
-                key={entry.id}
-                className="space-y-2 rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4"
-              >
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground sm:text-xs">
-                  <Link
-                    href={`/tournaments/${entry.category.tournament.slug}`}
-                    className="font-medium text-foreground transition hover:text-primary"
-                  >
-                    {entry.category.tournament.name}
-                  </Link>
-
-                  <span>•</span>
-
-                  <Link
-                    href={`/tournaments/${entry.category.tournament.slug}/categories/${entry.category.code}`}
-                    className="font-medium text-primary transition hover:opacity-80"
-                  >
-                    {entry.category.code}
-                  </Link>
-
-                  <span>•</span>
-
-                  <span className="inline-flex items-center gap-1">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    {formatDate(entry.category.tournament.eventDate)}
-                  </span>
-                </div>
-
-                <TeamCard
-                  team={{
-                    id: entry.id,
-                    teamName: entry.teamName,
-                    player1: {
-                      fullName: entry.player1.fullName,
-                      nickname: entry.player1.nickname,
-                    },
-                    player2: {
-                      fullName: entry.player2.fullName,
-                      nickname: entry.player2.nickname,
-                    },
-                  }}
-                  badgeLabel={entry.category.code}
-                />
-              </div>
+              <PlayerAppearanceCard key={entry.id} entry={entry} />
             ))}
           </div>
         )}
