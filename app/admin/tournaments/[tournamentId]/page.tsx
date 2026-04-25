@@ -18,7 +18,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
-import { RecalculateRankingsButton } from "@/components/admin/rankings/recalculate-rankings-button";
+import { RecalculateRankingsButton } from "@/components/rankings/recalculate-rankings-button";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
