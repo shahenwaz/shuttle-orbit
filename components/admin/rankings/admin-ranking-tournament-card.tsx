@@ -5,6 +5,7 @@ import { RecalculateRankingsButton } from "@/components/admin/rankings/recalcula
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { MetaInfoPill } from "@/components/shared/meta-info-pill";
 import { formatDate } from "@/lib/utils/format";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type AdminRankingTournamentCardProps = {
   tournament: {
@@ -24,7 +25,7 @@ export function AdminRankingTournamentCard({
   tournament,
 }: AdminRankingTournamentCardProps) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/4 p-4 sm:p-5">
+    <div className={surfaceCardClassName({ className: "p-4 sm:p-5" })}>
       <div className="flex flex-col gap-4">
         <div className="space-y-2.5">
           <div className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-400 sm:text-sm">

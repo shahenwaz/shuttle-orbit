@@ -1,4 +1,5 @@
 import { PlayerIdentityRow } from "@/components/players/player-identity-row";
+import { surfaceCardClassName } from "../shared/surface-card";
 
 type PlayerCardProps = {
   player: {
@@ -11,7 +12,13 @@ type PlayerCardProps = {
 
 export function PlayerCard({ player }: PlayerCardProps) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/4 px-3 py-2 backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/5 sm:px-4 sm:py-3">
+    <div
+      className={surfaceCardClassName({
+        interactive: true,
+        blur: true,
+        className: "px-3 py-2 sm:px-4 sm:py-3",
+      })}
+    >
       <PlayerIdentityRow
         fullName={player.fullName}
         nickname={player.nickname}

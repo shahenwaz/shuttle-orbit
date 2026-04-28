@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PlayerIdentityRow } from "@/components/players/player-identity-row";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type AdminPlayerCardProps = {
   player: {
@@ -40,7 +41,13 @@ export function AdminPlayerCard({ player }: AdminPlayerCardProps) {
   const [isDeleting, startDeleteTransition] = useTransition();
 
   return (
-    <div className="rounded-md border border-white/10 bg-white/4 px-3 py-0.5 backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/5 sm:px-3.5 sm:py-2.5">
+    <div
+      className={surfaceCardClassName({
+        interactive: true,
+        blur: true,
+        className: "px-3 py-0.5 sm:px-3.5 sm:py-2.5",
+      })}
+    >
       <div className="flex items-center justify-between gap-2">
         <PlayerIdentityRow
           fullName={player.fullName}

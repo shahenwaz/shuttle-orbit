@@ -5,6 +5,7 @@ import { CategoryChipList } from "@/components/public/category-chip-list";
 import { TournamentMetaList } from "@/components/public/tournament-meta-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils/format";
+import { surfaceCardClassName } from "../shared/surface-card";
 
 type TournamentListCardProps = {
   tournament: {
@@ -28,7 +29,13 @@ type TournamentListCardProps = {
 export function TournamentListCard({ tournament }: TournamentListCardProps) {
   return (
     <Link href={`/tournaments/${tournament.slug}`} className="block">
-      <Card className="group rounded-md border-white/10 bg-white/4 shadow-[0_12px_34px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-white/5">
+      <Card
+        className={surfaceCardClassName({
+          variant: "elevated",
+          interactive: true,
+          className: "group",
+        })}
+      >
         <CardContent className="space-y-4 px-4 py-2.5 sm:px-4.5 sm:py-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 space-y-1.5">

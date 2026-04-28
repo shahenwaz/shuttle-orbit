@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { cn } from "@/lib/utils";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type AdminOverviewCardProps = {
   title: string;
@@ -25,10 +26,9 @@ export function AdminOverviewCard({
 }: AdminOverviewCardProps) {
   return (
     <div
-      className={cn(
-        "rounded-md border border-white/10 bg-white/4 p-4 sm:p-5",
-        className,
-      )}
+      className={surfaceCardClassName({
+        className: cn("p-4 sm:p-5", className),
+      })}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="space-y-3">
