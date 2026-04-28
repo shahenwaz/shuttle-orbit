@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PlayerIdentityRow } from "@/components/players/player-identity-row";
 
 type AdminPlayerCardProps = {
   player: {
@@ -41,22 +42,15 @@ export function AdminPlayerCard({ player }: AdminPlayerCardProps) {
   return (
     <div className="rounded-md border border-white/10 bg-white/4 px-3 py-0.5 backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/5 sm:px-3.5 sm:py-2.5">
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="truncate pr-1 text-[13px] font-bold uppercase tracking-[0.08em] text-purple-400 sm:text-sm">
-            {player.fullName}
-            <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground">
-              - @{player.nickname}
-            </span>
-          </p>
-        </div>
+        <PlayerIdentityRow
+          fullName={player.fullName}
+          nickname={player.nickname}
+          categoryCodes={player.categoryCodes}
+          className="min-w-0 flex-1"
+          categoriesClassName="max-w-21 truncate text-[12px] font-medium uppercase tracking-[0.16em] text-primary sm:max-w-25 sm:text-[11px]"
+        />
 
         <div className="flex shrink-0 items-center gap-1.5">
-          {player.categoryCodes && player.categoryCodes.length > 0 ? (
-            <span className="max-w-21 truncate text-[12px] font-medium uppercase tracking-[0.16em] text-primary sm:max-w-25 sm:text-[11px]">
-              {player.categoryCodes.join(" · ")}
-            </span>
-          ) : null}
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

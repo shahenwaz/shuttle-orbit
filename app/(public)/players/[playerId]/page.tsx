@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { getPlayerProfile } from "@/lib/player/queries";
 import { MetaInfoPill } from "@/components/shared/meta-info-pill";
+import { SectionIntro } from "@/components/shared/section-intro";
 
 type PlayerProfilePageProps = {
   params: Promise<{
@@ -81,14 +82,11 @@ export default async function PlayerProfilePage({
       </section>
 
       <section className="space-y-3 sm:space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-base font-semibold tracking-tight sm:text-lg">
-            Ranking summary
-          </h2>
-          <p className="max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
-            Current universal standing and category-based ranking snapshot.
-          </p>
-        </div>
+        <SectionIntro
+          title="Ranking summary"
+          description="Current universal standing and category-based ranking snapshot."
+          descriptionClassName="max-w-2xl"
+        />
 
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
           <ProfileSummaryCard
@@ -106,15 +104,11 @@ export default async function PlayerProfilePage({
       </section>
 
       <section className="space-y-3 sm:space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-            Tournament appearances
-          </h2>
-          <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
-            Teams, categories, and ranking outcomes recorded for this player so
-            far.
-          </p>
-        </div>
+        <SectionIntro
+          title="Tournament appearances"
+          description="Teams, categories, and ranking outcomes recorded for this player so far."
+          titleClassName="text-lg sm:text-xl"
+        />
 
         {appearances.length === 0 ? (
           <EmptyState message="No tournament appearances available yet." />
