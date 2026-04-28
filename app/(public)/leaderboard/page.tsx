@@ -40,7 +40,7 @@ export default async function LeaderboardPage({
     : "Community players universal ranking";
 
   const description = activeCategory
-    ? `Track player standings for the ${activeCategory} division based on completed tournament results.`
+    ? `Track player standings for the ${activeCategory} category based on completed tournament results.`
     : "Track player standings across completed tournaments based on final placements and recorded results.";
 
   const activeValue = activeCategory
@@ -62,7 +62,7 @@ export default async function LeaderboardPage({
 
       {leaderboard.length === 0 ? (
         <Card className="rounded-[1.75rem] border-white/10 bg-white/4">
-          <CardContent className="px-6 py-10 text-sm leading-7 text-muted-foreground sm:text-base">
+          <CardContent className="px-6 py-10 text-sm leading-7 text-muted-foreground/90 sm:text-base">
             No ranking data is available yet.
           </CardContent>
         </Card>
@@ -72,11 +72,9 @@ export default async function LeaderboardPage({
             <LeaderboardMobileList entries={leaderboard} />
           </div>
 
-          <Card className="hidden rounded-[1.75rem] border-white/10 bg-white/4 md:block">
-            <CardContent className="p-0">
-              <LeaderboardTable entries={leaderboard} />
-            </CardContent>
-          </Card>
+          <div className="hidden md:block">
+            <LeaderboardTable entries={leaderboard} />
+          </div>
         </>
       )}
     </PageContainer>
