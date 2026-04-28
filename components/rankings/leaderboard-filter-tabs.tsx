@@ -36,9 +36,9 @@ export function LeaderboardFilterTabs({
             key={item.value}
             href={href}
             className={cn(
-              "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition sm:text-sm",
+              "inline-flex h-8 items-center rounded-md border px-3 text-[11px] font-medium transition sm:h-9 sm:px-4 sm:text-sm",
               isActive
-                ? "border-primary/30 bg-primary/12 text-foreground"
+                ? "border-primary/30 bg-primary/12 text-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.02)]"
                 : "border-white/10 bg-white/4 text-muted-foreground hover:bg-white/8 hover:text-foreground",
             )}
           >

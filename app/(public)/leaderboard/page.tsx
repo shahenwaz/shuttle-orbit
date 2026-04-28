@@ -1,8 +1,8 @@
-import Link from "next/link";
-
 import { PageContainer } from "@/components/layout/page-container";
 import { PublicPageHeader } from "@/components/public/public-page-header";
 import { LeaderboardFilterTabs } from "@/components/rankings/leaderboard-filter-tabs";
+import { LeaderboardMobileList } from "@/components/rankings/leaderboard-mobile-list";
+import { LeaderboardTable } from "@/components/rankings/leaderboard-table";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   getAvailableLeaderboardCategories,
@@ -48,7 +48,7 @@ export default async function LeaderboardPage({
     : "universal";
 
   return (
-    <PageContainer className="space-y-6 sm:space-y-8">
+    <PageContainer className="space-y-5 sm:space-y-6">
       <PublicPageHeader
         eyebrow="Leaderboard"
         title={title}
@@ -60,67 +60,25 @@ export default async function LeaderboardPage({
         categoryCodes={categoryCodes}
       />
 
-      <Card className="rounded-[1.75rem] border-white/10 bg-white/4">
-        <CardContent className="p-0">
-          {leaderboard.length === 0 ? (
-            <div className="px-6 py-10 text-sm leading-7 text-muted-foreground sm:text-base">
-              No ranking data is available yet.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-180 text-sm">
-                <thead className="border-b border-white/10 text-left text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Rank</th>
-                    <th className="px-4 py-3 font-medium">Player</th>
-                    <th className="px-4 py-3 font-medium">Nickname</th>
-                    <th className="px-4 py-3 font-medium">Best category</th>
-                    <th className="px-4 py-3 font-medium">Points</th>
-                    <th className="px-4 py-3 font-medium">Tournaments</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaderboard.map((entry) => (
-                    <tr
-                      key={entry.playerId}
-                      className="border-b border-white/6 last:border-b-0"
-                    >
-                      <td className="px-4 py-3 font-semibold text-foreground">
-                        {entry.rank}
-                      </td>
+      {leaderboard.length === 0 ? (
+        <Card className="rounded-[1.75rem] border-white/10 bg-white/4">
+          <CardContent className="px-6 py-10 text-sm leading-7 text-muted-foreground sm:text-base">
+            No ranking data is available yet.
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="md:hidden">
+            <LeaderboardMobileList entries={leaderboard} />
+          </div>
 
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/players/${entry.playerId}`}
-                          className="font-medium text-foreground hover:text-primary"
-                        >
-                          {entry.fullName}
-                        </Link>
-                      </td>
-
-                      <td className="px-4 py-3 text-muted-foreground">
-                        @{entry.nickname}
-                      </td>
-
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {entry.bestCategory ?? "—"}
-                      </td>
-
-                      <td className="px-4 py-3 font-semibold text-foreground">
-                        {entry.totalPoints}
-                      </td>
-
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {entry.tournamentsCount}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <Card className="hidden rounded-[1.75rem] border-white/10 bg-white/4 md:block">
+            <CardContent className="p-0">
+              <LeaderboardTable entries={leaderboard} />
+            </CardContent>
+          </Card>
+        </>
+      )}
     </PageContainer>
   );
 }
