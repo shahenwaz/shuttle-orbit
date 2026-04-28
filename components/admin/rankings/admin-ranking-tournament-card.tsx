@@ -24,17 +24,16 @@ export function AdminRankingTournamentCard({
   tournament,
 }: AdminRankingTournamentCardProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/4 p-4 sm:p-5">
+    <div className="rounded-md border border-white/10 bg-white/4 p-4 sm:p-5">
       <div className="flex flex-col gap-4">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <MetaInfoPill icon={CalendarDays}>
-              {formatDate(tournament.eventDate)}
-            </MetaInfoPill>
+        <div className="space-y-2.5">
+          <div className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-400 sm:text-sm">
+            <CalendarDays className="h-4 w-4" />
+            <span>{formatDate(tournament.eventDate)}</span>
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+            <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
               {tournament.name}
             </h3>
 

@@ -28,22 +28,22 @@ type TournamentListCardProps = {
 export function TournamentListCard({ tournament }: TournamentListCardProps) {
   return (
     <Link href={`/tournaments/${tournament.slug}`} className="block">
-      <Card className="group rounded-[1.75rem] border-white/10 bg-white/4 shadow-[0_14px_40px_rgba(0,0,0,0.16)] transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-white/5">
-        <CardContent className="space-y-5 p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+      <Card className="group rounded-md border-white/10 bg-white/4 shadow-[0_12px_34px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-white/5">
+        <CardContent className="space-y-4 px-4 py-2.5 sm:px-4.5 sm:py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1.5">
+              <h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
                 {tournament.name}
               </h2>
 
               {tournament.description ? (
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                <p className="line-clamp-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {tournament.description}
                 </p>
               ) : null}
             </div>
 
-            <div className="hidden rounded-full border border-white/10 bg-white/4 p-2 text-muted-foreground transition group-hover:text-foreground sm:flex">
+            <div className="hidden rounded-md border border-white/10 bg-white/4 p-2 text-muted-foreground transition group-hover:text-foreground sm:flex">
               <ArrowRight className="h-4 w-4" />
             </div>
           </div>
