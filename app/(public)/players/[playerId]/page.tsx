@@ -8,6 +8,7 @@ import { ProfileSummaryCard } from "@/components/players/profile-summary-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { getPlayerProfile } from "@/lib/player/queries";
+import { MetaInfoPill } from "@/components/shared/meta-info-pill";
 
 type PlayerProfilePageProps = {
   params: Promise<{
@@ -66,18 +67,16 @@ export default async function PlayerProfilePage({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground sm:text-xs">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
-            <Shapes className="h-3.5 w-3.5" />
+        <div className="flex flex-wrap gap-2">
+          <MetaInfoPill icon={Shapes}>
             {appearances.length} appearance
             {appearances.length === 1 ? "" : "s"}
-          </span>
+          </MetaInfoPill>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
-            <Trophy className="h-3.5 w-3.5" />
+          <MetaInfoPill icon={Trophy}>
             {uniqueTournaments} tournament
             {uniqueTournaments === 1 ? "" : "s"}
-          </span>
+          </MetaInfoPill>
         </div>
       </section>
 

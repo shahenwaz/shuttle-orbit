@@ -8,6 +8,7 @@ import {
   type RecalculateTournamentRankingsActionState,
 } from "@/app/admin/tournaments/[tournamentId]/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { Button } from "@/components/ui/button";
 
 type RecalculateRankingsButtonProps = {
@@ -34,8 +35,11 @@ export function RecalculateRankingsButton({
       title="Recalculate rankings"
       description="This will rebuild player tournament stats and ranking ledger rows for this tournament."
       triggerLabel="Recalculate rankings"
-      triggerIcon={<RefreshCcw className="h-4 w-4" />}
-      triggerClassName="border-white/10 bg-white/4 text-foreground hover:bg-white/8"
+      triggerIcon={<RefreshCcw className="h-3.5 w-3.5" />}
+      triggerClassName={actionPillButtonClassName({
+        variant: "neutral",
+        className: "h-auto gap-1.5 px-3 py-1.5 text-xs sm:text-sm",
+      })}
     >
       <form
         className="space-y-4"
