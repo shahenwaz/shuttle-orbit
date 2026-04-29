@@ -9,12 +9,13 @@ import {
   getLeaderboard,
 } from "@/lib/rankings/queries";
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Player Leaderboard",
   description:
     "View community badminton player rankings, leaderboard standings, category-based performance, and long-term tournament results.",
-};
+});
 
 type LeaderboardPageProps = {
   searchParams?: Promise<{

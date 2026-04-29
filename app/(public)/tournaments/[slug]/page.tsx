@@ -4,6 +4,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { TournamentCategoryCard } from "@/components/tournaments/tournament-category-card";
 import { TournamentHero } from "@/components/tournaments/tournament-hero";
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getTournamentBySlug } from "@/lib/tournament/queries";
 
 type TournamentDetailPageProps = {
@@ -19,19 +20,19 @@ export async function generateMetadata({
   const tournament = await getTournamentBySlug(slug);
 
   if (!tournament) {
-    return {
+    return buildPageMetadata({
       title: "Tournament",
       description:
         "View badminton tournament details, categories, fixtures, standings, and results.",
-    };
+    });
   }
 
-  return {
-    title: `${tournament.name}`,
+  return buildPageMetadata({
+    title: tournament.name,
     description:
       tournament.description ||
       `View ${tournament.name} tournament details, categories, fixtures, standings, and results.`,
-  };
+  });
 }
 
 type TournamentDetail = NonNullable<

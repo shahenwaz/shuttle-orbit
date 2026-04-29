@@ -4,12 +4,13 @@ import { TournamentListCard } from "@/components/public/tournament-list-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAllTournaments } from "@/lib/tournament/queries";
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-  title: "Tournaments",
+export const metadata: Metadata = buildPageMetadata({
+  title: "Badminton Tournaments",
   description:
     "Browse upcoming and completed badminton tournaments, categories, fixtures, standings, and results from community events.",
-};
+});
 
 type TournamentListItem = Awaited<ReturnType<typeof getAllTournaments>>[number];
 

@@ -6,6 +6,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { CategoryTabsView } from "@/components/tournaments/category-tabs-view";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
 
 type CategoryDetailPageProps = {
@@ -25,19 +26,19 @@ export async function generateMetadata({
   );
 
   if (!tournament || !category) {
-    return {
+    return buildPageMetadata({
       title: "Tournament Category",
       description:
         "View category standings, teams, fixtures, and results for this badminton tournament.",
-    };
+    });
   }
 
-  return {
+  return buildPageMetadata({
     title: `${category.name} - ${tournament.name}`,
     description:
       category.rulesSummary ||
       `View ${category.name} standings, teams, fixtures, matches, and results from ${tournament.name}.`,
-  };
+  });
 }
 
 export default async function CategoryDetailPage({

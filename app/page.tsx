@@ -7,12 +7,13 @@ import { HomeStatStrip } from "@/components/public/home-stat-strip";
 import { PublicHero } from "@/components/public/public-hero";
 import { getFeaturedTournament } from "@/lib/tournament/queries";
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Community Badminton Tournaments, Fixtures, Rankings and Results",
   description:
     "Follow community badminton tournaments, fixtures, standings, results, player records, and rankings through one modern tournament platform.",
-};
+});
 
 const stats = [
   { label: "Flexible formats", value: "Groups, knockouts, finals" },

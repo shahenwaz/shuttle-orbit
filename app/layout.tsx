@@ -22,6 +22,19 @@ export const metadata: Metadata = {
   },
   description:
     "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
+  openGraph: {
+    title: "Badminton Tournament Manager",
+    description:
+      "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
+    siteName: "Badminton Tournament Manager",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Badminton Tournament Manager",
+    description:
+      "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
+  },
 };
 
 export default function RootLayout({

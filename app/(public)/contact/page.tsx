@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { PublicPageHeader } from "@/components/public/public-page-header";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Contact",
   description:
-    "Contact the tournament organizers for event updates, corrections, or community badminton questions.",
-};
+    "Contact the badminton tournament organizers for updates, corrections, player information requests, or community event questions.",
+});
 
 export default function ContactPage() {
   return (
