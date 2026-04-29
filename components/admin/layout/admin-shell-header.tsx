@@ -1,7 +1,6 @@
 import { Shield } from "lucide-react";
 
 type AdminShellHeaderProps = {
-  activeItem?: "overview" | "players" | "tournaments";
   title: string;
   description: string;
   actions?: React.ReactNode;

@@ -91,7 +91,6 @@ export default async function AdminPlayersPage() {
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader
-        activeItem="players"
         title="Player management"
         description="Create and maintain the reusable player base for tournaments, teams, and rankings."
       />

@@ -34,7 +34,6 @@ export default async function AdminPage() {
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
       <AdminShellHeader
-        activeItem="overview"
         title="Admin overview"
         description="Control tournaments, players, category structure, fixtures, and results from one workspace."
       />
