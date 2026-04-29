@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageContainer } from "@/components/layout/page-container";
 import { TournamentCategoryCard } from "@/components/tournaments/tournament-category-card";
 import { TournamentHero } from "@/components/tournaments/tournament-hero";
+import type { Metadata } from "next";
 import { getTournamentBySlug } from "@/lib/tournament/queries";
 
 type TournamentDetailPageProps = {
@@ -10,6 +11,28 @@ type TournamentDetailPageProps = {
     slug: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: TournamentDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const tournament = await getTournamentBySlug(slug);
+
+  if (!tournament) {
+    return {
+      title: "Tournament",
+      description:
+        "View badminton tournament details, categories, fixtures, standings, and results.",
+    };
+  }
+
+  return {
+    title: `${tournament.name}`,
+    description:
+      tournament.description ||
+      `View ${tournament.name} tournament details, categories, fixtures, standings, and results.`,
+  };
+}
 
 type TournamentDetail = NonNullable<
   Awaited<ReturnType<typeof getTournamentBySlug>>

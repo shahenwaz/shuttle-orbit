@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
+
 import { PageContainer } from "@/components/layout/page-container";
 import { PublicPageHeader } from "@/components/public/public-page-header";
+
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description:
+    "Review the basic terms for using this badminton tournament platform and its public results pages.",
+};
 
 export default function TermsOfUsePage() {
   return (

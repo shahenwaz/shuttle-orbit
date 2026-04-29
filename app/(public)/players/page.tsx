@@ -3,6 +3,13 @@ import { PlayersDirectory } from "@/components/players/players-directory";
 import { PublicPageHeader } from "@/components/public/public-page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { getPlayersDirectory } from "@/lib/player/queries";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Players Directory",
+  description:
+    "Explore the player directory, view community badminton player profiles, appearances, tournament history, and ranking progress.",
+};
 
 export default async function PlayersPage() {
   const players = await getPlayersDirectory();

@@ -16,8 +16,12 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Badminton Tournament Manager",
-  description: "Flexible badminton tournament management for community events.",
+  title: {
+    default: "Badminton Tournament Manager",
+    template: "%s | Badminton Tournament Manager",
+  },
+  description:
+    "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
 };
 
 export default function RootLayout({

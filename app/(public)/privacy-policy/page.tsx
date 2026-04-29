@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
+
 import { PageContainer } from "@/components/layout/page-container";
 import { PublicPageHeader } from "@/components/public/public-page-header";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Read how player information, tournament data, results, and leaderboard records are handled on this platform.",
+};
 
 export default function PrivacyPolicyPage() {
   return (

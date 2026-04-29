@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Shapes, Trophy } from "lucide-react";
 
@@ -16,6 +17,26 @@ type PlayerProfilePageProps = {
     playerId: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: PlayerProfilePageProps): Promise<Metadata> {
+  const { playerId } = await params;
+  const profile = await getPlayerProfile(playerId);
+
+  if (!profile) {
+    return {
+      title: "Player Profile",
+      description:
+        "View badminton player profile, tournament appearances, ranking summary, and match history.",
+    };
+  }
+
+  return {
+    title: `${profile.player.fullName}`,
+    description: `View ${profile.player.fullName}'s badminton player profile, tournament appearances, ranking summary, and match history.`,
+  };
+}
 
 export default async function PlayerProfilePage({
   params,
