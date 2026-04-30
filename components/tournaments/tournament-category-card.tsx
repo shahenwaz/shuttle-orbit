@@ -29,10 +29,15 @@ export function TournamentCategoryCard({
   tournamentSlug,
   category,
 }: TournamentCategoryCardProps) {
-  const totalGroups = category.stages.reduce(
-    (count, stage) => count + stage.groups.length,
-    0,
+  const firstGroupStage = category.stages.find(
+    (stage) =>
+      stage.groups.length > 0 &&
+      (stage.stageType.toLowerCase().includes("round_robin") ||
+        stage.name.toLowerCase().includes("round robin") ||
+        stage.name.toLowerCase().includes("group")),
   );
+
+  const totalGroups = firstGroupStage?.groups.length ?? 0;
 
   return (
     <Link

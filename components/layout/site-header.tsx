@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Trophy, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 import { PageContainer } from "@/components/layout/page-container";
@@ -45,16 +46,21 @@ export function SiteHeader() {
               onClick={() => setMobileMenuOpen(false)}
               className="group flex min-w-0 items-center gap-3"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/8 bg-white/4 shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition duration-300 group-hover:border-primary/25 group-hover:bg-primary/8 sm:h-11 sm:w-11">
-                <Trophy className="h-4.5 w-4.5 text-primary transition duration-300 group-hover:scale-110 sm:h-5 sm:w-5" />
-              </div>
+              <Image
+                src="/brand/shuttlerank-logo.webp"
+                alt="ShuttleRank logo"
+                width={34}
+                height={34}
+                priority
+                className="relative h-8 w-8 object-contain drop-shadow-[0_0_12px_rgba(74,222,128,0.28)] transition duration-300 group-hover:scale-110 sm:h-8.5 sm:w-8.5"
+              />
 
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-primary/75">
-                  Community Sports
+                  Badminton Platform
                 </p>
                 <h1 className="truncate font-heading text-sm font-semibold tracking-tight text-foreground sm:text-base">
-                  Badminton Tournament Manager
+                  ShuttleRank
                 </h1>
               </div>
             </Link>

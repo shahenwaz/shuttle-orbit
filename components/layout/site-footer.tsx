@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
 
@@ -28,17 +28,21 @@ export function SiteFooter() {
     <footer className="border-t border-white/10 bg-background/70">
       <PageContainer className="py-8 sm:py-10">
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-          <Link href="/" className="inline-flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-white/4">
-              <Trophy className="h-4.5 w-4.5 text-primary" />
-            </div>
+          <Link href="/" className="group inline-flex items-center gap-3">
+            <Image
+              src="/brand/shuttlerank-logo.webp"
+              alt="ShuttleRank logo"
+              width={32}
+              height={32}
+              className="relative h-7.5 w-7.5 object-contain drop-shadow-[0_0_10px_rgba(74,222,128,0.24)] transition duration-300 group-hover:scale-105"
+            />
 
             <div className="space-y-0.5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/80">
-                Community platform
+                Badminton platform
               </p>
               <p className="font-heading text-sm font-semibold text-foreground sm:text-base">
-                Badminton Tournament Manager
+                ShuttleRank
               </p>
             </div>
           </Link>
@@ -68,8 +72,8 @@ export function SiteFooter() {
 
         <div className="mt-8 border-t border-white/10 pt-4">
           <p className="text-xs text-muted-foreground sm:text-sm">
-            © {new Date().getFullYear()} Badminton Tournament Manager. Built for
-            community badminton events.
+            © {new Date().getFullYear()} ShuttleRank. Built for community
+            badminton tournaments, results, and rankings.
           </p>
         </div>
       </PageContainer>

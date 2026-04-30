@@ -17,23 +17,29 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "Badminton Tournament Manager",
-    template: "%s | Badminton Tournament Manager",
+    default: "ShuttleRank",
+    template: "%s | ShuttleRank",
   },
   description:
-    "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
+    "ShuttleRank helps communities run badminton tournaments, manage fixtures, track standings, publish results, and build player rankings.",
+  applicationName: "ShuttleRank",
+  appleWebApp: {
+    title: "ShuttleRank",
+    capable: true,
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
-    title: "Badminton Tournament Manager",
+    title: "ShuttleRank",
     description:
-      "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
-    siteName: "Badminton Tournament Manager",
+      "A modern badminton tournament and ranking platform for community competitions.",
+    siteName: "ShuttleRank",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Badminton Tournament Manager",
+    title: "ShuttleRank",
     description:
-      "Flexible badminton tournament management for community events, fixtures, standings, player records, and rankings.",
+      "Run badminton tournaments, track results, and build player rankings with ShuttleRank.",
   },
 };
 

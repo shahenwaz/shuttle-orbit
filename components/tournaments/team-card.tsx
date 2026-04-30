@@ -24,16 +24,16 @@ export function TeamCard({ team, badgeLabel = "Team" }: TeamCardProps) {
   );
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/4 p-3 backdrop-blur-sm sm:p-4">
-      <div className="space-y-2.5">
-        <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 truncate text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-sm">
+    <div className="min-w-0 overflow-hidden rounded-lg border border-white/10 bg-white/4 p-3 backdrop-blur-sm sm:p-4">
+      <div className="min-w-0 space-y-2.5">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <p className="min-w-0 max-w-full wrap-break-word text-[10px] font-medium uppercase leading-4 tracking-[0.12em] text-muted-foreground sm:text-xs sm:tracking-[0.14em]">
             {badgeLabel} -{" "}
             <span className="font-bold text-primary">{teamLabel}</span>
           </p>
         </div>
 
-        <p className="truncate text-sm font-semibold text-foreground sm:text-base">
+        <p className="min-w-0 max-w-full wrap-break-word text-xs font-semibold leading-4 text-foreground sm:text-sm sm:leading-5">
           <span className="font-bold text-purple-400">
             {team.player1.fullName}
           </span>
