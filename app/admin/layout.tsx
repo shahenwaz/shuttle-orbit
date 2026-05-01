@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -18,14 +20,18 @@ export default async function AdminLayout({
     redirect("/login?callbackUrl=/admin");
   }
 
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
+
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarProvider
+        defaultOpen={defaultOpen}
         style={
           {
             "--sidebar-width": "16rem",
             "--sidebar-width-mobile": "17rem",
-          } as React.CSSProperties
+          } as CSSProperties
         }
       >
         <AdminAppSidebar />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useRef } from "react";
 import { Loader2, Save } from "lucide-react";
 
 import {
@@ -18,6 +18,11 @@ type RecordMatchResultFormProps = {
   matchId: string;
   teamALabel: string;
   teamBLabel: string;
+  existingSets?: Array<{
+    setNumber: number;
+    teamAScore: number;
+    teamBScore: number;
+  }>;
 };
 
 const initialState: RecordMatchResultActionState = {
@@ -32,6 +37,7 @@ export function RecordMatchResultForm({
   matchId,
   teamALabel,
   teamBLabel,
+  existingSets = [],
 }: RecordMatchResultFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -40,11 +46,10 @@ export function RecordMatchResultForm({
     initialState,
   );
 
-  useEffect(() => {
-    if (state.success) {
-      formRef.current?.reset();
-    }
-  }, [state.success]);
+  const set1 = existingSets.find((set) => set.setNumber === 1);
+  const set2 = existingSets.find((set) => set.setNumber === 2);
+  const set3 = existingSets.find((set) => set.setNumber === 3);
+  const hasExistingResult = existingSets.length > 0;
 
   return (
     <form ref={formRef} action={formAction} className="space-y-6">
@@ -56,6 +61,12 @@ export function RecordMatchResultForm({
         <div className="space-y-1">
           <p className="font-medium text-foreground">{teamALabel}</p>
           <p className="font-medium text-foreground">{teamBLabel}</p>
+
+          {hasExistingResult ? (
+            <p className="pt-1 text-xs text-primary">
+              Existing result loaded. Update any set or add the next set.
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -71,6 +82,7 @@ export function RecordMatchResultForm({
                 type="number"
                 min={0}
                 placeholder="Enter score"
+                defaultValue={set1?.teamAScore ?? ""}
               />
               {state.fieldErrors?.set1TeamAScore ? (
                 <p className="text-sm text-red-400">
@@ -87,6 +99,7 @@ export function RecordMatchResultForm({
                 type="number"
                 min={0}
                 placeholder="Enter score"
+                defaultValue={set1?.teamBScore ?? ""}
               />
               {state.fieldErrors?.set1TeamBScore ? (
                 <p className="text-sm text-red-400">
@@ -110,6 +123,7 @@ export function RecordMatchResultForm({
                 type="number"
                 min={0}
                 placeholder="Leave empty if not needed"
+                defaultValue={set2?.teamAScore ?? ""}
               />
               {state.fieldErrors?.set2TeamAScore ? (
                 <p className="text-sm text-red-400">
@@ -126,6 +140,7 @@ export function RecordMatchResultForm({
                 type="number"
                 min={0}
                 placeholder="Leave empty if not needed"
+                defaultValue={set2?.teamBScore ?? ""}
               />
               {state.fieldErrors?.set2TeamBScore ? (
                 <p className="text-sm text-red-400">
@@ -149,6 +164,7 @@ export function RecordMatchResultForm({
                 type="number"
                 min={0}
                 placeholder="Leave empty if not needed"
+                defaultValue={set3?.teamAScore ?? ""}
               />
               {state.fieldErrors?.set3TeamAScore ? (
                 <p className="text-sm text-red-400">
@@ -165,6 +181,7 @@ export function RecordMatchResultForm({
                 type="number"
                 min={0}
                 placeholder="Leave empty if not needed"
+                defaultValue={set3?.teamBScore ?? ""}
               />
               {state.fieldErrors?.set3TeamBScore ? (
                 <p className="text-sm text-red-400">

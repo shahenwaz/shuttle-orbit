@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Layers3, Swords, User, Users } from "lucide-react";
 
@@ -110,6 +111,45 @@ function SectionMetaLine({
   );
 }
 
+function getStageMetaLabel(stage: {
+  name: string;
+  stageType: string;
+  groups: Array<{ id: string }>;
+}) {
+  const stageType = stage.stageType.toLowerCase();
+  const stageName = stage.name.toLowerCase();
+
+  if (
+    stageType.includes("knockout") ||
+    stageType.includes("single_elimination") ||
+    stageType.includes("elimination") ||
+    stageType.includes("final")
+  ) {
+    return "KNOCKOUT";
+  }
+
+  if (stageType.includes("round_robin") || stageType.includes("group")) {
+    return "ROUND ROBIN";
+  }
+
+  if (stage.groups.length > 0) {
+    return "ROUND ROBIN";
+  }
+
+  if (
+    stageName.includes("semi final") ||
+    stageName.includes("semi-final") ||
+    stageName.includes("quarter final") ||
+    stageName.includes("quarter-final") ||
+    stageName.includes("third place") ||
+    stageName === "final"
+  ) {
+    return "KNOCKOUT";
+  }
+
+  return stage.stageType.replaceAll("_", " ").toUpperCase();
+}
+
 export function CategoryTabsView({ category }: CategoryTabsViewProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("players");
 
@@ -174,7 +214,13 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
           ) : (
             <div className="grid min-w-0 gap-1.5 sm:gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {players.map((player) => (
-                <PlayerCard key={player.id} player={player} />
+                <Link
+                  key={player.id}
+                  href={`/players/${player.id}`}
+                  className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
+                >
+                  <PlayerCard player={player} />
+                </Link>
               ))}
             </div>
           )}
@@ -221,8 +267,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
                     {stage.name}
                   </h3>
                   <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
-                    {stage.stageType.replaceAll("_", " ")} ·{" "}
-                    {stage.matches.length} match
+                    {getStageMetaLabel(stage)} · {stage.matches.length} match
                     {stage.matches.length === 1 ? "" : "es"}
                   </p>
                 </div>
@@ -260,7 +305,7 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
                       {stage.name}
                     </h3>
                     <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
-                      {stage.stageType.replaceAll("_", " ")}
+                      {getStageMetaLabel(stage)}
                     </p>
                   </div>
 

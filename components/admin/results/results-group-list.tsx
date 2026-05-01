@@ -43,6 +43,11 @@ type MatchRow = {
       nickname: string;
     };
   } | null;
+  sets: Array<{
+    setNumber: number;
+    teamAScore: number;
+    teamBScore: number;
+  }>;
 };
 
 type GroupResultRow = {
@@ -189,6 +194,7 @@ function GroupResultMatchCard({
             matchId={match.id}
             teamALabel={teamALabel}
             teamBLabel={teamBLabel}
+            existingSets={match.sets}
           />
         </CreateSheet>
 

@@ -45,6 +45,11 @@ type KnockoutStageListProps = {
       winnerId: string | null;
       teamAId: string | null;
       teamBId: string | null;
+      sets: Array<{
+        setNumber: number;
+        teamAScore: number;
+        teamBScore: number;
+      }>;
       teamA: {
         teamName: string | null;
         player1: {
@@ -298,6 +303,7 @@ function KnockoutMatchCard({
               matchId={match.id}
               teamALabel={teamALabel}
               teamBLabel={teamBLabel}
+              existingSets={match.sets}
             />
           </CreateSheet>
 
