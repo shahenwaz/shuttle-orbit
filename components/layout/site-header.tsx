@@ -15,7 +15,6 @@ const navLinks = [
   { href: "/tournaments", label: "Tournaments" },
   { href: "/players", label: "Players" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/admin", label: "Admin" },
 ];
 
 function isLinkActive(pathname: string, href: string) {

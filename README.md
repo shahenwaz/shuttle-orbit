@@ -312,6 +312,7 @@ This keeps rankings auditable, flexible, and easier to recalculate when tourname
 
 ### Next major areas
 
+- Optional club profiles for organised badminton communities, including club players, hosted tournaments, and club-level achievements.
 - More robust tournament format presets
 
 ## Deployment notes
