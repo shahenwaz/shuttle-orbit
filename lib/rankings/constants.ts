@@ -1,12 +1,12 @@
 export const RANKING_POINTS_BY_PLACEMENT = {
   CHAMPION: 1000,
   RUNNER_UP: 850,
-  SEMI_FINALIST: 700,
   THIRD_PLACE: 750,
+  SEMI_FINALIST: 700,
   FOURTH_PLACE: 650,
   ADVANCED_STAGE: 500,
   GROUP_STAGE: 350,
-  PARTICIPATION: 200,
+  PARTICIPATION: 0, // Registered-only teams should not receive ranking points.
 } as const;
 
 export const CATEGORY_MULTIPLIERS = {

@@ -46,6 +46,29 @@ function createEmptyAggregate(
   };
 }
 
+function isKnockoutStageType(stageType: string) {
+  return ["quarter_final", "semi_final", "final", "third_place"].includes(
+    stageType,
+  );
+}
+
+function getFirstGroupStageOrder(
+  stages: Array<{
+    stageOrder: number;
+    groups: Array<{ id: string }>;
+  }>,
+) {
+  const groupStageOrders = stages
+    .filter((stage) => stage.groups.length > 0)
+    .map((stage) => stage.stageOrder);
+
+  if (groupStageOrders.length === 0) {
+    return null;
+  }
+
+  return Math.min(...groupStageOrders);
+}
+
 function updateAggregateFromMatch(
   aggregate: TeamAggregate,
   match: {
@@ -57,7 +80,6 @@ function updateAggregateFromMatch(
       teamBScore: number;
     }>;
     stage: {
-      stageOrder: number;
       stageType: string;
     };
   },
@@ -76,7 +98,7 @@ function updateAggregateFromMatch(
     aggregate.matchesWon += 1;
   }
 
-  if (match.stage.stageOrder > 1 || match.stage.stageType !== "round_robin") {
+  if (isKnockoutStageType(match.stage.stageType)) {
     aggregate.reachedAdvancedStage = true;
   }
 
@@ -119,6 +141,24 @@ export async function recalculateTournamentRankings(tournamentId: string) {
         select: {
           id: true,
           code: true,
+          stages: {
+            select: {
+              id: true,
+              name: true,
+              stageType: true,
+              stageOrder: true,
+              groups: {
+                select: {
+                  id: true,
+                  memberships: {
+                    select: {
+                      teamEntryId: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
           teamEntries: {
             select: {
               id: true,
@@ -138,7 +178,6 @@ export async function recalculateTournamentRankings(tournamentId: string) {
               winnerId: true,
               stage: {
                 select: {
-                  stageOrder: true,
                   stageType: true,
                 },
               },
@@ -174,6 +213,29 @@ export async function recalculateTournamentRankings(tournamentId: string) {
           teamEntry.player2Id,
         ),
       );
+    }
+
+    const firstGroupStageOrder = getFirstGroupStageOrder(category.stages);
+
+    for (const stage of category.stages) {
+      const isLaterGroupStage =
+        firstGroupStageOrder !== null &&
+        stage.groups.length > 0 &&
+        stage.stageOrder > firstGroupStageOrder;
+
+      if (!isLaterGroupStage) {
+        continue;
+      }
+
+      for (const group of stage.groups) {
+        for (const membership of group.memberships) {
+          const aggregate = aggregateMap.get(membership.teamEntryId);
+
+          if (aggregate) {
+            aggregate.reachedAdvancedStage = true;
+          }
+        }
+      }
     }
 
     for (const match of category.matches) {
@@ -239,13 +301,15 @@ export async function recalculateTournamentRankings(tournamentId: string) {
       let placementTier = placements.get(teamEntryId);
 
       if (!placementTier) {
-        if (aggregate.reachedAdvancedStage) {
+        if (aggregate.playedAnyMatch && aggregate.reachedAdvancedStage) {
           placementTier = "ADVANCED_STAGE";
         } else if (aggregate.playedAnyMatch) {
           placementTier = "GROUP_STAGE";
-        } else {
-          placementTier = "PARTICIPATION";
         }
+      }
+
+      if (!placementTier) {
+        continue;
       }
 
       const rankingPlacementTier = placementTier as RankingPlacementTier;

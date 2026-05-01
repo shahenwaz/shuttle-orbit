@@ -22,6 +22,7 @@ ShuttleRank currently includes:
 - Flexible category structures with group stages, multiple stages, knockouts, finals, and third-place matches
 - Fixture generation, manual fixture creation, score recording, result reset, and standings calculation
 - Player records, tournament history, ranking data, and leaderboard support
+- Public match cards with multi-set score details
 - Modern dark UI with mobile-first responsive polish
 - Branded ShuttleRank identity, favicon, app icon, and web app manifest setup
 
@@ -62,7 +63,8 @@ The app is designed around these principles:
 - Latest fixture and result presentation
 - Searchable players directory
 - Player profile pages with tournament history and ranking context
-- Public leaderboard with ranking filters and summary views
+- Public leaderboard with universal and category-based ranking views
+- Public match cards with clear set-by-set score details for multi-set knockout matches
 - Mobile-first public UI
 
 ### Admin experience
@@ -84,6 +86,8 @@ The app is designed around these principles:
 - Stage rename support
 - Multiple group stages before knockout
 - Ranking data, leaderboard management, and admin ranking tools
+- Existing score preload when editing match results
+- Ranking recalculation for completed tournaments
 
 ## Tournament format support
 
@@ -93,12 +97,13 @@ Currently supported flows include:
 
 - Round-robin groups
 - Multiple groups inside one category
-- Multiple group stages before knockout
+- Advanced round-robin stages before knockouts
 - Semi-final and final stages
 - Third-place matches
 - Manually managed fixtures and results
 - One-set group matches
 - Optional multi-set knockout matches
+- Ranking support for later group stages treated as advanced stages
 
 Example supported structure:
 

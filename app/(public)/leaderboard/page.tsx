@@ -56,7 +56,7 @@ export default async function LeaderboardPage({
     : "universal";
 
   return (
-    <PageContainer className="space-y-5 sm:space-y-6">
+    <PageContainer className="space-y-5 pb-5 sm:space-y-6 sm:pb-7 md:pb-10">
       <PublicPageHeader
         eyebrow="Leaderboard"
         title={title}
