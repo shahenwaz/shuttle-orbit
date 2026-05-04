@@ -1,4 +1,10 @@
-import { LayoutDashboard, Swords, Trophy, Users } from "lucide-react";
+import {
+  BarChart3,
+  LayoutDashboard,
+  Swords,
+  Trophy,
+  Users,
+} from "lucide-react";
 
 export const adminNavItems = [
   {
@@ -18,6 +24,12 @@ export const adminNavItems = [
     href: "/admin/tournaments",
     icon: Trophy,
     match: (pathname: string) => pathname.startsWith("/admin/tournaments"),
+  },
+  {
+    title: "Rankings",
+    href: "/admin/rankings",
+    icon: BarChart3,
+    match: (pathname: string) => pathname.startsWith("/admin/rankings"),
   },
   {
     title: "Knockout",

@@ -67,6 +67,11 @@ export default async function AdminCategoryResultsPage({
                     createdAt: "asc",
                   },
                   include: {
+                    sets: {
+                      orderBy: {
+                        setNumber: "asc",
+                      },
+                    },
                     teamA: {
                       include: {
                         player1: {
@@ -111,6 +116,11 @@ export default async function AdminCategoryResultsPage({
                 createdAt: "asc",
               },
               include: {
+                sets: {
+                  orderBy: {
+                    setNumber: "asc",
+                  },
+                },
                 teamA: {
                   include: {
                     player1: {

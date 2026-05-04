@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-container";
 import { CategoryTabsView } from "@/components/tournaments/category-tabs-view";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
 
 type CategoryDetailPageProps = {
@@ -13,6 +15,31 @@ type CategoryDetailPageProps = {
     categoryCode: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: CategoryDetailPageProps): Promise<Metadata> {
+  const { slug, categoryCode } = await params;
+  const { tournament, category } = await getCategoryByTournamentAndCode(
+    slug,
+    categoryCode,
+  );
+
+  if (!tournament || !category) {
+    return buildPageMetadata({
+      title: "Tournament Category",
+      description:
+        "View category standings, teams, fixtures, and results for this badminton tournament.",
+    });
+  }
+
+  return buildPageMetadata({
+    title: `${category.name} - ${tournament.name}`,
+    description:
+      category.rulesSummary ||
+      `View ${category.name} standings, teams, fixtures, matches, and results from ${tournament.name}.`,
+  });
+}
 
 export default async function CategoryDetailPage({
   params,

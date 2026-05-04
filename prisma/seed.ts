@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
@@ -20,40 +21,33 @@ const prisma = new PrismaClient({
   log: ["warn", "error"],
 });
 
-const cGroupPlayers = [
-  { fullName: "MOKSHUD CHOWDHURY", nickname: "mokshud" },
-  { fullName: "ABDUR RAHIM BHUIYAN", nickname: "rahim" },
-  { fullName: "AHMED NAZIR", nickname: "nazir" },
-  { fullName: "SAIFUL ISLAM", nickname: "saiful" },
-  { fullName: "RAHIB AHMED", nickname: "rahib" },
-  { fullName: "TUFAYEL AHMED", nickname: "tufayel" },
-  { fullName: "MD ZAKARIA AHMAD", nickname: "zakaria" },
-  { fullName: "NAHID ISLAM", nickname: "nahid" },
-  { fullName: "MD AKHTHER HUSSAIN", nickname: "akhther" },
-  { fullName: "ABDUL AZIM TOWHID", nickname: "towhid" },
-  { fullName: "WAHIDUL ALAM MURAD", nickname: "murad" },
-  { fullName: "GOLAM MORSHED KAMRUL", nickname: "kamrul" },
-  { fullName: "RAFIQUL ISLAM", nickname: "rafiqul" },
-  { fullName: "MUNWAR HOSSAIN RONY", nickname: "rony" },
-  { fullName: "QAMRUZZAMAN", nickname: "qamrul" },
-  { fullName: "MANIK MONIRUZZAMAN", nickname: "manik" },
-  { fullName: "MD SHARIA HOSSAIN ANIK", nickname: "anik" },
-  { fullName: "MD SHAMIM MIAH", nickname: "shamim" },
-  { fullName: "JAKIR HUSAIN JABUL", nickname: "jakir-jabul" },
-  { fullName: "JAKIR HUSSAIN", nickname: "jakir-hussain" },
-  { fullName: "SHAH ALAM", nickname: "shahalam" },
-  { fullName: "SOWKAT ALI KHAN", nickname: "sowkat" },
-  { fullName: "SALIM JAIGIRDAR", nickname: "salim" },
-  { fullName: "KUHINUR RAHMAN", nickname: "kuhinur" },
-];
-
 async function main() {
-  await prisma.player.createMany({
-    data: cGroupPlayers,
-    skipDuplicates: true,
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminName = process.env.ADMIN_NAME?.trim() || "Admin";
+
+  if (!adminEmail || !adminPassword) {
+    throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env.");
+  }
+
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
+
+  await prisma.adminUser.upsert({
+    where: {
+      email: adminEmail,
+    },
+    update: {
+      name: adminName,
+      passwordHash,
+    },
+    create: {
+      name: adminName,
+      email: adminEmail,
+      passwordHash,
+    },
   });
 
-  console.log("C Group players seeded successfully.");
+  console.log(`Admin user seeded successfully: ${adminEmail}`);
 }
 
 main()

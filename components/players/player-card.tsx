@@ -1,3 +1,6 @@
+import { PlayerIdentityRow } from "@/components/players/player-identity-row";
+import { surfaceCardClassName } from "../shared/surface-card";
+
 type PlayerCardProps = {
   player: {
     id: string;
@@ -9,21 +12,18 @@ type PlayerCardProps = {
 
 export function PlayerCard({ player }: PlayerCardProps) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/4 px-3 py-2 backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/5 sm:px-4 sm:py-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="min-w-0 truncate text-[13px] font-bold uppercase tracking-[0.08em] text-purple-400 sm:text-sm">
-          {player.fullName}
-          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground">
-            - @{player.nickname}
-          </span>
-        </p>
-
-        {player.categoryCodes && player.categoryCodes.length > 0 ? (
-          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-primary/90">
-            {player.categoryCodes.join(" · ")}
-          </span>
-        ) : null}
-      </div>
+    <div
+      className={surfaceCardClassName({
+        interactive: true,
+        blur: true,
+        className: "px-3 py-2 sm:px-4 sm:py-3",
+      })}
+    >
+      <PlayerIdentityRow
+        fullName={player.fullName}
+        nickname={player.nickname}
+        categoryCodes={player.categoryCodes}
+      />
     </div>
   );
 }

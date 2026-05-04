@@ -3,6 +3,14 @@ import { PublicPageHeader } from "@/components/public/public-page-header";
 import { TournamentListCard } from "@/components/public/tournament-list-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAllTournaments } from "@/lib/tournament/queries";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Badminton Tournaments",
+  description:
+    "Browse upcoming and completed badminton tournaments, categories, fixtures, standings, and results from community events.",
+});
 
 type TournamentListItem = Awaited<ReturnType<typeof getAllTournaments>>[number];
 
@@ -10,7 +18,7 @@ export default async function TournamentsPage() {
   const tournaments = await getAllTournaments();
 
   return (
-    <PageContainer className="space-y-6 sm:space-y-8">
+    <PageContainer className="space-y-5 sm:space-y-6">
       <PublicPageHeader
         eyebrow="Tournaments"
         title="Upcoming and completed badminton tournaments"
@@ -18,13 +26,13 @@ export default async function TournamentsPage() {
       />
 
       {tournaments.length === 0 ? (
-        <Card className="rounded-[1.75rem] border-white/10 bg-white/4">
-          <CardContent className="py-10 text-sm text-muted-foreground sm:text-base">
+        <Card className="rounded-md border-white/10 bg-white/4">
+          <CardContent className="py-8 text-sm text-muted-foreground sm:text-base">
             No tournaments are available right now.
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:gap-5">
+        <div className="grid gap-3 sm:gap-4">
           {tournaments.map((tournament: TournamentListItem) => (
             <TournamentListCard key={tournament.id} tournament={tournament} />
           ))}

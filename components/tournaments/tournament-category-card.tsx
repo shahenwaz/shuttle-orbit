@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Layers3, Swords, Users } from "lucide-react";
 
+import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
+import { MetaInfoPill } from "@/components/shared/meta-info-pill";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type TournamentCategoryCardProps = {
@@ -27,10 +29,15 @@ export function TournamentCategoryCard({
   tournamentSlug,
   category,
 }: TournamentCategoryCardProps) {
-  const totalGroups = category.stages.reduce(
-    (count, stage) => count + stage.groups.length,
-    0,
+  const firstGroupStage = category.stages.find(
+    (stage) =>
+      stage.groups.length > 0 &&
+      (stage.stageType.toLowerCase().includes("round_robin") ||
+        stage.name.toLowerCase().includes("round robin") ||
+        stage.name.toLowerCase().includes("group")),
   );
+
+  const totalGroups = firstGroupStage?.groups.length ?? 0;
 
   return (
     <Link
@@ -50,25 +57,28 @@ export function TournamentCategoryCard({
               "View players, teams, matches, and standings for this category."}
           </p>
 
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground sm:text-xs">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
-              <Users className="h-3.5 w-3.5 text-primary" />
+          <div className="flex flex-wrap items-center gap-2">
+            <MetaInfoPill icon={Users} className="[&_svg]:text-primary">
               {category._count.teamEntries} teams
-            </span>
+            </MetaInfoPill>
 
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
-              <Swords className="h-3.5 w-3.5 text-primary" />
+            <MetaInfoPill icon={Swords} className="[&_svg]:text-primary">
               {category._count.matches} matches
-            </span>
+            </MetaInfoPill>
 
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5">
-              <Layers3 className="h-3.5 w-3.5 text-primary" />
+            <MetaInfoPill icon={Layers3} className="[&_svg]:text-primary">
               {totalGroups} groups
-            </span>
+            </MetaInfoPill>
           </div>
 
           <div className="mt-auto pt-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/40 px-3 py-1.5 text-xs font-medium text-foreground transition group-hover:border-primary/30 group-hover:text-primary sm:text-sm">
+            <div
+              className={actionPillButtonClassName({
+                variant: "link",
+                className:
+                  "pointer-events-none gap-1.5 text-xs group-hover:opacity-100 sm:text-sm",
+              })}
+            >
               <span>Open category</span>
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
             </div>

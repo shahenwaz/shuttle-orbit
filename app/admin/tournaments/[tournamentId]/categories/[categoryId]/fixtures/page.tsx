@@ -91,6 +91,11 @@ export default async function AdminCategoryFixturesPage({
                     createdAt: "asc",
                   },
                   include: {
+                    sets: {
+                      orderBy: {
+                        setNumber: "asc",
+                      },
+                    },
                     teamA: {
                       include: {
                         player1: {
@@ -135,6 +140,11 @@ export default async function AdminCategoryFixturesPage({
                 createdAt: "asc",
               },
               include: {
+                sets: {
+                  orderBy: {
+                    setNumber: "asc",
+                  },
+                },
                 teamA: {
                   include: {
                     player1: {

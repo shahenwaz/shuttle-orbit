@@ -6,30 +6,38 @@ import { HomeFeaturedTournament } from "@/components/public/home-featured-tourna
 import { HomeStatStrip } from "@/components/public/home-stat-strip";
 import { PublicHero } from "@/components/public/public-hero";
 import { getFeaturedTournament } from "@/lib/tournament/queries";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "ShuttleRank | Badminton Tournaments, Rankings and Results",
+  description:
+    "ShuttleRank helps communities run badminton tournaments, manage fixtures, track standings, publish results, and build player rankings.",
+});
 
 const stats = [
-  { label: "Flexible formats", value: "Groups, knockouts, finals" },
-  { label: "Built for doubles", value: "Persistent player history" },
-  { label: "Community-ready", value: "Fixtures, results, standings" },
+  { label: "Tournament formats", value: "Groups, knockouts, finals" },
+  { label: "Player history", value: "Records beyond one event" },
+  { label: "Live competition flow", value: "Fixtures, standings, results" },
 ] as const;
 
 const features = [
   {
-    title: "Flexible tournament formats",
+    title: "Run flexible badminton tournaments",
     description:
-      "From group stages to knockouts and finals, each event can be structured to match the format your community needs.",
+      "Create real community tournament formats with group stages, knockouts, finals, and custom category structures.",
     icon: Settings2,
   },
   {
-    title: "Player records that continue across events",
+    title: "Track players beyond one event",
     description:
-      "Keep track of participation, changing partnerships, and tournament history as players return for future competitions.",
+      "Build long-term player records with participation history, changing partnerships, results, and future ranking potential.",
     icon: Users,
   },
   {
-    title: "Clear public results and standings",
+    title: "Publish clear standings and results",
     description:
-      "Players and spectators can easily follow fixtures, standings, match outcomes, and tournament progress in one place.",
+      "Give players and spectators one clean place to follow fixtures, match scores, group tables, tournament progress, and leaderboards.",
     icon: Medal,
   },
 ] as const;
@@ -40,13 +48,13 @@ export default async function HomePage() {
   return (
     <PageContainer className="space-y-10 sm:space-y-14">
       <PublicHero
-        badge="Community badminton tournaments made easier"
-        title="Run tournaments smoothly. Keep player history beyond a single event."
-        description="Manage fixtures, standings, results, and player records through a polished badminton tournament experience built for real community events."
+        badge="Introducing ShuttleRank"
+        title="Run badminton tournaments with clarity, history, and rankings."
+        description="ShuttleRank helps communities manage fixtures, teams, standings, results, player records, and leaderboards through one polished badminton tournament platform."
         primaryHref="/tournaments"
         primaryLabel="Explore tournaments"
         secondaryHref="/leaderboard"
-        secondaryLabel="View leaderboard"
+        secondaryLabel="View rankings"
       />
 
       <HomeStatStrip items={[...stats]} />

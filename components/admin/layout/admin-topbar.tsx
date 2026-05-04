@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 
+import { AdminLogoutButton } from "@/components/admin/layout/admin-logout-button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,13 +35,13 @@ export function AdminTopbar() {
     segments.length > 0 ? segments[segments.length - 1] : "Overview";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center border-b border-white/10 bg-[#0b1118] px-4 sm:px-5">
-      <div className="flex min-w-0 items-center gap-2.5">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-white/10 bg-[#0b1118] px-4 sm:h-16 sm:px-5">
+      <div className="flex min-w-0 items-center gap-2">
         <SidebarTrigger />
 
         <Separator
           orientation="vertical"
-          className="mx-0.5 hidden data-[orientation=vertical]:h-4 sm:block"
+          className="mx-1 hidden data-[orientation=vertical]:h-4 sm:block"
         />
 
         <Breadcrumb>
@@ -56,6 +57,10 @@ export function AdminTopbar() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+      </div>
+
+      <div className="flex items-center">
+        <AdminLogoutButton />
       </div>
     </header>
   );
