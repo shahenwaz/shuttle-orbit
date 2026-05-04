@@ -88,6 +88,7 @@ The app is designed around these principles:
 - Ranking data, leaderboard management, and admin ranking tools
 - Existing score preload when editing match results
 - Ranking recalculation for completed tournaments
+- Random shuffle helper for assigning unassigned teams into first-stage groups
 
 ## Tournament format support
 
