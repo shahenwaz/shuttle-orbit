@@ -7,7 +7,11 @@ import { authOptions } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Admin Login",
-  description: "Sign in to access the badminton tournament admin workspace.",
+  description: "Sign in to access the ShuttleRank admin workspace.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function LoginPage() {
