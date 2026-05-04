@@ -40,6 +40,11 @@ const resetGroupFixturesSchema = z.object({
   groupId: z.cuid({ error: "Invalid group id." }),
 });
 
+const shuffleFirstStageTeamsSchema = z.object({
+  tournamentId: z.cuid({ error: "Invalid tournament id." }),
+  categoryId: z.cuid({ error: "Invalid category id." }),
+});
+
 function revalidateGroupAdminPaths(tournamentId: string, categoryId: string) {
   revalidatePath(`/admin/tournaments/${tournamentId}`);
   revalidatePath(
@@ -55,6 +60,32 @@ function revalidateGroupAdminPaths(tournamentId: string, categoryId: string) {
     `/admin/tournaments/${tournamentId}/categories/${categoryId}/results`,
   );
   revalidatePath(`/tournaments`);
+}
+
+function shuffleArray<T>(items: T[]) {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [
+      shuffled[randomIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
+function getSmallestGroupIndex(groups: Array<{ currentCount: number }>) {
+  let smallestIndex = 0;
+
+  for (let index = 1; index < groups.length; index += 1) {
+    if (groups[index].currentCount < groups[smallestIndex].currentCount) {
+      smallestIndex = index;
+    }
+  }
+
+  return smallestIndex;
 }
 
 export async function createGroupAction(
@@ -138,6 +169,140 @@ export async function createGroupAction(
     success: true,
     message: "Group created successfully.",
     fieldErrors: {},
+  };
+}
+
+export async function shuffleFirstGroupStageTeamsAction(
+  formData: FormData,
+): Promise<SimpleGroupActionState> {
+  const parsed = shuffleFirstStageTeamsSchema.safeParse({
+    tournamentId: formData.get("tournamentId"),
+    categoryId: formData.get("categoryId"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Invalid shuffle request.",
+    };
+  }
+
+  const { tournamentId, categoryId } = parsed.data;
+
+  const category = await prisma.tournamentCategory.findFirst({
+    where: {
+      id: categoryId,
+      tournamentId,
+    },
+    select: {
+      id: true,
+      teamEntries: {
+        select: {
+          id: true,
+        },
+      },
+      stages: {
+        orderBy: {
+          stageOrder: "asc",
+        },
+        select: {
+          id: true,
+          stageOrder: true,
+          groups: {
+            orderBy: {
+              groupOrder: "asc",
+            },
+            select: {
+              id: true,
+              memberships: {
+                select: {
+                  teamEntryId: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!category) {
+    return {
+      success: false,
+      message: "Category not found.",
+    };
+  }
+
+  const firstGroupStage = category.stages.find(
+    (stage) => stage.groups.length > 0,
+  );
+
+  if (!firstGroupStage) {
+    return {
+      success: false,
+      message: "Create first-stage groups before shuffling teams.",
+    };
+  }
+
+  const assignedTeamIds = new Set(
+    firstGroupStage.groups.flatMap((group) =>
+      group.memberships.map((membership) => membership.teamEntryId),
+    ),
+  );
+
+  const unassignedTeams = category.teamEntries.filter(
+    (team) => !assignedTeamIds.has(team.id),
+  );
+
+  if (unassignedTeams.length === 0) {
+    return {
+      success: false,
+      message: "All teams are already assigned in the first group stage.",
+    };
+  }
+
+  const groupBuckets = firstGroupStage.groups.map((group) => ({
+    groupId: group.id,
+    currentCount: group.memberships.length,
+  }));
+
+  if (groupBuckets.length === 0) {
+    return {
+      success: false,
+      message: "Create groups before shuffling teams.",
+    };
+  }
+
+  const shuffledTeams = shuffleArray(unassignedTeams);
+  const membershipsToCreate: Array<{
+    groupId: string;
+    teamEntryId: string;
+  }> = [];
+
+  for (const team of shuffledTeams) {
+    const targetGroupIndex = getSmallestGroupIndex(groupBuckets);
+    const targetGroup = groupBuckets[targetGroupIndex];
+
+    membershipsToCreate.push({
+      groupId: targetGroup.groupId,
+      teamEntryId: team.id,
+    });
+
+    targetGroup.currentCount += 1;
+  }
+
+  await prisma.groupMembership.createMany({
+    data: membershipsToCreate,
+    skipDuplicates: true,
+  });
+
+  revalidateGroupAdminPaths(tournamentId, categoryId);
+
+  return {
+    success: true,
+    message: `${membershipsToCreate.length} team${
+      membershipsToCreate.length === 1 ? "" : "s"
+    } shuffled into the first group stage.`,
   };
 }
 

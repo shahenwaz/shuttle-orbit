@@ -23,6 +23,7 @@ type CreateDialogProps = {
   hideTrigger?: boolean;
   triggerClassName?: string;
   triggerIcon?: React.ReactNode;
+  triggerDisabled?: boolean;
 };
 
 export function CreateDialog({
@@ -35,12 +36,13 @@ export function CreateDialog({
   hideTrigger = false,
   triggerClassName,
   triggerIcon,
+  triggerDisabled,
 }: CreateDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!hideTrigger ? (
         <DialogTrigger asChild>
-          <Button className={cn(triggerClassName)}>
+          <Button className={cn(triggerClassName)} disabled={triggerDisabled}>
             {triggerIcon ? <span className="mr-1">{triggerIcon}</span> : null}
             {triggerLabel}
           </Button>

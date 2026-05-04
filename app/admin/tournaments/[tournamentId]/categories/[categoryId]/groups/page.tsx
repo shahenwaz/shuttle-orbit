@@ -17,6 +17,7 @@ import { TeamCard } from "@/components/tournaments/team-card";
 import { prisma } from "@/lib/db/prisma";
 import { formatTeamName } from "@/lib/utils/format";
 import { StageCardActions } from "@/components/admin/groups/stage-card-actions";
+import { ShuffleUnassignedTeamsButton } from "@/components/admin/groups/shuffle-unassigned-teams-button";
 
 type AdminCategoryGroupsPageProps = {
   params: Promise<{
@@ -132,6 +133,25 @@ export default async function AdminCategoryGroupsPage({
     })),
   );
 
+  const firstGroupStage = groupStages
+    .filter((stage) => stage.groups.length > 0)
+    .sort((a, b) => a.stageOrder - b.stageOrder)[0];
+
+  const firstGroupStageAssignedTeamIds = new Set(
+    firstGroupStage?.groups.flatMap((group) =>
+      group.memberships.map((membership) => membership.teamEntry.id),
+    ) ?? [],
+  );
+
+  const firstGroupStageUnassignedCount = firstGroupStage
+    ? category.teamEntries.filter(
+        (team) => !firstGroupStageAssignedTeamIds.has(team.id),
+      ).length
+    : 0;
+
+  const canShuffleFirstGroupStage =
+    Boolean(firstGroupStage) && firstGroupStageUnassignedCount > 0;
+
   return (
     <PageContainer className="space-y-6">
       <CategoryWorkspaceHeader
@@ -209,6 +229,13 @@ export default async function AdminCategoryGroupsPage({
                 groups={groupOptions}
               />
             </CreateSheet>
+
+            <ShuffleUnassignedTeamsButton
+              tournamentId={tournament.id}
+              categoryId={category.id}
+              disabled={!canShuffleFirstGroupStage}
+              unassignedCount={firstGroupStageUnassignedCount}
+            />
           </>
         }
       />
