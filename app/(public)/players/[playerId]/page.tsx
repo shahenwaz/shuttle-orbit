@@ -51,8 +51,10 @@ export default async function PlayerProfilePage({
 
   const { player, appearances, rankingSummary } = profile;
 
+  type PlayerAppearance = (typeof appearances)[number];
+
   const uniqueTournaments = new Set(
-    appearances.map((entry) => entry.category.tournament.id),
+    appearances.map((entry: PlayerAppearance) => entry.category.tournament.id),
   ).size;
 
   const bestCategoryEntry = rankingSummary.categoryRankings[0] ?? null;
@@ -136,7 +138,7 @@ export default async function PlayerProfilePage({
           <EmptyState message="No tournament appearances available yet." />
         ) : (
           <div className="space-y-3 sm:space-y-4">
-            {appearances.map((entry) => (
+            {appearances.map((entry: PlayerAppearance) => (
               <PlayerAppearanceCard key={entry.id} entry={entry} />
             ))}
           </div>
