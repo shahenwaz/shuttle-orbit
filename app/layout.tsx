@@ -17,29 +17,29 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "ShuttleRank",
-    template: "%s | ShuttleRank",
+    default: "Shuttle Orbit",
+    template: "%s | Shuttle Orbit",
   },
   description:
-    "ShuttleRank helps communities run badminton tournaments, manage fixtures, track standings, publish results, and build player rankings.",
-  applicationName: "ShuttleRank",
+    "Shuttle Orbit helps communities run badminton tournaments, manage fixtures, track standings, publish results, and build player rankings.",
+  applicationName: "Shuttle Orbit",
   appleWebApp: {
-    title: "ShuttleRank",
+    title: "Shuttle Orbit",
     capable: true,
     statusBarStyle: "black-translucent",
   },
   openGraph: {
-    title: "ShuttleRank",
+    title: "Shuttle Orbit",
     description:
       "A modern badminton tournament and ranking platform for community competitions.",
-    siteName: "ShuttleRank",
+    siteName: "Shuttle Orbit",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShuttleRank",
+    title: "Shuttle Orbit",
     description:
-      "Run badminton tournaments, track results, and build player rankings with ShuttleRank.",
+      "Run badminton tournaments, track results, and build player rankings with Shuttle Orbit.",
   },
 };
 

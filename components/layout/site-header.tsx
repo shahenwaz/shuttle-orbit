@@ -46,8 +46,8 @@ export function SiteHeader() {
               className="group flex min-w-0 items-center gap-3"
             >
               <Image
-                src="/brand/shuttlerank-logo.webp"
-                alt="ShuttleRank logo"
+                src="/brand/shuttle-orbit-logo.webp"
+                alt="Shuttle Orbit logo"
                 width={34}
                 height={34}
                 priority
@@ -59,7 +59,7 @@ export function SiteHeader() {
                   Badminton Platform
                 </p>
                 <h1 className="truncate font-heading text-sm font-semibold tracking-tight text-foreground sm:text-base">
-                  ShuttleRank
+                  Shuttle Orbit
                 </h1>
               </div>
             </Link>

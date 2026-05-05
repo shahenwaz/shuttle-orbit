@@ -14,9 +14,9 @@ export const metadata: Metadata = buildPageMetadata({
 const contactItems = [
   {
     title: "Email",
-    value: "shuttlerank@outlook.com",
+    value: "shuttle-orbit@outlook.com",
     icon: Mail,
-    href: "mailto:shuttlerank@outlook.com",
+    href: "mailto:shuttle-orbit@outlook.com",
   },
   {
     title: "Facebook",

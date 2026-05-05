@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Admin Login",
-  description: "Sign in to access the ShuttleRank admin workspace.",
+  description: "Sign in to access the Shuttle Orbit admin workspace.",
   robots: {
     index: false,
     follow: false,

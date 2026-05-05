@@ -10,9 +10,9 @@ import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "ShuttleRank | Badminton Tournaments, Rankings and Results",
+  title: "Shuttle Orbit | Badminton Tournaments, Rankings and Results",
   description:
-    "ShuttleRank helps communities run badminton tournaments, manage fixtures, track standings, publish results, and build player rankings.",
+    "Shuttle Orbit helps communities run badminton tournaments, manage fixtures, track standings, publish results, and build player rankings.",
 });
 
 const stats = [
@@ -52,9 +52,9 @@ export default async function HomePage() {
   return (
     <PageContainer className="space-y-10 sm:space-y-14">
       <PublicHero
-        badge="Introducing ShuttleRank"
+        badge="Introducing Shuttle Orbit"
         title="Run badminton tournaments with clarity, history, and rankings."
-        description="ShuttleRank helps communities manage fixtures, teams, standings, results, player records, and leaderboards through one polished badminton tournament platform."
+        description="Shuttle Orbit helps communities manage fixtures, teams, standings, results, player records, and leaderboards through one polished badminton tournament platform."
         primaryHref="/tournaments"
         primaryLabel="Explore tournaments"
         secondaryHref="/leaderboard"

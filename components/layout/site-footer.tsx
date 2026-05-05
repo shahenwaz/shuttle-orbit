@@ -30,8 +30,8 @@ export function SiteFooter() {
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <Link href="/" className="group inline-flex items-center gap-3">
             <Image
-              src="/brand/shuttlerank-logo.webp"
-              alt="ShuttleRank logo"
+              src="/brand/shuttle-orbit-logo.webp"
+              alt="Shuttle Orbit logo"
               width={32}
               height={32}
               className="relative h-7.5 w-7.5 object-contain drop-shadow-[0_0_10px_rgba(74,222,128,0.24)] transition duration-300 group-hover:scale-105"
@@ -42,7 +42,7 @@ export function SiteFooter() {
                 Badminton platform
               </p>
               <p className="font-heading text-sm font-semibold text-foreground sm:text-base">
-                ShuttleRank
+                Shuttle Orbit
               </p>
             </div>
           </Link>
@@ -72,7 +72,7 @@ export function SiteFooter() {
 
         <div className="mt-8 border-t border-white/10 pt-4">
           <p className="text-xs text-muted-foreground sm:text-sm">
-            © {new Date().getFullYear()} ShuttleRank. Built for community
+            © {new Date().getFullYear()} Shuttle Orbit. Built for community
             badminton tournaments, results, and rankings.
           </p>
         </div>

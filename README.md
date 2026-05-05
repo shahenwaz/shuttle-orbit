@@ -1,8 +1,8 @@
-# ShuttleRank
+# Shuttle Orbit
 
 A modern badminton tournament and ranking platform for community competitions.
 
-ShuttleRank helps communities run flexible badminton tournaments with admin-controlled setup, public tournament pages, fixtures, standings, results, player records, and ranking support.
+Shuttle Orbit helps communities run flexible badminton tournaments with admin-controlled setup, public tournament pages, fixtures, standings, results, player records, and ranking support.
 
 ![Next.js](https://img.shields.io/badge/Next.js-App%20Router-black?logo=nextdotjs)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)
@@ -15,7 +15,7 @@ ShuttleRank helps communities run flexible badminton tournaments with admin-cont
 
 The core tournament management foundation is in place, along with ranking, leaderboard, and player profile support.
 
-ShuttleRank currently includes:
+Shuttle Orbit currently includes:
 
 - Public tournament, category, player, and leaderboard pages
 - Admin tournament, player, team, group, fixture, result, and ranking workflows
@@ -24,7 +24,7 @@ ShuttleRank currently includes:
 - Player records, tournament history, ranking data, and leaderboard support
 - Public match cards with multi-set score details
 - Modern dark UI with mobile-first responsive polish
-- Branded ShuttleRank identity, favicon, app icon, and web app manifest setup
+- Branded Shuttle Orbit identity, favicon, app icon, and web app manifest setup
 
 ## Tech stack
 
@@ -41,7 +41,7 @@ ShuttleRank currently includes:
 
 ## Project goal
 
-ShuttleRank is built as a long-term badminton tournament platform, not a one-off event page.
+Shuttle Orbit is built as a long-term badminton tournament platform, not a one-off event page.
 
 The app is designed around these principles:
 
@@ -92,7 +92,7 @@ The app is designed around these principles:
 
 ## Tournament format support
 
-ShuttleRank supports flexible badminton formats instead of forcing one fixed structure.
+Shuttle Orbit supports flexible badminton formats instead of forcing one fixed structure.
 
 Currently supported flows include:
 
@@ -201,7 +201,7 @@ Core models include:
 
 ```bash
 git clone <repository-url>
-cd shuttlerank
+cd shuttle-orbit
 ```
 
 ### 2. Install dependencies
@@ -309,7 +309,7 @@ This keeps rankings auditable, flexible, and easier to recalculate when tourname
 - Ranking data, leaderboard views, and admin ranking tools
 - Public leaderboard filters and summaries
 - Admin route authentication
-- ShuttleRank branding, logo, favicon, and app icon setup
+- Shuttle Orbit branding, logo, favicon, and app icon setup
 
 ### Next major areas
 
