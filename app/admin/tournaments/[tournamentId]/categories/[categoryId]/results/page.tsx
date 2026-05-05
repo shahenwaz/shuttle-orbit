@@ -36,7 +36,6 @@ export default async function AdminCategoryResultsPage({
         tournamentId,
       },
       include: {
-        knockoutStartStage: true,
         teamEntries: {
           orderBy: {
             createdAt: "asc",
