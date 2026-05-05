@@ -1,6 +1,5 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -532,40 +531,39 @@ export async function resetGroupFixturesAction(
     };
   }
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const matches = await tx.match.findMany({
-      where: {
-        tournamentId,
-        categoryId,
-        groupId,
-      },
-      select: {
-        id: true,
-      },
-    });
+  const matches = await prisma.match.findMany({
+    where: {
+      tournamentId,
+      categoryId,
+      groupId,
+    },
+    select: {
+      id: true,
+    },
+  });
 
-    type GroupMatchRow = (typeof matches)[number];
+  type GroupMatchRow = (typeof matches)[number];
 
-    const matchIds = matches.map((match: GroupMatchRow) => match.id);
+  const matchIds = matches.map((match: GroupMatchRow) => match.id);
 
-    if (matchIds.length > 0) {
-      await tx.matchSet.deleteMany({
+  if (matchIds.length > 0) {
+    await prisma.$transaction([
+      prisma.matchSet.deleteMany({
         where: {
           matchId: {
             in: matchIds,
           },
         },
-      });
-
-      await tx.match.deleteMany({
+      }),
+      prisma.match.deleteMany({
         where: {
           id: {
             in: matchIds,
           },
         },
-      });
-    }
-  });
+      }),
+    ]);
+  }
 
   revalidateGroupAdminPaths(tournamentId, categoryId);
 
