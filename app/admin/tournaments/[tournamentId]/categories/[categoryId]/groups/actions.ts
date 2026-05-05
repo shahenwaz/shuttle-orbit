@@ -62,7 +62,7 @@ function revalidateGroupAdminPaths(tournamentId: string, categoryId: string) {
   revalidatePath(`/tournaments`);
 }
 
-function shuffleArray<T>(items: T[]) {
+function shuffleArray<T>(items: readonly T[]): T[] {
   const shuffled = [...items];
 
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -275,7 +275,9 @@ export async function shuffleFirstGroupStageTeamsAction(
     };
   }
 
-  const shuffledTeams = shuffleArray(unassignedTeams);
+  const shuffledTeams: ShuffleTeamEntry[] =
+    shuffleArray<ShuffleTeamEntry>(unassignedTeams);
+
   const membershipsToCreate: Array<{
     groupId: string;
     teamEntryId: string;
@@ -284,6 +286,10 @@ export async function shuffleFirstGroupStageTeamsAction(
   for (const team of shuffledTeams) {
     const targetGroupIndex = getSmallestGroupIndex(groupBuckets);
     const targetGroup = groupBuckets[targetGroupIndex];
+
+    if (!targetGroup) {
+      continue;
+    }
 
     membershipsToCreate.push({
       groupId: targetGroup.groupId,

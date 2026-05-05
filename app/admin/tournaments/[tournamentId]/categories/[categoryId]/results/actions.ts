@@ -24,6 +24,24 @@ export type ResetMatchResultActionState = {
   message: string;
 };
 
+type KnockoutStageType =
+  | "quarter_final"
+  | "semi_final"
+  | "final"
+  | "third_place";
+
+type RecordedSetInput = {
+  setNumber: number;
+  teamAScore: number;
+  teamBScore: number;
+};
+
+type DownstreamTarget = {
+  nextStageType: "semi_final" | "final" | "third_place";
+  nextMatchNumber: number;
+  nextSlot: "teamAId" | "teamBId";
+};
+
 const optionalScoreSchema = z.preprocess((value) => {
   if (value === "" || value === null || value === undefined) {
     return undefined;
@@ -68,6 +86,14 @@ function hasBothScores(a?: number, b?: number) {
 function hasOneScoreOnly(a?: number, b?: number) {
   return (
     (a !== undefined && b === undefined) || (a === undefined && b !== undefined)
+  );
+}
+
+function isKnockoutStageType(
+  stageType: string,
+): stageType is KnockoutStageType {
+  return ["quarter_final", "semi_final", "final", "third_place"].includes(
+    stageType,
   );
 }
 
@@ -195,31 +221,29 @@ export async function recordMatchResultAction(
     };
   }
 
-  const sets = [
+  const sets: RecordedSetInput[] = [
     {
       setNumber: 1,
       teamAScore: set1TeamAScore,
       teamBScore: set1TeamBScore,
     },
-    ...(hasBothScores(set2TeamAScore, set2TeamBScore)
-      ? [
-          {
-            setNumber: 2,
-            teamAScore: set2TeamAScore!,
-            teamBScore: set2TeamBScore!,
-          },
-        ]
-      : []),
-    ...(hasBothScores(set3TeamAScore, set3TeamBScore)
-      ? [
-          {
-            setNumber: 3,
-            teamAScore: set3TeamAScore!,
-            teamBScore: set3TeamBScore!,
-          },
-        ]
-      : []),
   ];
+
+  if (set2TeamAScore !== undefined && set2TeamBScore !== undefined) {
+    sets.push({
+      setNumber: 2,
+      teamAScore: set2TeamAScore,
+      teamBScore: set2TeamBScore,
+    });
+  }
+
+  if (set3TeamAScore !== undefined && set3TeamBScore !== undefined) {
+    sets.push({
+      setNumber: 3,
+      teamAScore: set3TeamAScore,
+      teamBScore: set3TeamBScore,
+    });
+  }
 
   let teamASetWins = 0;
   let teamBSetWins = 0;
@@ -245,7 +269,6 @@ export async function recordMatchResultAction(
   const winnerId = teamASetWins > teamBSetWins ? match.teamAId : match.teamBId;
   const loserId = winnerId === match.teamAId ? match.teamBId : match.teamAId;
 
-  type MatchSetInput = (typeof sets)[number];
   const scoreSummary =
     sets.length === 1
       ? `${sets[0].teamAScore} - ${sets[0].teamBScore}`
@@ -267,7 +290,7 @@ export async function recordMatchResultAction(
         matchId,
       },
     }),
-    ...sets.map((set: MatchSetInput) =>
+    ...sets.map((set: RecordedSetInput) =>
       prisma.matchSet.create({
         data: {
           matchId,
@@ -279,22 +302,10 @@ export async function recordMatchResultAction(
     ),
   ]);
 
-  if (
-    match.stage.stageType === "quarter_final" ||
-    match.stage.stageType === "semi_final" ||
-    match.stage.stageType === "final" ||
-    match.stage.stageType === "third_place"
-  ) {
+  if (isKnockoutStageType(match.stage.stageType)) {
     const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
 
-    const winnerTarget = getAdvanceTarget(
-      match.stage.stageType as
-        | "quarter_final"
-        | "semi_final"
-        | "final"
-        | "third_place",
-      matchNumber,
-    );
+    const winnerTarget = getAdvanceTarget(match.stage.stageType, matchNumber);
 
     if (winnerTarget) {
       const nextStage = await prisma.stage.findFirst({
@@ -338,11 +349,7 @@ export async function recordMatchResultAction(
     }
 
     const consolationTarget = getConsolationTarget(
-      match.stage.stageType as
-        | "quarter_final"
-        | "semi_final"
-        | "final"
-        | "third_place",
+      match.stage.stageType,
       matchNumber,
     );
 
@@ -450,40 +457,32 @@ export async function resetMatchResultAction(
     };
   }
 
-  const isKnockoutStage =
-    match.stage.stageType === "quarter_final" ||
-    match.stage.stageType === "semi_final" ||
-    match.stage.stageType === "final" ||
-    match.stage.stageType === "third_place";
-
-  if (isKnockoutStage && match.winnerId) {
+  if (isKnockoutStageType(match.stage.stageType) && match.winnerId) {
     const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
 
-    const winnerTarget = getAdvanceTarget(
-      match.stage.stageType as
-        | "quarter_final"
-        | "semi_final"
-        | "final"
-        | "third_place",
-      matchNumber,
-    );
-
+    const winnerTarget = getAdvanceTarget(match.stage.stageType, matchNumber);
     const consolationTarget = getConsolationTarget(
-      match.stage.stageType as
-        | "quarter_final"
-        | "semi_final"
-        | "final"
-        | "third_place",
+      match.stage.stageType,
       matchNumber,
     );
 
-    const downstreamTargets = [winnerTarget, consolationTarget].filter(
-      Boolean,
-    ) as Array<{
-      nextStageType: "semi_final" | "final" | "third_place";
-      nextMatchNumber: 1 | 2;
-      nextSlot: "teamAId" | "teamBId";
-    }>;
+    const downstreamTargets: DownstreamTarget[] = [];
+
+    if (winnerTarget) {
+      downstreamTargets.push({
+        nextStageType: winnerTarget.nextStageType,
+        nextMatchNumber: winnerTarget.nextMatchNumber,
+        nextSlot: winnerTarget.nextSlot,
+      });
+    }
+
+    if (consolationTarget) {
+      downstreamTargets.push({
+        nextStageType: consolationTarget.nextStageType,
+        nextMatchNumber: consolationTarget.nextMatchNumber,
+        nextSlot: consolationTarget.nextSlot,
+      });
+    }
 
     for (const target of downstreamTargets) {
       const nextStage = await prisma.stage.findFirst({

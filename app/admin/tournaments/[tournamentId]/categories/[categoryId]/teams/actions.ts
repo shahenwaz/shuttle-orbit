@@ -279,9 +279,27 @@ export async function updateTeamEntryNameAction(
   }
 
   try {
-    await prisma.teamEntry.update({
+    const teamEntry = await prisma.teamEntry.findFirst({
       where: {
         id: teamEntryId,
+        tournamentId,
+        categoryId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!teamEntry) {
+      return {
+        success: false,
+        message: "Team entry not found.",
+      };
+    }
+
+    await prisma.teamEntry.update({
+      where: {
+        id: teamEntry.id,
       },
       data: {
         teamName,

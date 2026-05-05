@@ -92,8 +92,10 @@ export default async function AdminCategoryTeamsPage({
     notFound();
   }
 
+  type CategoryStage = (typeof category.stages)[number];
+
   const totalGroups = category.stages.reduce(
-    (sum, stage) => sum + stage.groups.length,
+    (sum: number, stage: CategoryStage) => sum + stage.groups.length,
     0,
   );
 

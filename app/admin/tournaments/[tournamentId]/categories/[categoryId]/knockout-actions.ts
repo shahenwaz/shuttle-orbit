@@ -60,16 +60,21 @@ export async function generateKnockoutBracketAction(args: {
 
   const startStageType = category.knockoutStartStage as KnockoutStageType;
   const seeds = buildKnockoutStageSeeds(startStageType);
+
+  type CategoryStage = (typeof category.stages)[number];
+  type KnockoutSeed = (typeof seeds)[number];
+  type KnockoutMatchSeed = KnockoutSeed["matches"][number];
+
   const maxStageOrder =
     category.stages.reduce(
-      (max, stage) => Math.max(max, stage.stageOrder),
+      (max: number, stage: CategoryStage) => Math.max(max, stage.stageOrder),
       0,
     ) || 0;
 
   let nextStageOrder = maxStageOrder + 1;
 
   await prisma.$transaction(async (tx) => {
-    for (const seed of seeds) {
+    for (const seed of seeds as KnockoutSeed[]) {
       let stage = await tx.stage.findFirst({
         where: {
           categoryId,
@@ -106,7 +111,7 @@ export async function generateKnockoutBracketAction(args: {
       });
 
       if (existingMatches === 0) {
-        for (const matchSeed of seed.matches) {
+        for (const matchSeed of seed.matches as KnockoutMatchSeed[]) {
           await tx.match.create({
             data: {
               tournamentId,

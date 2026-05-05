@@ -144,7 +144,7 @@ export default async function AdminCategoryGroupsPage({
     .filter((stage: GroupStage) => stage.groups.length > 0)
     .sort((a: GroupStage, b: GroupStage) => a.stageOrder - b.stageOrder)[0];
 
-  const firstGroupStageAssignedTeamIds = new Set(
+  const firstGroupStageAssignedTeamIds = new Set<string>(
     firstGroupStage?.groups.flatMap((group: StageGroup) =>
       group.memberships.map(
         (membership: StageMembership) => membership.teamEntry.id,
@@ -255,7 +255,7 @@ export default async function AdminCategoryGroupsPage({
       ) : (
         <div className="grid gap-6">
           {groupStages.map((stage: GroupStage) => {
-            const assignedTeamIds = new Set(
+            const assignedTeamIds = new Set<string>(
               stage.groups.flatMap((group: StageGroup) =>
                 group.memberships.map(
                   (membership: StageMembership) => membership.teamEntry.id,
