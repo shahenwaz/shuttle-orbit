@@ -1,5 +1,6 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -80,7 +81,14 @@ function getSmallestGroupIndex(groups: Array<{ currentCount: number }>) {
   let smallestIndex = 0;
 
   for (let index = 1; index < groups.length; index += 1) {
-    if (groups[index].currentCount < groups[smallestIndex].currentCount) {
+    const currentGroup = groups[index];
+    const smallestGroup = groups[smallestIndex];
+
+    if (!currentGroup || !smallestGroup) {
+      continue;
+    }
+
+    if (currentGroup.currentCount < smallestGroup.currentCount) {
       smallestIndex = index;
     }
   }
@@ -251,7 +259,7 @@ export async function shuffleFirstGroupStageTeamsAction(
   type FirstStageMembership = FirstStageGroup["memberships"][number];
   type ShuffleTeamEntry = (typeof category.teamEntries)[number];
 
-  const assignedTeamIds = new Set(
+  const assignedTeamIds = new Set<string>(
     firstGroupStage.groups.flatMap((group: FirstStageGroup) =>
       group.memberships.map(
         (membership: FirstStageMembership) => membership.teamEntryId,
@@ -262,6 +270,13 @@ export async function shuffleFirstGroupStageTeamsAction(
   const unassignedTeams = category.teamEntries.filter(
     (team: ShuffleTeamEntry) => !assignedTeamIds.has(team.id),
   );
+
+  if (unassignedTeams.length === 0) {
+    return {
+      success: false,
+      message: "All teams are already assigned in the first group stage.",
+    };
+  }
 
   const groupBuckets = firstGroupStage.groups.map((group: FirstStageGroup) => ({
     groupId: group.id,
@@ -517,7 +532,7 @@ export async function resetGroupFixturesAction(
     };
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const matches = await tx.match.findMany({
       where: {
         tournamentId,
@@ -559,8 +574,6 @@ export async function resetGroupFixturesAction(
     message: "Group fixtures reset successfully.",
   };
 }
-
-// The updateGroupAction is defined here instead of in the edit-group-form file to keep all group related actions in one place, as they share some validation logic and types.
 
 export type UpdateGroupActionState = {
   success: boolean;
@@ -680,8 +693,6 @@ export async function updateGroupAction(
   };
 }
 
-// The deleteGroupAction is defined here instead of in the edit-group-form file to keep all group related actions in one place, as they share some validation logic and types.
-
 export type DeleteGroupActionState = {
   success: boolean;
   message: string;
@@ -759,8 +770,6 @@ export async function deleteGroupAction(
     message: "Group deleted successfully.",
   };
 }
-
-// The createCategoryGroupStageAction is defined here instead of in the create-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
 
 export type CreateCategoryGroupStageActionState = {
   success: boolean;
@@ -876,8 +885,6 @@ export async function createCategoryGroupStageAction(
   };
 }
 
-// The updateCategoryStageAction is defined here instead of in the edit-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
-
 export type UpdateCategoryStageActionState = {
   success: boolean;
   message: string;
@@ -989,8 +996,6 @@ export async function updateCategoryStageAction(
     fieldErrors: {},
   };
 }
-
-// The deleteCategoryStageAction is defined here instead of in the edit-stage-form file to keep all group stage related actions in one place, as they share some validation logic and types.
 
 export type DeleteCategoryStageActionState = {
   success: boolean;
