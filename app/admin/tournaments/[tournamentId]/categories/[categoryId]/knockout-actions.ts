@@ -73,64 +73,62 @@ export async function generateKnockoutBracketAction(args: {
 
   let nextStageOrder = maxStageOrder + 1;
 
-  await prisma.$transaction(async (tx) => {
-    for (const seed of seeds as KnockoutSeed[]) {
-      let stage = await tx.stage.findFirst({
-        where: {
+  for (const seed of seeds as KnockoutSeed[]) {
+    let stage = await prisma.stage.findFirst({
+      where: {
+        categoryId,
+        stageType: seed.stageType,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!stage) {
+      stage = await prisma.stage.create({
+        data: {
           categoryId,
+          name: seed.stageName,
           stageType: seed.stageType,
+          stageOrder: nextStageOrder,
         },
         select: {
           id: true,
         },
       });
 
-      if (!stage) {
-        stage = await tx.stage.create({
-          data: {
-            categoryId,
-            name: seed.stageName,
-            stageType: seed.stageType,
-            stageOrder: nextStageOrder,
-          },
-          select: {
-            id: true,
-          },
-        });
-
-        nextStageOrder += 1;
-      }
-
-      const existingMatches = await tx.match.count({
-        where: {
-          tournamentId,
-          categoryId,
-          stageId: stage.id,
-          groupId: null,
-        },
-      });
-
-      if (existingMatches === 0) {
-        for (const matchSeed of seed.matches as KnockoutMatchSeed[]) {
-          await tx.match.create({
-            data: {
-              tournamentId,
-              categoryId,
-              stageId: stage.id,
-              groupId: null,
-              roundLabel: getKnockoutRoundLabel(
-                seed.stageType,
-                matchSeed.matchNumber,
-              ),
-              teamAId: null,
-              teamBId: null,
-              status: "scheduled",
-            },
-          });
-        }
-      }
+      nextStageOrder += 1;
     }
-  });
+
+    const existingMatches = await prisma.match.count({
+      where: {
+        tournamentId,
+        categoryId,
+        stageId: stage.id,
+        groupId: null,
+      },
+    });
+
+    if (existingMatches === 0) {
+      await prisma.match.createMany({
+        data: (seed.matches as KnockoutMatchSeed[]).map(
+          (matchSeed: KnockoutMatchSeed) => ({
+            tournamentId,
+            categoryId,
+            stageId: stage.id,
+            groupId: null,
+            roundLabel: getKnockoutRoundLabel(
+              seed.stageType,
+              matchSeed.matchNumber,
+            ),
+            teamAId: null,
+            teamBId: null,
+            status: "scheduled",
+          }),
+        ),
+      });
+    }
+  }
 
   revalidatePath(`/admin/tournaments/${tournamentId}/categories/${categoryId}`);
   revalidatePath(
