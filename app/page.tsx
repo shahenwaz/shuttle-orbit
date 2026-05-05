@@ -45,6 +45,10 @@ const features = [
 export default async function HomePage() {
   const featuredTournament = await getFeaturedTournament();
 
+  type FeaturedTournamentCategory = NonNullable<
+    typeof featuredTournament
+  >["categories"][number];
+
   return (
     <PageContainer className="space-y-10 sm:space-y-14">
       <PublicHero
@@ -68,10 +72,12 @@ export default async function HomePage() {
                 description: featuredTournament.description,
                 eventDate: featuredTournament.eventDate,
                 location: featuredTournament.location,
-                categories: featuredTournament.categories.map((category) => ({
-                  id: category.id,
-                  code: category.code,
-                })),
+                categories: featuredTournament.categories.map(
+                  (category: FeaturedTournamentCategory) => ({
+                    id: category.id,
+                    code: category.code,
+                  }),
+                ),
               }
             : null
         }
