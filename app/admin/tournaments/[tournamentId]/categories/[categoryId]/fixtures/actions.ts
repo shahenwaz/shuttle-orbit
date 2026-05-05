@@ -119,9 +119,13 @@ export async function generateGroupFixturesAction(
     };
   }
 
-  const teamEntries = group.memberships.map((membership) => ({
-    id: membership.teamEntry.id,
-  }));
+  type GroupFixtureMembership = (typeof group.memberships)[number];
+
+  const teamEntries = group.memberships.map(
+    (membership: GroupFixtureMembership) => ({
+      id: membership.teamEntry.id,
+    }),
+  );
 
   const pairings = generateRoundRobinPairings(teamEntries);
 
@@ -145,13 +149,17 @@ export async function generateGroupFixturesAction(
     },
   });
 
+  type ExistingMatchRow = (typeof existingMatches)[number];
+
   const existingMatchKeys = new Set(
-    existingMatches.map((match) =>
+    existingMatches.map((match: ExistingMatchRow) =>
       [match.teamAId, match.teamBId].sort().join("::"),
     ),
   );
 
-  const newPairings = pairings.filter((pairing) => {
+  type RoundRobinPairing = (typeof pairings)[number];
+
+  const newPairings = pairings.filter((pairing: RoundRobinPairing) => {
     const key = [pairing.teamAId, pairing.teamBId].sort().join("::");
     return !existingMatchKeys.has(key);
   });
@@ -163,8 +171,10 @@ export async function generateGroupFixturesAction(
     };
   }
 
+  type NewPairing = (typeof newPairings)[number];
+
   await prisma.$transaction(
-    newPairings.map((pairing) =>
+    newPairings.map((pairing: NewPairing) =>
       prisma.match.create({
         data: {
           tournamentId,
@@ -184,7 +194,9 @@ export async function generateGroupFixturesAction(
 
   return {
     success: true,
-    message: `${newPairings.length} fixture${newPairings.length === 1 ? "" : "s"} generated successfully.`,
+    message: `${newPairings.length} fixture${
+      newPairings.length === 1 ? "" : "s"
+    } generated successfully.`,
     fieldErrors: {},
   };
 }
@@ -249,7 +261,13 @@ export async function createGroupMatchAction(
     };
   }
 
-  const groupTeamIds = new Set(group.memberships.map((m) => m.teamEntryId));
+  type GroupMembershipRow = (typeof group.memberships)[number];
+
+  const groupTeamIds = new Set(
+    group.memberships.map(
+      (membership: GroupMembershipRow) => membership.teamEntryId,
+    ),
+  );
 
   if (!groupTeamIds.has(teamAId) || !groupTeamIds.has(teamBId)) {
     return {

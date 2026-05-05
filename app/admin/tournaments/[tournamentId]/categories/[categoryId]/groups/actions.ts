@@ -233,8 +233,10 @@ export async function shuffleFirstGroupStageTeamsAction(
     };
   }
 
+  type ShuffleStage = (typeof category.stages)[number];
+
   const firstGroupStage = category.stages.find(
-    (stage) => stage.groups.length > 0,
+    (stage: ShuffleStage) => stage.groups.length > 0,
   );
 
   if (!firstGroupStage) {
@@ -244,24 +246,24 @@ export async function shuffleFirstGroupStageTeamsAction(
     };
   }
 
+  type FirstGroupStage = NonNullable<typeof firstGroupStage>;
+  type FirstStageGroup = FirstGroupStage["groups"][number];
+  type FirstStageMembership = FirstStageGroup["memberships"][number];
+  type ShuffleTeamEntry = (typeof category.teamEntries)[number];
+
   const assignedTeamIds = new Set(
-    firstGroupStage.groups.flatMap((group) =>
-      group.memberships.map((membership) => membership.teamEntryId),
+    firstGroupStage.groups.flatMap((group: FirstStageGroup) =>
+      group.memberships.map(
+        (membership: FirstStageMembership) => membership.teamEntryId,
+      ),
     ),
   );
 
   const unassignedTeams = category.teamEntries.filter(
-    (team) => !assignedTeamIds.has(team.id),
+    (team: ShuffleTeamEntry) => !assignedTeamIds.has(team.id),
   );
 
-  if (unassignedTeams.length === 0) {
-    return {
-      success: false,
-      message: "All teams are already assigned in the first group stage.",
-    };
-  }
-
-  const groupBuckets = firstGroupStage.groups.map((group) => ({
+  const groupBuckets = firstGroupStage.groups.map((group: FirstStageGroup) => ({
     groupId: group.id,
     currentCount: group.memberships.length,
   }));
@@ -521,7 +523,9 @@ export async function resetGroupFixturesAction(
       },
     });
 
-    const matchIds = matches.map((match) => match.id);
+    type GroupMatchRow = (typeof matches)[number];
+
+    const matchIds = matches.map((match: GroupMatchRow) => match.id);
 
     if (matchIds.length > 0) {
       await tx.matchSet.deleteMany({
@@ -817,8 +821,10 @@ export async function createCategoryGroupStageAction(
     };
   }
 
+  type ExistingStageRow = (typeof category.stages)[number];
+
   const duplicateStage = category.stages.find(
-    (stage) =>
+    (stage: ExistingStageRow) =>
       stage.name.trim().toLowerCase() === stageName.trim().toLowerCase(),
   );
 
@@ -833,8 +839,10 @@ export async function createCategoryGroupStageAction(
   }
 
   const nextStageOrder =
-    category.stages.reduce((max, stage) => Math.max(max, stage.stageOrder), 0) +
-    1;
+    category.stages.reduce(
+      (max: number, stage: ExistingStageRow) => Math.max(max, stage.stageOrder),
+      0,
+    ) + 1;
 
   await prisma.stage.create({
     data: {

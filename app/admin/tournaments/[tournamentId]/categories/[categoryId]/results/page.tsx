@@ -174,32 +174,39 @@ export default async function AdminCategoryResultsPage({
     notFound();
   }
 
+  type CategoryStage = (typeof category.stages)[number];
+  type CategoryTeamEntry = (typeof category.teamEntries)[number];
+
   const groupStages = category.stages.filter(
-    (stage) =>
+    (stage: CategoryStage) =>
       !["quarter_final", "semi_final", "final", "third_place"].includes(
         stage.stageType,
       ),
   );
 
-  const knockoutStages = category.stages.filter((stage) =>
+  const knockoutStages = category.stages.filter((stage: CategoryStage) =>
     ["quarter_final", "semi_final", "final", "third_place"].includes(
       stage.stageType,
     ),
   );
 
+  type GroupStage = (typeof groupStages)[number];
+  type MatchRow = CategoryStage["matches"][number];
+
   const totalGroups = groupStages.reduce(
-    (sum, stage) => sum + stage.groups.length,
+    (sum: number, stage: GroupStage) => sum + stage.groups.length,
     0,
   );
 
   const completedMatches = category.stages.reduce(
-    (sum, stage) =>
+    (sum: number, stage: CategoryStage) =>
       sum +
-      stage.matches.filter((match) => match.status === "completed").length,
+      stage.matches.filter((match: MatchRow) => match.status === "completed")
+        .length,
     0,
   );
 
-  const teamOptions = category.teamEntries.map((team) => ({
+  const teamOptions = category.teamEntries.map((team: CategoryTeamEntry) => ({
     id: team.id,
     label: formatTeamName(
       team.player1.fullName,
@@ -236,7 +243,7 @@ export default async function AdminCategoryResultsPage({
         <EmptyState message="No group stages available yet." />
       ) : (
         <div className="grid gap-6">
-          {groupStages.map((stage) => (
+          {groupStages.map((stage: GroupStage) => (
             <section key={stage.id} className="space-y-4">
               <div className="surface-card overflow-hidden">
                 <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">

@@ -198,26 +198,32 @@ export default async function AdminCategoryFixturesPage({
     notFound();
   }
 
+  type CategoryStage = (typeof category.stages)[number];
+  type CategoryTeamEntry = (typeof category.teamEntries)[number];
+
   const groupStages = category.stages.filter(
-    (stage) =>
+    (stage: CategoryStage) =>
       !["quarter_final", "semi_final", "final", "third_place"].includes(
         stage.stageType,
       ),
   );
 
-  const knockoutStages = category.stages.filter((stage) =>
+  const knockoutStages = category.stages.filter((stage: CategoryStage) =>
     ["quarter_final", "semi_final", "final", "third_place"].includes(
       stage.stageType,
     ),
   );
 
+  type GroupStage = (typeof groupStages)[number];
+  type StageGroup = GroupStage["groups"][number];
+
   const totalGroups = groupStages.reduce(
-    (sum, stage) => sum + stage.groups.length,
+    (sum: number, stage: GroupStage) => sum + stage.groups.length,
     0,
   );
 
-  const groupOptions = groupStages.flatMap((stage) =>
-    stage.groups.map((group) => ({
+  const groupOptions = groupStages.flatMap((stage: GroupStage) =>
+    stage.groups.map((group: StageGroup) => ({
       id: group.id,
       name: `${stage.name} · ${group.name}`,
       teamCount: group.memberships.length,
@@ -225,7 +231,7 @@ export default async function AdminCategoryFixturesPage({
     })),
   );
 
-  const teamOptions = category.teamEntries.map((team) => ({
+  const teamOptions = category.teamEntries.map((team: CategoryTeamEntry) => ({
     id: team.id,
     label: formatTeamName(
       team.player1.fullName,
@@ -302,7 +308,7 @@ export default async function AdminCategoryFixturesPage({
         <EmptyState message="No group stages available yet." />
       ) : (
         <div className="grid gap-6">
-          {groupStages.map((stage) => (
+          {groupStages.map((stage: GroupStage) => (
             <section key={stage.id} className="space-y-4">
               <div className="surface-card overflow-hidden">
                 <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">

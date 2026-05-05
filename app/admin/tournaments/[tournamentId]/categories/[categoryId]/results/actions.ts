@@ -245,6 +245,7 @@ export async function recordMatchResultAction(
   const winnerId = teamASetWins > teamBSetWins ? match.teamAId : match.teamBId;
   const loserId = winnerId === match.teamAId ? match.teamBId : match.teamAId;
 
+  type MatchSetInput = (typeof sets)[number];
   const scoreSummary =
     sets.length === 1
       ? `${sets[0].teamAScore} - ${sets[0].teamBScore}`
@@ -266,7 +267,7 @@ export async function recordMatchResultAction(
         matchId,
       },
     }),
-    ...sets.map((set) =>
+    ...sets.map((set: MatchSetInput) =>
       prisma.matchSet.create({
         data: {
           matchId,

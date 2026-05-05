@@ -109,14 +109,21 @@ export default async function AdminCategoryGroupsPage({
     notFound();
   }
 
+  type CategoryStage = (typeof category.stages)[number];
+  type CategoryTeamEntry = (typeof category.teamEntries)[number];
+
   const groupStages = category.stages.filter(
-    (stage) =>
+    (stage: CategoryStage) =>
       !["quarter_final", "semi_final", "final", "third_place"].includes(
         stage.stageType,
       ),
   );
 
-  const teamOptions = category.teamEntries.map((team) => ({
+  type GroupStage = (typeof groupStages)[number];
+  type StageGroup = GroupStage["groups"][number];
+  type StageMembership = StageGroup["memberships"][number];
+
+  const teamOptions = category.teamEntries.map((team: CategoryTeamEntry) => ({
     id: team.id,
     label: formatTeamName(
       team.player1.fullName,
@@ -125,8 +132,8 @@ export default async function AdminCategoryGroupsPage({
     ),
   }));
 
-  const groupOptions = groupStages.flatMap((stage) =>
-    stage.groups.map((group) => ({
+  const groupOptions = groupStages.flatMap((stage: GroupStage) =>
+    stage.groups.map((group: StageGroup) => ({
       id: group.id,
       name: group.name,
       stageName: stage.name,
@@ -134,18 +141,21 @@ export default async function AdminCategoryGroupsPage({
   );
 
   const firstGroupStage = groupStages
-    .filter((stage) => stage.groups.length > 0)
-    .sort((a, b) => a.stageOrder - b.stageOrder)[0];
+    .filter((stage: GroupStage) => stage.groups.length > 0)
+    .sort((a: GroupStage, b: GroupStage) => a.stageOrder - b.stageOrder)[0];
 
   const firstGroupStageAssignedTeamIds = new Set(
-    firstGroupStage?.groups.flatMap((group) =>
-      group.memberships.map((membership) => membership.teamEntry.id),
+    firstGroupStage?.groups.flatMap((group: StageGroup) =>
+      group.memberships.map(
+        (membership: StageMembership) => membership.teamEntry.id,
+      ),
     ) ?? [],
   );
 
   const firstGroupStageUnassignedCount = firstGroupStage
     ? category.teamEntries.filter(
-        (team) => !firstGroupStageAssignedTeamIds.has(team.id),
+        (team: CategoryTeamEntry) =>
+          !firstGroupStageAssignedTeamIds.has(team.id),
       ).length
     : 0;
 
@@ -204,7 +214,7 @@ export default async function AdminCategoryGroupsPage({
               <CreateGroupForm
                 tournamentId={tournament.id}
                 categoryId={category.id}
-                stages={groupStages.map((stage) => ({
+                stages={groupStages.map((stage: GroupStage) => ({
                   id: stage.id,
                   name: stage.name,
                 }))}
@@ -244,20 +254,25 @@ export default async function AdminCategoryGroupsPage({
         <EmptyState message="No group stages created yet." />
       ) : (
         <div className="grid gap-6">
-          {groupStages.map((stage) => {
+          {groupStages.map((stage: GroupStage) => {
             const assignedTeamIds = new Set(
-              stage.groups.flatMap((group) =>
-                group.memberships.map((membership) => membership.teamEntry.id),
+              stage.groups.flatMap((group: StageGroup) =>
+                group.memberships.map(
+                  (membership: StageMembership) => membership.teamEntry.id,
+                ),
               ),
             );
 
             const unassignedTeams = category.teamEntries.filter(
-              (team) => !assignedTeamIds.has(team.id),
+              (team: CategoryTeamEntry) => !assignedTeamIds.has(team.id),
+            );
+
+            const firstStageOrder = Math.min(
+              ...groupStages.map((item: GroupStage) => item.stageOrder),
             );
 
             const shouldShowUnassignedTeams =
-              stage.stageOrder ===
-                Math.min(...groupStages.map((item) => item.stageOrder)) &&
+              stage.stageOrder === firstStageOrder &&
               unassignedTeams.length > 0;
 
             return (
@@ -326,7 +341,7 @@ export default async function AdminCategoryGroupsPage({
                           <EmptyState message="All category teams are assigned in this stage." />
                         ) : (
                           <div className="grid gap-2">
-                            {unassignedTeams.map((team) => (
+                            {unassignedTeams.map((team: CategoryTeamEntry) => (
                               <TeamCard
                                 key={team.id}
                                 team={{
