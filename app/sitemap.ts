@@ -11,6 +11,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getPlayersDirectory(),
   ]);
 
+  type SitemapTournament = (typeof tournaments)[number];
+  type SitemapPlayer = (typeof players)[number];
+
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -47,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const tournamentRoutes: MetadataRoute.Sitemap = tournaments.map(
-    (tournament) => ({
+    (tournament: SitemapTournament) => ({
       url: `${siteUrl}/tournaments/${tournament.slug}`,
       lastModified: tournament.updatedAt,
       changeFrequency: "weekly",
@@ -55,12 +58,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  const playerRoutes: MetadataRoute.Sitemap = players.map((player) => ({
-    url: `${siteUrl}/players/${player.id}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
+  const playerRoutes: MetadataRoute.Sitemap = players.map(
+    (player: SitemapPlayer) => ({
+      url: `${siteUrl}/players/${player.id}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    }),
+  );
 
   return [...staticRoutes, ...tournamentRoutes, ...playerRoutes];
 }
