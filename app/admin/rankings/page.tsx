@@ -1,11 +1,13 @@
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
-import { PageContainer } from "@/components/layout/page-container";
 import { AdminRankingTournamentCard } from "@/components/admin/rankings/admin-ranking-tournament-card";
+import { PageContainer } from "@/components/layout/page-container";
 import { EmptyState } from "@/components/shared/empty-state";
 import { getAdminRankingTournaments } from "@/lib/rankings/admin-queries";
 
 export default async function AdminRankingsPage() {
   const tournaments = await getAdminRankingTournaments();
+
+  type AdminRankingTournament = (typeof tournaments)[number];
 
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
@@ -18,7 +20,7 @@ export default async function AdminRankingsPage() {
         <EmptyState message="No tournaments available for ranking review yet." />
       ) : (
         <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-          {tournaments.map((tournament) => (
+          {tournaments.map((tournament: AdminRankingTournament) => (
             <AdminRankingTournamentCard
               key={tournament.id}
               tournament={tournament}
