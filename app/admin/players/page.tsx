@@ -71,11 +71,21 @@ export default async function AdminPlayersPage() {
     prisma.player.count(),
   ]);
 
-  const normalizedPlayers = players.map((player) => {
+  type AdminPlayerRow = (typeof players)[number];
+  type AdminPlayerTeamEntryAsPlayer1 =
+    AdminPlayerRow["teamEntriesAsPlayer1"][number];
+  type AdminPlayerTeamEntryAsPlayer2 =
+    AdminPlayerRow["teamEntriesAsPlayer2"][number];
+
+  const normalizedPlayers = players.map((player: AdminPlayerRow) => {
     const categoryCodes = Array.from(
       new Set([
-        ...player.teamEntriesAsPlayer1.map((entry) => entry.category.code),
-        ...player.teamEntriesAsPlayer2.map((entry) => entry.category.code),
+        ...player.teamEntriesAsPlayer1.map(
+          (entry: AdminPlayerTeamEntryAsPlayer1) => entry.category.code,
+        ),
+        ...player.teamEntriesAsPlayer2.map(
+          (entry: AdminPlayerTeamEntryAsPlayer2) => entry.category.code,
+        ),
       ]),
     );
 
