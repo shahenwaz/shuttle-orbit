@@ -131,6 +131,29 @@ function assignPlacement(
   }
 }
 
+function sortAggregatesByStandings(
+  aggregates: TeamAggregate[],
+): TeamAggregate[] {
+  return [...aggregates].sort((a, b) => {
+    if (b.matchesWon !== a.matchesWon) {
+      return b.matchesWon - a.matchesWon;
+    }
+
+    const aDifference = a.pointsFor - a.pointsAgainst;
+    const bDifference = b.pointsFor - b.pointsAgainst;
+
+    if (bDifference !== aDifference) {
+      return bDifference - aDifference;
+    }
+
+    if (b.pointsFor !== a.pointsFor) {
+      return b.pointsFor - a.pointsFor;
+    }
+
+    return a.teamEntryId.localeCompare(b.teamEntryId);
+  });
+}
+
 export async function recalculateTournamentRankings(tournamentId: string) {
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
@@ -288,12 +311,46 @@ export async function recalculateTournamentRankings(tournamentId: string) {
           : thirdPlaceMatch.teamAId;
 
       assignPlacement(placements, fourthPlaceId, "FOURTH_PLACE");
-    } else {
+    } else if (semiFinalMatches.length > 0) {
       for (const match of semiFinalMatches) {
         const loserId =
           match.teamAId === match.winnerId ? match.teamBId : match.teamAId;
 
         assignPlacement(placements, loserId, "SEMI_FINALIST");
+      }
+    } else if (finalMatch) {
+      const standings = sortAggregatesByStandings(
+        Array.from(aggregateMap.values()),
+      );
+
+      const finalists = new Set<string>();
+
+      if (finalMatch.teamAId) {
+        finalists.add(finalMatch.teamAId);
+      }
+
+      if (finalMatch.teamBId) {
+        finalists.add(finalMatch.teamBId);
+      }
+
+      const nonFinalists = standings.filter(
+        (aggregate) => !finalists.has(aggregate.teamEntryId),
+      );
+
+      if (nonFinalists[0]) {
+        assignPlacement(
+          placements,
+          nonFinalists[0].teamEntryId,
+          "ADVANCED_STAGE",
+        );
+      }
+
+      if (nonFinalists[1]) {
+        assignPlacement(
+          placements,
+          nonFinalists[1].teamEntryId,
+          "ADVANCED_STAGE",
+        );
       }
     }
 

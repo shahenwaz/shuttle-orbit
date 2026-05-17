@@ -105,6 +105,7 @@ Currently supported flows include:
 - One-set group matches
 - Optional multi-set knockout matches
 - Ranking support for later group stages treated as advanced stages
+- Final-only round-robin tournament ranking support with standings-based 3rd and 4th placement handling
 
 Example supported structure:
 
