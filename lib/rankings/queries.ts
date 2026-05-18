@@ -2,6 +2,37 @@ import { prisma } from "@/lib/db/prisma";
 
 type LeaderboardScope = "UNIVERSAL" | "CATEGORY";
 
+function getCategoryCodeRank(code: string) {
+  const normalized = code.trim().toUpperCase();
+
+  switch (normalized) {
+    case "A":
+      return 500;
+    case "B":
+      return 400;
+    case "MIXED":
+      return 300;
+    case "C":
+      return 200;
+    default:
+      return 0;
+  }
+}
+
+function getStrongestCategoryPlayed(codes: string[]) {
+  return (
+    [...new Set(codes)].sort((a, b) => {
+      const rankDiff = getCategoryCodeRank(b) - getCategoryCodeRank(a);
+
+      if (rankDiff !== 0) {
+        return rankDiff;
+      }
+
+      return a.localeCompare(b);
+    })[0] ?? null
+  );
+}
+
 export async function getLeaderboard({
   scope = "UNIVERSAL",
   categoryCode,
@@ -34,10 +65,12 @@ export async function getLeaderboard({
     ],
   });
 
+  const playerIds = rows.map((row) => row.playerId);
+
   const players = await prisma.player.findMany({
     where: {
       id: {
-        in: rows.map((row) => row.playerId),
+        in: playerIds,
       },
     },
     select: {
@@ -61,29 +94,23 @@ export async function getLeaderboard({
 
   return rows.map((row, index) => {
     const player = playerMap.get(row.playerId);
+    const totalPoints = row._sum.totalPointsAwarded ?? 0;
 
     const tournamentIds = new Set(
       player?.tournamentStats.map((stat) => stat.tournamentId) ?? [],
     );
 
-    const categoryCounts = new Map<string, number>();
-
-    for (const stat of player?.tournamentStats ?? []) {
-      const code = stat.category.code;
-      categoryCounts.set(code, (categoryCounts.get(code) ?? 0) + 1);
-    }
-
-    const bestCategory =
-      [...categoryCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const categoryCodes =
+      player?.tournamentStats.map((stat) => stat.category.code) ?? [];
 
     return {
       rank: index + 1,
       playerId: row.playerId,
       fullName: player?.fullName ?? "Unknown Player",
       nickname: player?.nickname ?? "unknown",
-      totalPoints: row._sum.totalPointsAwarded ?? 0,
+      totalPoints,
       tournamentsCount: tournamentIds.size,
-      bestCategory,
+      bestCategory: getStrongestCategoryPlayed(categoryCodes),
     };
   });
 }

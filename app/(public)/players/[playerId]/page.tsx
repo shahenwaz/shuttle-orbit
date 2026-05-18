@@ -57,10 +57,7 @@ export default async function PlayerProfilePage({
     appearances.map((entry: PlayerAppearance) => entry.category.tournament.id),
   ).size;
 
-  const bestCategoryEntry = rankingSummary.categoryRankings[0] ?? null;
-  const bestCategoryDisplay = bestCategoryEntry
-    ? `${bestCategoryEntry.categoryCode} · #${bestCategoryEntry.rank ?? "—"}`
-    : "—";
+  const bestCategoryDisplay = rankingSummary.bestResultLabel ?? "—";
 
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
@@ -108,11 +105,11 @@ export default async function PlayerProfilePage({
       <section className="space-y-3 sm:space-y-4">
         <SectionIntro
           title="Ranking summary"
-          description="Current universal standing and category-based ranking snapshot."
+          description="Current universal standing and best recorded tournament result."
           descriptionClassName="max-w-2xl"
         />
 
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-[0.7fr_0.85fr_1.45fr] gap-2 sm:grid-cols-3 sm:gap-3">
           <ProfileSummaryCard
             label="Rank"
             value={rankingSummary.universalRank ?? "—"}

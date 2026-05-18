@@ -45,7 +45,7 @@ export default async function LeaderboardPage({
 
   const title = activeCategory
     ? `${activeCategory} player rankings`
-    : "Community players universal ranking";
+    : "BD Community players universal ranking";
 
   const description = activeCategory
     ? `Track player standings for the ${activeCategory} category based on completed tournament results.`
