@@ -7,6 +7,8 @@ import { ClubMemberForm } from "@/components/admin/clubs/club-member-form";
 import { ClubMembersDirectory } from "@/components/admin/clubs/club-members-directory";
 import { ClubSessionForm } from "@/components/admin/clubs/club-session-form";
 import { ClubSessionsDirectory } from "@/components/admin/clubs/club-sessions-directory";
+import { ClubMemberAccessPanel } from "@/components/admin/clubs/club-member-access-panel";
+
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
@@ -206,6 +208,15 @@ export default async function ClubWorkspacePage({
                   No club description added yet.
                 </p>
               )}
+
+              {club.isManagedClub ? (
+                <ClubMemberAccessPanel
+                  clubId={club.id}
+                  slug={club.slug}
+                  memberAccessEnabled={club.memberAccessEnabled}
+                  memberShareKey={club.memberShareKey}
+                />
+              ) : null}
             </div>
 
             <CreateSheet
