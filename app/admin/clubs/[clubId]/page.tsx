@@ -5,6 +5,8 @@ import { ArrowLeft, Eye, EyeOff, PlusSquare, Settings2 } from "lucide-react";
 import { ClubForm } from "@/components/admin/clubs/club-form";
 import { ClubMemberForm } from "@/components/admin/clubs/club-member-form";
 import { ClubMembersDirectory } from "@/components/admin/clubs/club-members-directory";
+import { ClubSessionForm } from "@/components/admin/clubs/club-session-form";
+import { ClubSessionsDirectory } from "@/components/admin/clubs/club-sessions-directory";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
@@ -68,6 +70,22 @@ export default async function ClubWorkspacePage({
           select: {
             members: true,
             sessions: true,
+          },
+        },
+        sessions: {
+          orderBy: {
+            startAt: "desc",
+          },
+          select: {
+            id: true,
+            clubId: true,
+            title: true,
+            startAt: true,
+            endAt: true,
+            venue: true,
+            courtNumbers: true,
+            bookingRef: true,
+            privateNotes: true,
           },
         },
       },
@@ -263,15 +281,33 @@ export default async function ClubWorkspacePage({
       ) : null}
 
       {activeTab === "sessions" && club.isManagedClub ? (
-        <section className="space-y-3 pt-2">
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold tracking-tight text-foreground">
-              Sessions
-            </h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Court times, court numbers, and attendance will stay here.
-            </p>
+        <section className="space-y-4 pt-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1">
+              <h2 className="text-base font-semibold tracking-tight text-foreground">
+                Sessions
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Court times, court numbers, and booking details.
+              </p>
+            </div>
+
+            <CreateSheet
+              triggerLabel="Add session"
+              title="Add club session"
+              description="Add the next club night with time, venue, courts, and booking details."
+              triggerClassName={actionPillButtonClassName({
+                variant: "create",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
+            >
+              <ClubSessionForm clubId={club.id} defaultVenue={club.homeVenue} />
+            </CreateSheet>
           </div>
+
+          <ClubSessionsDirectory sessions={club.sessions} />
         </section>
       ) : null}
     </PageContainer>

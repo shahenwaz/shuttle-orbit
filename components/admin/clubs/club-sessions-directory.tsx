@@ -1,0 +1,248 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import {
+  CalendarDays,
+  Clock,
+  MapPin,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+
+import {
+  deleteClubSessionAction,
+  type DeleteClubSessionActionState,
+} from "@/app/admin/clubs/[clubId]/sessions/actions";
+import { CreateDialog } from "@/components/admin/create-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+type ClubSessionRow = {
+  id: string;
+  clubId: string;
+  title: string;
+  startAt: Date;
+  endAt: Date;
+  venue: string | null;
+  courtNumbers: string | null;
+  bookingRef: string | null;
+  privateNotes: string | null;
+};
+
+type ClubSessionsDirectoryProps = {
+  sessions: ClubSessionRow[];
+};
+
+const initialDeleteState: DeleteClubSessionActionState = {
+  success: false,
+  message: "",
+};
+
+function formatSessionDate(date: Date) {
+  return new Intl.DateTimeFormat("en-IE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatSessionTime(date: Date) {
+  return new Intl.DateTimeFormat("en-IE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function ClubSessionCard({ session }: { session: ClubSessionRow }) {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteState, setDeleteState] =
+    useState<DeleteClubSessionActionState>(initialDeleteState);
+  const [isDeleting, startDeleteTransition] = useTransition();
+
+  return (
+    <div
+      className={surfaceCardClassName({
+        interactive: true,
+        blur: true,
+        className: "px-3 py-2.5 sm:px-3.5",
+      })}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
+              {session.title}
+            </h3>
+
+            {session.courtNumbers ? (
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+                {session.courtNumbers}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays className="h-3 w-3 text-primary/80" />
+              {formatSessionDate(session.startAt)}
+            </span>
+
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3 w-3 text-primary/80" />
+              {formatSessionTime(session.startAt)} -{" "}
+              {formatSessionTime(session.endAt)}
+            </span>
+
+            {session.venue ? (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-3 w-3 text-primary/80" />
+                {session.venue}
+              </span>
+            ) : null}
+          </div>
+
+          {session.bookingRef ? (
+            <p className="text-xs text-muted-foreground">
+              Booking: {session.bookingRef}
+            </p>
+          ) : null}
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 cursor-pointer rounded-full text-muted-foreground hover:bg-white/6 hover:text-foreground focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0"
+            >
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Open session actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            className="w-44 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
+          >
+            <DropdownMenuItem
+              disabled
+              className="cursor-not-allowed rounded-xl text-sm text-muted-foreground"
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit soon
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onSelect={() => {
+                setDeleteState(initialDeleteState);
+                setIsDeleteOpen(true);
+              }}
+              className="cursor-pointer rounded-xl text-sm text-red-200 focus:bg-red-500/10 focus:text-red-100"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Remove session
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <CreateDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Remove session"
+        description="This will only work if no attendance has been recorded for this session."
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.currentTarget);
+
+            startDeleteTransition(async () => {
+              const result = await deleteClubSessionAction(formData);
+              setDeleteState(result);
+
+              if (result.success) {
+                setIsDeleteOpen(false);
+              }
+            });
+          }}
+        >
+          <input type="hidden" name="clubId" value={session.clubId} />
+          <input type="hidden" name="sessionId" value={session.id} />
+
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to remove{" "}
+            <span className="font-medium text-foreground">{session.title}</span>
+            ?
+          </p>
+
+          {deleteState.message ? (
+            <div
+              className={`rounded-xl border px-3 py-2 text-sm ${
+                deleteState.success
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  : "border-red-500/20 bg-red-500/10 text-red-300"
+              }`}
+            >
+              {deleteState.message}
+            </div>
+          ) : null}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setIsDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={isDeleting}
+              className="cursor-pointer"
+            >
+              {isDeleting ? "Removing..." : "Remove session"}
+            </Button>
+          </div>
+        </form>
+      </CreateDialog>
+    </div>
+  );
+}
+
+export function ClubSessionsDirectory({
+  sessions,
+}: ClubSessionsDirectoryProps) {
+  if (sessions.length === 0) {
+    return (
+      <EmptyState message="No sessions added yet. Add the next club night with court time and court numbers." />
+    );
+  }
+
+  return (
+    <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
+      {sessions.map((session) => (
+        <ClubSessionCard key={session.id} session={session} />
+      ))}
+    </div>
+  );
+}
