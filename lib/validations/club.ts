@@ -34,6 +34,10 @@ export const clubFormSchema = z.object({
     (value) => value === "on" || value === "true",
     z.boolean(),
   ),
+  isManagedClub: z.preprocess(
+    (value) => value === "on" || value === "true",
+    z.boolean(),
+  ),
 });
 
 export type ClubFormInput = z.infer<typeof clubFormSchema>;

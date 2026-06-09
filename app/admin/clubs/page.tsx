@@ -23,6 +23,7 @@ export default async function AdminClubsPage() {
         description: true,
         homeVenue: true,
         isPublic: true,
+        isManagedClub: true,
         _count: {
           select: {
             members: true,
@@ -38,7 +39,7 @@ export default async function AdminClubsPage() {
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader
         title="Club management"
-        description="Create club profiles, manage member groups, and prepare private session planning for organised badminton communities."
+        description="Create club profiles, manage member groups, and prepare private session planning for organized badminton communities."
       />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">

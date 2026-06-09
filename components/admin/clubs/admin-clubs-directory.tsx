@@ -15,6 +15,7 @@ type AdminClubRow = {
   description: string | null;
   homeVenue: string | null;
   isPublic: boolean;
+  isManagedClub: boolean;
   _count: {
     members: number;
     sessions: number;
@@ -63,6 +64,10 @@ export function AdminClubsDirectory({ clubs }: AdminClubsDirectoryProps) {
                       <VisibilityIcon className="h-3.5 w-3.5" />
                       {club.isPublic ? "Public profile" : "Private profile"}
                     </div>
+
+                    <span className="rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {club.isManagedClub ? "Managed" : "Showcase"}
+                    </span>
                   </div>
 
                   {club.homeVenue ? (

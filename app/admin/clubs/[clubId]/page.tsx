@@ -115,6 +115,10 @@ export default async function ClubWorkspacePage({
           {club.isPublic ? "Public" : "Private"}
         </span>
 
+        <span className="inline-flex items-center rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
+          {club.isManagedClub ? "Managed workspace" : "Showcase profile"}
+        </span>
+
         <CreateSheet
           triggerLabel="Edit profile"
           title="Edit club profile"
