@@ -13,7 +13,6 @@ export type ClubSessionActionState = {
     sessionDate?: string[];
     startTime?: string[];
     endTime?: string[];
-    venue?: string[];
     courtNumbers?: string[];
     privateNotes?: string[];
   };
@@ -54,9 +53,7 @@ export async function createClubSessionAction(
     sessionDate: formData.get("sessionDate"),
     startTime: formData.get("startTime"),
     endTime: formData.get("endTime"),
-    venue: formData.get("venue"),
     courtNumbers: formData.get("courtNumbers"),
-    bookingRef: formData.get("bookingRef"),
     privateNotes: formData.get("privateNotes"),
   });
 
@@ -74,7 +71,6 @@ export async function createClubSessionAction(
     },
     select: {
       id: true,
-      homeVenue: true,
       isManagedClub: true,
     },
   });
@@ -105,7 +101,6 @@ export async function createClubSessionAction(
         parsed.data.sessionDate,
         parsed.data.endTime,
       ),
-      venue: parsed.data.venue ?? club.homeVenue,
       courtNumbers: parsed.data.courtNumbers,
       privateNotes: parsed.data.privateNotes,
     },
@@ -144,9 +139,7 @@ export async function updateClubSessionAction(
     sessionDate: formData.get("sessionDate"),
     startTime: formData.get("startTime"),
     endTime: formData.get("endTime"),
-    venue: formData.get("venue"),
     courtNumbers: formData.get("courtNumbers"),
-    bookingRef: formData.get("bookingRef"),
     privateNotes: formData.get("privateNotes"),
   });
 
@@ -189,7 +182,6 @@ export async function updateClubSessionAction(
         parsed.data.sessionDate,
         parsed.data.endTime,
       ),
-      venue: parsed.data.venue,
       courtNumbers: parsed.data.courtNumbers,
       privateNotes: parsed.data.privateNotes,
     },

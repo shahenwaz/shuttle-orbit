@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Clock,
   Grid3X3,
-  MapPin,
   MoreVertical,
   Pencil,
   Trash2,
@@ -33,7 +32,6 @@ type ClubSessionRow = {
   title: string;
   startAt: Date;
   endAt: Date;
-  venue: string | null;
   courtNumbers: string | null;
   privateNotes: string | null;
 };
@@ -71,7 +69,7 @@ type ClubSessionCardProps = {
   defaultVenue?: string | null;
 };
 
-function ClubSessionCard({ session, defaultVenue }: ClubSessionCardProps) {
+function ClubSessionCard({ session }: ClubSessionCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteState, setDeleteState] =
@@ -103,13 +101,6 @@ function ClubSessionCard({ session, defaultVenue }: ClubSessionCardProps) {
               {formatSessionTime(session.startAt)} -{" "}
               {formatSessionTime(session.endAt)}
             </span>
-
-            {session.venue ? (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3 w-3 text-primary/80" />
-                {session.venue}
-              </span>
-            ) : null}
 
             {session.courtNumbers ? (
               <span className="inline-flex items-center gap-1">
@@ -171,7 +162,6 @@ function ClubSessionCard({ session, defaultVenue }: ClubSessionCardProps) {
           mode="edit"
           clubId={session.clubId}
           session={session}
-          defaultVenue={defaultVenue}
           onSuccess={() => setIsEditOpen(false)}
         />
       </CreateDialog>

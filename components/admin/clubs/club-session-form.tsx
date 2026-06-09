@@ -15,7 +15,6 @@ type ClubSessionFormSession = {
   title: string;
   startAt: Date;
   endAt: Date;
-  venue: string | null;
   courtNumbers: string | null;
   privateNotes: string | null;
 };
@@ -23,7 +22,6 @@ type ClubSessionFormSession = {
 type ClubSessionFormProps = {
   mode: "create" | "edit";
   clubId: string;
-  defaultVenue?: string | null;
   session?: ClubSessionFormSession;
   onSuccess?: () => void;
 };
@@ -71,7 +69,6 @@ function getInputTime(date?: Date) {
 export function ClubSessionForm({
   mode,
   clubId,
-  defaultVenue,
   session,
   onSuccess,
 }: ClubSessionFormProps) {
@@ -166,23 +163,6 @@ export function ClubSessionForm({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label
-            htmlFor="venue"
-            className="text-sm font-medium text-foreground"
-          >
-            Venue
-          </label>
-          <input
-            id="venue"
-            name="venue"
-            defaultValue={session?.venue ?? defaultVenue ?? ""}
-            placeholder="Terenure Badminton Centre"
-            className={inputClassName}
-          />
-          <FieldError errors={state.fieldErrors?.venue} />
-        </div>
-
         <div className="space-y-2">
           <label
             htmlFor="courtNumbers"

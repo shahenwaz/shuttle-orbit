@@ -82,7 +82,6 @@ export default async function ClubWorkspacePage({
             title: true,
             startAt: true,
             endAt: true,
-            venue: true,
             courtNumbers: true,
             privateNotes: true,
           },
@@ -287,7 +286,7 @@ export default async function ClubWorkspacePage({
                 Sessions
               </h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Court times, court numbers, and session details.
+                Date, time, and court details for club sessions.
               </p>
             </div>
 
@@ -302,18 +301,11 @@ export default async function ClubWorkspacePage({
               })}
               triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
             >
-              <ClubSessionForm
-                mode="create"
-                clubId={club.id}
-                defaultVenue={club.homeVenue}
-              />
+              <ClubSessionForm mode="create" clubId={club.id} />
             </CreateSheet>
           </div>
 
-          <ClubSessionsDirectory
-            sessions={club.sessions}
-            defaultVenue={club.homeVenue}
-          />
+          <ClubSessionsDirectory sessions={club.sessions} />
         </section>
       ) : null}
     </PageContainer>

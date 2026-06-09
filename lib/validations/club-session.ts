@@ -19,7 +19,6 @@ export const clubSessionFormSchema = z
     sessionDate: z.string().min(1, "Session date is required."),
     startTime: z.string().min(1, "Start time is required."),
     endTime: z.string().min(1, "End time is required."),
-    venue: optionalText(160, "Venue must be 160 characters or less."),
     courtNumbers: optionalText(
       80,
       "Court numbers must be 80 characters or less.",
