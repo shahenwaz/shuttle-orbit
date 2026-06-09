@@ -22,6 +22,37 @@ enum PlacementTier {
   PARTICIPATION
 }
 
+enum ClubMemberRole {
+  OWNER
+  ORGANIZER
+  MEMBER
+}
+
+enum ClubMemberStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ClubSessionStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum ClubSessionVisibility {
+  PUBLIC
+  MEMBER_ONLY
+  ADMIN_ONLY
+}
+
+enum ClubAttendanceStatus {
+  GOING
+  MAYBE
+  NOT_GOING
+  NOT_RESPONDED
+}
+
 model Player {
   id        String   @id @default(cuid())
   fullName  String
@@ -34,6 +65,7 @@ model Player {
   teamEntriesAsPlayer2 TeamEntry[]            @relation("TeamEntryPlayer2")
   rankingLedgers       RankingLedger[]
   tournamentStats      PlayerTournamentStat[]
+  clubMemberships      ClubMember[]
 }
 
 model Tournament {
@@ -229,6 +261,92 @@ model PlayerTournamentStat {
   @@unique([playerId, tournamentId, categoryId])
   @@index([categoryId, placementTier])
   @@index([tournamentId])
+}
+
+model Club {
+  id                  String   @id @default(cuid())
+  name                String
+  slug                String   @unique
+  shortName           String?
+  description         String?
+  location            String?
+  homeVenue           String?
+  logoUrl             String?
+  bannerUrl           String?
+  isPublic            Boolean  @default(true)
+  memberAccessEnabled Boolean  @default(false)
+  memberShareKey      String?  @unique
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  members  ClubMember[]
+  sessions ClubSession[]
+
+  @@index([slug])
+  @@index([isPublic])
+}
+
+model ClubMember {
+  id        String           @id @default(cuid())
+  clubId    String
+  playerId  String?
+  name      String
+  nickname  String?
+  role      ClubMemberRole   @default(MEMBER)
+  status    ClubMemberStatus @default(ACTIVE)
+  isPublic  Boolean          @default(false)
+  joinedAt  DateTime         @default(now())
+  notes     String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  club       Club                    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  player     Player?                 @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  attendance ClubSessionAttendance[]
+
+  @@unique([clubId, playerId])
+  @@index([clubId, status])
+  @@index([playerId])
+}
+
+model ClubSession {
+  id            String                @id @default(cuid())
+  clubId        String
+  title         String
+  startAt       DateTime
+  endAt         DateTime
+  venue         String?
+  courtNumbers  String?
+  bookingRef    String?
+  status        ClubSessionStatus     @default(SCHEDULED)
+  visibility    ClubSessionVisibility @default(MEMBER_ONLY)
+  publicNotes   String?
+  privateNotes  String?
+  costPerPlayer Decimal?              @db.Decimal(8, 2)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  club       Club                    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  attendance ClubSessionAttendance[]
+
+  @@index([clubId, startAt])
+  @@index([status])
+}
+
+model ClubSessionAttendance {
+  id        String               @id @default(cuid())
+  sessionId String
+  memberId  String
+  status    ClubAttendanceStatus @default(NOT_RESPONDED)
+  note      String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  session ClubSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  member  ClubMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, memberId])
+  @@index([memberId, status])
 }
 
 model AdminUser {
