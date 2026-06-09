@@ -43,9 +43,7 @@ enum ClubSessionVisibility {
 
 enum ClubAttendanceStatus {
   GOING
-  MAYBE
   NOT_GOING
-  NOT_RESPONDED
 }
 
 model Player {
@@ -268,6 +266,7 @@ model Club {
   logoUrl             String?
   bannerUrl           String?
   isPublic            Boolean  @default(true)
+  isManagedClub       Boolean  @default(false)
   memberAccessEnabled Boolean  @default(false)
   memberShareKey      String?  @unique
   createdAt           DateTime @default(now())
@@ -278,6 +277,7 @@ model Club {
 
   @@index([slug])
   @@index([isPublic])
+  @@index([isManagedClub])
 }
 
 model ClubMember {
@@ -330,7 +330,7 @@ model ClubSessionAttendance {
   id        String               @id @default(cuid())
   sessionId String
   memberId  String
-  status    ClubAttendanceStatus @default(NOT_RESPONDED)
+  status    ClubAttendanceStatus @default(NOT_GOING)
   note      String?
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
