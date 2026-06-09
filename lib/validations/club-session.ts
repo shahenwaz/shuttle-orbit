@@ -24,11 +24,10 @@ export const clubSessionFormSchema = z
       80,
       "Court numbers must be 80 characters or less.",
     ),
-    bookingRef: optionalText(
-      80,
-      "Booking reference must be 80 characters or less.",
+    privateNotes: optionalText(
+      500,
+      "Internal note must be 500 characters or less.",
     ),
-    privateNotes: optionalText(500, "Notes must be 500 characters or less."),
   })
   .superRefine((data, ctx) => {
     const start = `${data.sessionDate}T${data.startTime}`;

@@ -84,7 +84,6 @@ export default async function ClubWorkspacePage({
             endAt: true,
             venue: true,
             courtNumbers: true,
-            bookingRef: true,
             privateNotes: true,
           },
         },
@@ -288,14 +287,14 @@ export default async function ClubWorkspacePage({
                 Sessions
               </h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Court times, court numbers, and booking details.
+                Court times, court numbers, and session details.
               </p>
             </div>
 
             <CreateSheet
               triggerLabel="Add session"
               title="Add club session"
-              description="Add the next club night with time, venue, courts, and booking details."
+              description="Add the next club night with time, venue, and court details."
               triggerClassName={actionPillButtonClassName({
                 variant: "create",
                 className:
@@ -303,11 +302,18 @@ export default async function ClubWorkspacePage({
               })}
               triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
             >
-              <ClubSessionForm clubId={club.id} defaultVenue={club.homeVenue} />
+              <ClubSessionForm
+                mode="create"
+                clubId={club.id}
+                defaultVenue={club.homeVenue}
+              />
             </CreateSheet>
           </div>
 
-          <ClubSessionsDirectory sessions={club.sessions} />
+          <ClubSessionsDirectory
+            sessions={club.sessions}
+            defaultVenue={club.homeVenue}
+          />
         </section>
       ) : null}
     </PageContainer>

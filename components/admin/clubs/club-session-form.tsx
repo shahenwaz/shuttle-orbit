@@ -4,13 +4,28 @@ import { useActionState } from "react";
 
 import {
   createClubSessionAction,
+  updateClubSessionAction,
   type ClubSessionActionState,
 } from "@/app/admin/clubs/[clubId]/sessions/actions";
 import { Button } from "@/components/ui/button";
 
+type ClubSessionFormSession = {
+  id: string;
+  clubId: string;
+  title: string;
+  startAt: Date;
+  endAt: Date;
+  venue: string | null;
+  courtNumbers: string | null;
+  privateNotes: string | null;
+};
+
 type ClubSessionFormProps = {
+  mode: "create" | "edit";
   clubId: string;
   defaultVenue?: string | null;
+  session?: ClubSessionFormSession;
+  onSuccess?: () => void;
 };
 
 const initialState: ClubSessionActionState = {
@@ -31,18 +46,58 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="text-xs text-red-300">{errors[0]}</p>;
 }
 
+function getInputDate(date?: Date) {
+  if (!date) return "";
+
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function getInputTime(date?: Date) {
+  if (!date) return "";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 export function ClubSessionForm({
+  mode,
   clubId,
   defaultVenue,
+  session,
+  onSuccess,
 }: ClubSessionFormProps) {
+  const action =
+    mode === "edit" ? updateClubSessionAction : createClubSessionAction;
+
   const [state, formAction, pending] = useActionState(
-    createClubSessionAction,
+    async (prevState: ClubSessionActionState, formData: FormData) => {
+      const result = await action(prevState, formData);
+
+      if (result.success) {
+        onSuccess?.();
+      }
+
+      return result;
+    },
     initialState,
   );
 
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="clubId" value={clubId} />
+
+      {session ? (
+        <input type="hidden" name="sessionId" value={session.id} />
+      ) : null}
 
       <div className="space-y-2">
         <label htmlFor="title" className="text-sm font-medium text-foreground">
@@ -51,7 +106,7 @@ export function ClubSessionForm({
         <input
           id="title"
           name="title"
-          defaultValue="Club night"
+          defaultValue={session?.title ?? "Club night"}
           className={inputClassName}
         />
         <FieldError errors={state.fieldErrors?.title} />
@@ -69,6 +124,7 @@ export function ClubSessionForm({
             id="sessionDate"
             name="sessionDate"
             type="date"
+            defaultValue={getInputDate(session?.startAt)}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.sessionDate} />
@@ -85,6 +141,7 @@ export function ClubSessionForm({
             id="startTime"
             name="startTime"
             type="time"
+            defaultValue={getInputTime(session?.startAt)}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.startTime} />
@@ -101,6 +158,7 @@ export function ClubSessionForm({
             id="endTime"
             name="endTime"
             type="time"
+            defaultValue={getInputTime(session?.endAt)}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.endTime} />
@@ -118,7 +176,7 @@ export function ClubSessionForm({
           <input
             id="venue"
             name="venue"
-            defaultValue={defaultVenue ?? ""}
+            defaultValue={session?.venue ?? defaultVenue ?? ""}
             placeholder="Terenure Badminton Centre"
             className={inputClassName}
           />
@@ -135,27 +193,12 @@ export function ClubSessionForm({
           <input
             id="courtNumbers"
             name="courtNumbers"
+            defaultValue={session?.courtNumbers ?? ""}
             placeholder="Court 4, 5"
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.courtNumbers} />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor="bookingRef"
-          className="text-sm font-medium text-foreground"
-        >
-          Booking reference
-        </label>
-        <input
-          id="bookingRef"
-          name="bookingRef"
-          placeholder="Optional"
-          className={inputClassName}
-        />
-        <FieldError errors={state.fieldErrors?.bookingRef} />
       </div>
 
       <div className="space-y-2">
@@ -168,6 +211,7 @@ export function ClubSessionForm({
         <textarea
           id="privateNotes"
           name="privateNotes"
+          defaultValue={session?.privateNotes ?? ""}
           placeholder="Optional note for court/payment/session details"
           className={textareaClassName}
         />
@@ -185,7 +229,13 @@ export function ClubSessionForm({
       ) : null}
 
       <Button type="submit" disabled={pending} className="rounded-md">
-        {pending ? "Adding..." : "Add session"}
+        {pending
+          ? mode === "edit"
+            ? "Saving..."
+            : "Adding..."
+          : mode === "edit"
+            ? "Save session"
+            : "Add session"}
       </Button>
     </form>
   );

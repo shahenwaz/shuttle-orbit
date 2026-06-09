@@ -15,7 +15,6 @@ export type ClubSessionActionState = {
     endTime?: string[];
     venue?: string[];
     courtNumbers?: string[];
-    bookingRef?: string[];
     privateNotes?: string[];
   };
 };
@@ -108,7 +107,6 @@ export async function createClubSessionAction(
       ),
       venue: parsed.data.venue ?? club.homeVenue,
       courtNumbers: parsed.data.courtNumbers,
-      bookingRef: parsed.data.bookingRef,
       privateNotes: parsed.data.privateNotes,
     },
   });
@@ -193,7 +191,6 @@ export async function updateClubSessionAction(
       ),
       venue: parsed.data.venue,
       courtNumbers: parsed.data.courtNumbers,
-      bookingRef: parsed.data.bookingRef,
       privateNotes: parsed.data.privateNotes,
     },
   });

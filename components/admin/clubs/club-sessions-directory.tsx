@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   CalendarDays,
   Clock,
+  Grid3X3,
   MapPin,
   MoreVertical,
   Pencil,
@@ -14,6 +15,7 @@ import {
   deleteClubSessionAction,
   type DeleteClubSessionActionState,
 } from "@/app/admin/clubs/[clubId]/sessions/actions";
+import { ClubSessionForm } from "@/components/admin/clubs/club-session-form";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { surfaceCardClassName } from "@/components/shared/surface-card";
@@ -33,12 +35,12 @@ type ClubSessionRow = {
   endAt: Date;
   venue: string | null;
   courtNumbers: string | null;
-  bookingRef: string | null;
   privateNotes: string | null;
 };
 
 type ClubSessionsDirectoryProps = {
   sessions: ClubSessionRow[];
+  defaultVenue?: string | null;
 };
 
 const initialDeleteState: DeleteClubSessionActionState = {
@@ -64,7 +66,13 @@ function formatSessionTime(date: Date) {
   }).format(date);
 }
 
-function ClubSessionCard({ session }: { session: ClubSessionRow }) {
+type ClubSessionCardProps = {
+  session: ClubSessionRow;
+  defaultVenue?: string | null;
+};
+
+function ClubSessionCard({ session, defaultVenue }: ClubSessionCardProps) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteState, setDeleteState] =
     useState<DeleteClubSessionActionState>(initialDeleteState);
@@ -80,17 +88,9 @@ function ClubSessionCard({ session }: { session: ClubSessionRow }) {
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
-              {session.title}
-            </h3>
-
-            {session.courtNumbers ? (
-              <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
-                {session.courtNumbers}
-              </span>
-            ) : null}
-          </div>
+          <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
+            {session.title}
+          </h3>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
@@ -110,13 +110,14 @@ function ClubSessionCard({ session }: { session: ClubSessionRow }) {
                 {session.venue}
               </span>
             ) : null}
-          </div>
 
-          {session.bookingRef ? (
-            <p className="text-xs text-muted-foreground">
-              Booking: {session.bookingRef}
-            </p>
-          ) : null}
+            {session.courtNumbers ? (
+              <span className="inline-flex items-center gap-1">
+                <Grid3X3 className="h-3 w-3 text-primary/80" />
+                Courts: {session.courtNumbers}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         <DropdownMenu>
@@ -137,11 +138,11 @@ function ClubSessionCard({ session }: { session: ClubSessionRow }) {
             className="w-44 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
           >
             <DropdownMenuItem
-              disabled
-              className="cursor-not-allowed rounded-xl text-sm text-muted-foreground"
+              onSelect={() => setIsEditOpen(true)}
+              className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
             >
               <Pencil className="mr-2 h-4 w-4" />
-              Edit soon
+              Edit session
             </DropdownMenuItem>
 
             <DropdownMenuItem
@@ -157,6 +158,23 @@ function ClubSessionCard({ session }: { session: ClubSessionRow }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <CreateDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Edit session"
+        description="Update court time, venue, courts, and booking details."
+      >
+        <ClubSessionForm
+          mode="edit"
+          clubId={session.clubId}
+          session={session}
+          defaultVenue={defaultVenue}
+          onSuccess={() => setIsEditOpen(false)}
+        />
+      </CreateDialog>
 
       <CreateDialog
         open={isDeleteOpen}
@@ -231,6 +249,7 @@ function ClubSessionCard({ session }: { session: ClubSessionRow }) {
 
 export function ClubSessionsDirectory({
   sessions,
+  defaultVenue,
 }: ClubSessionsDirectoryProps) {
   if (sessions.length === 0) {
     return (
@@ -241,7 +260,11 @@ export function ClubSessionsDirectory({
   return (
     <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
       {sessions.map((session) => (
-        <ClubSessionCard key={session.id} session={session} />
+        <ClubSessionCard
+          key={session.id}
+          session={session}
+          defaultVenue={defaultVenue}
+        />
       ))}
     </div>
   );

@@ -310,7 +310,6 @@ model ClubSession {
   endAt         DateTime
   venue         String?
   courtNumbers  String?
-  bookingRef    String?
   status        ClubSessionStatus     @default(SCHEDULED)
   visibility    ClubSessionVisibility @default(MEMBER_ONLY)
   publicNotes   String?
