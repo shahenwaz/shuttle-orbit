@@ -114,7 +114,7 @@ function ClubMemberCard({ member, players }: ClubMemberCardProps) {
               {member.player ? (
                 <span className="inline-flex items-center gap-1 text-sky-200">
                   <Link2 className="h-3 w-3" />
-                  Linked player
+                  Tour player
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1">

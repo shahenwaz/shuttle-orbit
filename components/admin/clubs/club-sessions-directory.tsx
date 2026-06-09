@@ -8,6 +8,7 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  Users,
 } from "lucide-react";
 
 import {
@@ -15,6 +16,7 @@ import {
   type DeleteClubSessionActionState,
 } from "@/app/admin/clubs/[clubId]/sessions/actions";
 import { ClubSessionForm } from "@/components/admin/clubs/club-session-form";
+import { ClubSessionAttendanceManager } from "@/components/admin/clubs/club-session-attendance-manager";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { surfaceCardClassName } from "@/components/shared/surface-card";
@@ -26,6 +28,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type ClubAttendanceStatus = "GOING" | "NOT_GOING";
+
+type ClubSessionMember = {
+  id: string;
+  clubId: string;
+  name: string;
+  nickname: string | null;
+  role: string;
+  playerId: string | null;
+  attendanceStatus?: ClubAttendanceStatus | null;
+};
+
 type ClubSessionRow = {
   id: string;
   clubId: string;
@@ -34,11 +48,16 @@ type ClubSessionRow = {
   endAt: Date;
   courtNumbers: string | null;
   privateNotes: string | null;
+  attendance: {
+    id: string;
+    memberId: string;
+    status: ClubAttendanceStatus;
+  }[];
 };
 
 type ClubSessionsDirectoryProps = {
   sessions: ClubSessionRow[];
-  defaultVenue?: string | null;
+  members: ClubSessionMember[];
 };
 
 const initialDeleteState: DeleteClubSessionActionState = {
@@ -66,15 +85,31 @@ function formatSessionTime(date: Date) {
 
 type ClubSessionCardProps = {
   session: ClubSessionRow;
-  defaultVenue?: string | null;
+  members: ClubSessionMember[];
 };
 
-function ClubSessionCard({ session }: ClubSessionCardProps) {
+function ClubSessionCard({ session, members }: ClubSessionCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteState, setDeleteState] =
     useState<DeleteClubSessionActionState>(initialDeleteState);
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
+
+  const goingCount = session.attendance.filter(
+    (item) => item.status === "GOING",
+  ).length;
+
+  const membersWithAttendance = members.map((member) => {
+    const attendance = session.attendance.find(
+      (item) => item.memberId === member.id,
+    );
+
+    return {
+      ...member,
+      attendanceStatus: attendance?.status ?? null,
+    };
+  });
 
   return (
     <div
@@ -108,6 +143,11 @@ function ClubSessionCard({ session }: ClubSessionCardProps) {
                 Courts: {session.courtNumbers}
               </span>
             ) : null}
+
+            <span className="inline-flex items-center gap-1">
+              <Users className="h-3 w-3 text-primary/80" />
+              Going: {goingCount}
+            </span>
           </div>
         </div>
 
@@ -126,8 +166,16 @@ function ClubSessionCard({ session }: ClubSessionCardProps) {
 
           <DropdownMenuContent
             align="end"
-            className="w-44 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
+            className="w-48 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
           >
+            <DropdownMenuItem
+              onSelect={() => setIsAttendanceOpen(true)}
+              className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Manage attendance
+            </DropdownMenuItem>
+
             <DropdownMenuItem
               onSelect={() => setIsEditOpen(true)}
               className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
@@ -156,13 +204,28 @@ function ClubSessionCard({ session }: ClubSessionCardProps) {
         triggerLabel=""
         hideTrigger
         title="Edit session"
-        description="Update court time, venue, courts, and booking details."
+        description="Update date, time, and court details."
       >
         <ClubSessionForm
           mode="edit"
           clubId={session.clubId}
           session={session}
           onSuccess={() => setIsEditOpen(false)}
+        />
+      </CreateDialog>
+
+      <CreateDialog
+        open={isAttendanceOpen}
+        onOpenChange={setIsAttendanceOpen}
+        triggerLabel=""
+        hideTrigger
+        title="Manage attendance"
+        description="Quickly mark who is coming."
+      >
+        <ClubSessionAttendanceManager
+          clubId={session.clubId}
+          sessionId={session.id}
+          members={membersWithAttendance}
         />
       </CreateDialog>
 
@@ -239,7 +302,7 @@ function ClubSessionCard({ session }: ClubSessionCardProps) {
 
 export function ClubSessionsDirectory({
   sessions,
-  defaultVenue,
+  members,
 }: ClubSessionsDirectoryProps) {
   if (sessions.length === 0) {
     return (
@@ -250,11 +313,7 @@ export function ClubSessionsDirectory({
   return (
     <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
       {sessions.map((session) => (
-        <ClubSessionCard
-          key={session.id}
-          session={session}
-          defaultVenue={defaultVenue}
-        />
+        <ClubSessionCard key={session.id} session={session} members={members} />
       ))}
     </div>
   );

@@ -83,6 +83,13 @@ export default async function ClubWorkspacePage({
             startAt: true,
             endAt: true,
             courtNumbers: true,
+            attendance: {
+              select: {
+                id: true,
+                memberId: true,
+                status: true,
+              },
+            },
             privateNotes: true,
           },
         },
@@ -305,7 +312,10 @@ export default async function ClubWorkspacePage({
             </CreateSheet>
           </div>
 
-          <ClubSessionsDirectory sessions={club.sessions} />
+          <ClubSessionsDirectory
+            sessions={club.sessions}
+            members={club.members}
+          />
         </section>
       ) : null}
     </PageContainer>
