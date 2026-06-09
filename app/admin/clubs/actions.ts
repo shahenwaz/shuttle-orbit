@@ -72,7 +72,7 @@ export async function createClubAction(
 
   revalidatePath("/admin/clubs");
 
-  redirect(`/admin/clubs/${club.id}/edit`);
+  redirect(`/admin/clubs/${club.id}`);
 }
 
 export async function updateClubAction(
@@ -137,7 +137,7 @@ export async function updateClubAction(
   });
 
   revalidatePath("/admin/clubs");
-  revalidatePath(`/admin/clubs/${clubId}/edit`);
+  revalidatePath(`/admin/clubs/${clubId}`);
 
   return {
     success: true,

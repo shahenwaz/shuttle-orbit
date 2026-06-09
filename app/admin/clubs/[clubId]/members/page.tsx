@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 
-type EditClubPageProps = {
+type ClubMembersPageProps = {
   params: Promise<{
     clubId: string;
   }>;
 };
 
-export default async function EditClubPage({ params }: EditClubPageProps) {
+export default async function ClubMembersPage({
+  params,
+}: ClubMembersPageProps) {
   const { clubId } = await params;
 
   redirect(`/admin/clubs/${clubId}`);

@@ -15,7 +15,6 @@ type ClubFormClub = {
   slug: string;
   shortName: string | null;
   description: string | null;
-  location: string | null;
   homeVenue: string | null;
   logoUrl: string | null;
   bannerUrl: string | null;

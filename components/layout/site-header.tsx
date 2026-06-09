@@ -50,7 +50,8 @@ export function SiteHeader() {
                 alt="Shuttle Orbit logo"
                 width={34}
                 height={34}
-                priority
+                loading="eager"
+                fetchPriority="high"
                 className="relative h-8 w-8 object-contain drop-shadow-[0_0_12px_rgba(74,222,128,0.28)] transition duration-300 group-hover:scale-110 sm:h-8.5 sm:w-8.5"
               />
 

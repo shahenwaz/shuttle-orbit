@@ -96,23 +96,9 @@ export function AdminClubsDirectory({ clubs }: AdminClubsDirectoryProps) {
                     className: "w-full justify-center sm:w-auto",
                   })}
                 >
-                  <Link href={`/admin/clubs/${club.id}/edit`}>
+                  <Link href={`/admin/clubs/${club.id}`}>
                     <Settings2 className="mr-1 h-3.5 w-3.5" />
                     Manage
-                  </Link>
-                </Button>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className={actionPillButtonClassName({
-                    variant: "link",
-                    className: "w-full justify-center sm:w-auto",
-                  })}
-                >
-                  <Link href={`/admin/clubs/${club.id}/edit`}>
-                    Edit profile
                   </Link>
                 </Button>
               </div>
