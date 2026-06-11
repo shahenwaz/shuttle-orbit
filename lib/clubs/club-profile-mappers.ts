@@ -2,10 +2,12 @@ export type ClubProfileMemberInput = {
   id: string;
   name: string;
   nickname: string | null;
+  playerId?: string | null;
 };
 
 export type ClubProfileMember = ClubProfileMemberInput & {
   displayName: string;
+  playerType: "tour-player" | "club-only";
 };
 
 export type ClubProfileSessionInput = {
@@ -44,7 +46,9 @@ export function mapClubProfileMember(
 ): ClubProfileMember {
   return {
     ...member,
+    playerId: member.playerId ?? null,
     displayName: getClubMemberDisplayName(member),
+    playerType: member.playerId ? "tour-player" : "club-only",
   };
 }
 

@@ -123,7 +123,7 @@ function SessionSection({
           {emptyMessage}
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-1.5 md:grid-cols-2 lg:grid-cols-3">
           {sessions.map((session) => (
             <SessionCard
               key={session.id}

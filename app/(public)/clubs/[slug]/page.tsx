@@ -36,6 +36,7 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
           id: true,
           name: true,
           nickname: true,
+          playerId: true,
         },
       },
     },
