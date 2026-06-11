@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { CalendarDays, Clock, Grid3X3, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
+import { MemberZoneSessions } from "@/components/clubs/member-zone-sessions";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 
@@ -10,24 +11,6 @@ type MemberZonePageProps = {
     shareKey: string;
   }>;
 };
-
-function formatSessionDate(date: Date) {
-  return new Intl.DateTimeFormat("en-IE", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    timeZone: "UTC",
-  }).format(date);
-}
-
-function formatSessionTime(date: Date) {
-  return new Intl.DateTimeFormat("en-IE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZone: "UTC",
-  }).format(date);
-}
 
 export default async function ClubMemberZonePage({
   params,
@@ -43,7 +26,6 @@ export default async function ClubMemberZonePage({
     },
     select: {
       name: true,
-      shortName: true,
       homeVenue: true,
       sessions: {
         where: {
@@ -61,6 +43,7 @@ export default async function ClubMemberZonePage({
           startAt: true,
           endAt: true,
           courtNumbers: true,
+          privateNotes: true,
           attendance: {
             where: {
               status: "GOING",
@@ -76,7 +59,6 @@ export default async function ClubMemberZonePage({
                   id: true,
                   name: true,
                   nickname: true,
-                  playerId: true,
                 },
               },
             },
@@ -90,11 +72,11 @@ export default async function ClubMemberZonePage({
     notFound();
   }
 
-  type MemberSession = (typeof club.sessions)[number];
-  type GoingAttendance = MemberSession["attendance"][number];
+  type SessionRow = (typeof club.sessions)[number];
+  type AttendanceRow = SessionRow["attendance"][number];
 
   return (
-    <PageContainer className="space-y-6 py-8 sm:py-10">
+    <PageContainer className="space-y-5 py-7 sm:space-y-6 sm:py-10">
       <section className="space-y-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">
           Private member view
@@ -115,76 +97,32 @@ export default async function ClubMemberZonePage({
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-end justify-between gap-3">
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold tracking-tight text-foreground">
-              Upcoming sessions
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Date, time, courts, and confirmed players.
-            </p>
-          </div>
+        <div className="space-y-1">
+          <h2 className="text-base font-semibold tracking-tight text-foreground">
+            Upcoming sessions
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Date, time, courts, and confirmed players.
+          </p>
         </div>
 
-        {club.sessions.length === 0 ? (
-          <div className="rounded-md border border-white/10 bg-white/4 px-4 py-5 text-sm text-muted-foreground">
-            No upcoming sessions shared yet.
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            {club.sessions.map((session: MemberSession) => (
-              <article
-                key={session.id}
-                className="rounded-md border border-white/10 bg-white/4 p-4"
-              >
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold text-foreground sm:text-base">
-                      {session.title}
-                    </h3>
-
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <CalendarDays className="h-3 w-3 text-primary/80" />
-                        {formatSessionDate(session.startAt)}
-                      </span>
-
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-primary/80" />
-                        {formatSessionTime(session.startAt)} -{" "}
-                        {formatSessionTime(session.endAt)}
-                      </span>
-
-                      {session.courtNumbers ? (
-                        <span className="inline-flex items-center gap-1">
-                          <Grid3X3 className="h-3 w-3 text-primary/80" />
-                          Courts: {session.courtNumbers}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 border-t border-white/10 pt-3">
-                    {session.attendance.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No one marked going yet.
-                      </p>
-                    ) : (
-                      <p className="text-sm leading-6 text-foreground">
-                        {session.attendance
-                          .map(
-                            (attendance: GoingAttendance) =>
-                              attendance.member.name,
-                          )
-                          .join(", ")}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+        <MemberZoneSessions
+          sessions={club.sessions.map((session: SessionRow) => ({
+            id: session.id,
+            title: session.title,
+            startAt: session.startAt.toISOString(),
+            endAt: session.endAt.toISOString(),
+            courtNumbers: session.courtNumbers,
+            privateNotes: session.privateNotes,
+            attendance: session.attendance.map((attendance: AttendanceRow) => ({
+              member: {
+                id: attendance.member.id,
+                name: attendance.member.name,
+                nickname: attendance.member.nickname,
+              },
+            })),
+          }))}
+        />
       </section>
     </PageContainer>
   );
