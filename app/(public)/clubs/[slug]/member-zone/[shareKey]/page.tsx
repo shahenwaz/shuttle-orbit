@@ -126,7 +126,6 @@ export default async function ClubMemberZonePage({
           description: club.description,
           homeVenue: club.homeVenue,
           logoUrl: club.logoUrl,
-          isManagedClub: club.isManagedClub,
         }}
         members={club.members.map((member: MemberRow) =>
           mapClubProfileMember(member),

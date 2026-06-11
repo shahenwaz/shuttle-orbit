@@ -25,7 +25,6 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
       homeVenue: true,
       logoUrl: true,
       isPublic: true,
-      isManagedClub: true,
       members: {
         where: {
           isPublic: true,
@@ -57,7 +56,6 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
           description: club.description,
           homeVenue: club.homeVenue,
           logoUrl: club.logoUrl,
-          isManagedClub: club.isManagedClub,
         }}
         members={club.members.map((member: MemberRow) =>
           mapClubProfileMember(member),
