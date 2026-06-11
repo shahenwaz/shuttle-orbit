@@ -75,6 +75,7 @@ export function ClubProfileShell({
         <ClubOverviewPanel
           description={club.description}
           homeVenue={club.homeVenue}
+          memberCount={members.length}
         />
       ) : null}
 
