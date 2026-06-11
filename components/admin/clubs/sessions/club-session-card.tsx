@@ -15,10 +15,20 @@ import {
   deleteClubSessionAction,
   type DeleteClubSessionActionState,
 } from "@/app/admin/clubs/[clubId]/sessions/actions";
-import { ClubSessionForm } from "@/components/admin/clubs/club-session-form";
-import { ClubSessionAttendanceManager } from "@/components/admin/clubs/club-session-attendance-manager";
+import { ClubSessionAttendanceManager } from "@/components/admin/clubs/sessions/club-session-attendance-manager";
+import { ClubSessionForm } from "@/components/admin/clubs/sessions/club-session-form";
+import type {
+  ClubSessionMember,
+  ClubSessionRow,
+  ClubSessionVariant,
+} from "@/components/admin/clubs/sessions/club-session-types";
+import {
+  formatSessionDate,
+  formatSessionTime,
+  getGoingCount,
+  getMembersWithAttendance,
+} from "@/components/admin/clubs/sessions/club-session-utils";
 import { CreateDialog } from "@/components/admin/create-dialog";
-import { EmptyState } from "@/components/shared/empty-state";
 import { surfaceCardClassName } from "@/components/shared/surface-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,36 +38,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type ClubAttendanceStatus = "GOING" | "NOT_GOING";
-
-type ClubSessionMember = {
-  id: string;
-  clubId: string;
-  name: string;
-  nickname: string | null;
-  role: string;
-  playerId: string | null;
-  attendanceStatus?: ClubAttendanceStatus | null;
-};
-
-type ClubSessionRow = {
-  id: string;
-  clubId: string;
-  title: string;
-  startAt: Date;
-  endAt: Date;
-  courtNumbers: string | null;
-  privateNotes: string | null;
-  attendance: {
-    id: string;
-    memberId: string;
-    status: ClubAttendanceStatus;
-  }[];
-};
-
-type ClubSessionsDirectoryProps = {
-  sessions: ClubSessionRow[];
+type ClubSessionCardProps = {
+  session: ClubSessionRow;
   members: ClubSessionMember[];
+  variant: ClubSessionVariant;
 };
 
 const initialDeleteState: DeleteClubSessionActionState = {
@@ -65,51 +49,21 @@ const initialDeleteState: DeleteClubSessionActionState = {
   message: "",
 };
 
-function formatSessionDate(date: Date) {
-  return new Intl.DateTimeFormat("en-IE", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    timeZone: "UTC",
-  }).format(date);
-}
-
-function formatSessionTime(date: Date) {
-  return new Intl.DateTimeFormat("en-IE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZone: "UTC",
-  }).format(date);
-}
-
-type ClubSessionCardProps = {
-  session: ClubSessionRow;
-  members: ClubSessionMember[];
-};
-
-function ClubSessionCard({ session, members }: ClubSessionCardProps) {
+export function ClubSessionCard({
+  session,
+  members,
+  variant,
+}: ClubSessionCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
   const [deleteState, setDeleteState] =
     useState<DeleteClubSessionActionState>(initialDeleteState);
   const [isDeleting, startDeleteTransition] = useTransition();
-  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
 
-  const goingCount = session.attendance.filter(
-    (item) => item.status === "GOING",
-  ).length;
-
-  const membersWithAttendance = members.map((member) => {
-    const attendance = session.attendance.find(
-      (item) => item.memberId === member.id,
-    );
-
-    return {
-      ...member,
-      attendanceStatus: attendance?.status ?? null,
-    };
-  });
+  const attendanceLabel = variant === "previous" ? "Attended" : "Going";
+  const goingCount = getGoingCount(session);
+  const membersWithAttendance = getMembersWithAttendance({ session, members });
 
   return (
     <div
@@ -146,7 +100,7 @@ function ClubSessionCard({ session, members }: ClubSessionCardProps) {
 
             <span className="inline-flex items-center gap-1">
               <Users className="h-3 w-3 text-primary/80" />
-              Going: {goingCount}
+              {attendanceLabel}: {goingCount}
             </span>
           </div>
         </div>
@@ -296,25 +250,6 @@ function ClubSessionCard({ session, members }: ClubSessionCardProps) {
           </div>
         </form>
       </CreateDialog>
-    </div>
-  );
-}
-
-export function ClubSessionsDirectory({
-  sessions,
-  members,
-}: ClubSessionsDirectoryProps) {
-  if (sessions.length === 0) {
-    return (
-      <EmptyState message="No sessions added yet. Add the next club night with court time and court numbers." />
-    );
-  }
-
-  return (
-    <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
-      {sessions.map((session) => (
-        <ClubSessionCard key={session.id} session={session} members={members} />
-      ))}
     </div>
   );
 }

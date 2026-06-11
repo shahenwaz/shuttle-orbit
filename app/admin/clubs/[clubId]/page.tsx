@@ -5,8 +5,8 @@ import { ArrowLeft, Eye, EyeOff, PlusSquare, Settings2 } from "lucide-react";
 import { ClubForm } from "@/components/admin/clubs/club-form";
 import { ClubMemberForm } from "@/components/admin/clubs/club-member-form";
 import { ClubMembersDirectory } from "@/components/admin/clubs/club-members-directory";
-import { ClubSessionForm } from "@/components/admin/clubs/club-session-form";
-import { ClubSessionsDirectory } from "@/components/admin/clubs/club-sessions-directory";
+import { ClubSessionForm } from "@/components/admin/clubs/sessions/club-session-form";
+import { ClubSessionsDirectory } from "@/components/admin/clubs/sessions/club-sessions-directory";
 import { ClubMemberAccessPanel } from "@/components/admin/clubs/club-member-access-panel";
 
 import { CreateSheet } from "@/components/admin/create-sheet";

@@ -34,6 +34,8 @@ export function SiteFooter() {
               alt="Shuttle Orbit logo"
               width={32}
               height={32}
+              loading="eager"
+              fetchPriority="high"
               className="relative h-7.5 w-7.5 object-contain drop-shadow-[0_0_10px_rgba(74,222,128,0.24)] transition duration-300 group-hover:scale-105"
             />
 
