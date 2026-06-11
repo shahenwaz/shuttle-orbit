@@ -12,10 +12,39 @@ type MemberZonePageProps = {
   }>;
 };
 
+const sessionSelect = {
+  id: true,
+  title: true,
+  startAt: true,
+  endAt: true,
+  courtNumbers: true,
+  privateNotes: true,
+  attendance: {
+    where: {
+      status: "GOING" as const,
+    },
+    orderBy: {
+      member: {
+        name: "asc" as const,
+      },
+    },
+    select: {
+      member: {
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+        },
+      },
+    },
+  },
+};
+
 export default async function ClubMemberZonePage({
   params,
 }: MemberZonePageProps) {
   const { slug, shareKey } = await params;
+  const now = new Date();
 
   const club = await prisma.club.findFirst({
     where: {
@@ -25,46 +54,9 @@ export default async function ClubMemberZonePage({
       isManagedClub: true,
     },
     select: {
+      id: true,
       name: true,
       homeVenue: true,
-      sessions: {
-        where: {
-          startAt: {
-            gte: new Date(),
-          },
-        },
-        orderBy: {
-          startAt: "asc",
-        },
-        take: 8,
-        select: {
-          id: true,
-          title: true,
-          startAt: true,
-          endAt: true,
-          courtNumbers: true,
-          privateNotes: true,
-          attendance: {
-            where: {
-              status: "GOING",
-            },
-            orderBy: {
-              member: {
-                name: "asc",
-              },
-            },
-            select: {
-              member: {
-                select: {
-                  id: true,
-                  name: true,
-                  nickname: true,
-                },
-              },
-            },
-          },
-        },
-      },
     },
   });
 
@@ -72,8 +64,55 @@ export default async function ClubMemberZonePage({
     notFound();
   }
 
-  type SessionRow = (typeof club.sessions)[number];
+  const [upcomingSessions, previousSessions] = await Promise.all([
+    prisma.clubSession.findMany({
+      where: {
+        clubId: club.id,
+        endAt: {
+          gte: now,
+        },
+      },
+      orderBy: {
+        startAt: "asc",
+      },
+      take: 8,
+      select: sessionSelect,
+    }),
+    prisma.clubSession.findMany({
+      where: {
+        clubId: club.id,
+        endAt: {
+          lt: now,
+        },
+      },
+      orderBy: {
+        startAt: "desc",
+      },
+      take: 8,
+      select: sessionSelect,
+    }),
+  ]);
+
+  type SessionRow = (typeof upcomingSessions)[number];
   type AttendanceRow = SessionRow["attendance"][number];
+
+  function mapSession(session: SessionRow) {
+    return {
+      id: session.id,
+      title: session.title,
+      startAt: session.startAt.toISOString(),
+      endAt: session.endAt.toISOString(),
+      courtNumbers: session.courtNumbers,
+      privateNotes: session.privateNotes,
+      attendance: session.attendance.map((attendance: AttendanceRow) => ({
+        member: {
+          id: attendance.member.id,
+          name: attendance.member.name,
+          nickname: attendance.member.nickname,
+        },
+      })),
+    };
+  }
 
   return (
     <PageContainer className="space-y-5 py-7 sm:space-y-6 sm:py-10">
@@ -97,31 +136,17 @@ export default async function ClubMemberZonePage({
       </section>
 
       <section className="space-y-3">
-        <div className="space-y-1">
-          <h2 className="text-base font-semibold tracking-tight text-foreground">
-            Upcoming sessions
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Date, time, courts, and confirmed players.
-          </p>
-        </div>
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Our Train & Play sessions
+        </h2>
 
         <MemberZoneSessions
-          sessions={club.sessions.map((session: SessionRow) => ({
-            id: session.id,
-            title: session.title,
-            startAt: session.startAt.toISOString(),
-            endAt: session.endAt.toISOString(),
-            courtNumbers: session.courtNumbers,
-            privateNotes: session.privateNotes,
-            attendance: session.attendance.map((attendance: AttendanceRow) => ({
-              member: {
-                id: attendance.member.id,
-                name: attendance.member.name,
-                nickname: attendance.member.nickname,
-              },
-            })),
-          }))}
+          upcomingSessions={upcomingSessions.map((session: SessionRow) =>
+            mapSession(session),
+          )}
+          previousSessions={previousSessions.map((session: SessionRow) =>
+            mapSession(session),
+          )}
         />
       </section>
     </PageContainer>
