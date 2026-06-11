@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CalendarDays, Clock, Grid3X3, StickyNote, Users } from "lucide-react";
 
+import type { ClubProfileSession } from "@/lib/clubs/club-profile-mappers";
 import {
   Dialog,
   DialogContent,
@@ -10,41 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SectionTabs } from "@/components/shared/section-tabs";
 
-type MemberZoneSession = {
-  id: string;
-  title: string;
-  startAt: string;
-  endAt: string;
-  courtNumbers: string | null;
-  privateNotes: string | null;
-  attendance: {
-    member: {
-      id: string;
-      name: string;
-      nickname: string | null;
-    };
-  }[];
+type ClubSessionsPanelProps = {
+  upcomingSessions: ClubProfileSession[];
+  previousSessions: ClubProfileSession[];
 };
 
-type MemberZoneSessionsProps = {
-  upcomingSessions: MemberZoneSession[];
-  previousSessions: MemberZoneSession[];
+type SelectedSessionState = {
+  session: ClubProfileSession;
+  variant: "upcoming" | "previous";
 };
-
-type SessionTab = "upcoming" | "previous";
-
-const sessionTabs = [
-  {
-    key: "upcoming",
-    label: "Upcoming",
-  },
-  {
-    key: "previous",
-    label: "Previous",
-  },
-] as const;
 
 function formatSessionDate(value: string, style: "short" | "long" = "short") {
   return new Intl.DateTimeFormat("en-IE", {
@@ -64,30 +40,24 @@ function formatSessionTime(value: string) {
   }).format(new Date(value));
 }
 
-function getDisplayName(member: { name: string; nickname: string | null }) {
-  return (member.nickname ?? member.name).toUpperCase();
-}
-
 function SessionCard({
   session,
-  attendanceLabel,
+  label,
   onOpen,
 }: {
-  session: MemberZoneSession;
-  attendanceLabel: "Going" | "Attended";
+  session: ClubProfileSession;
+  label: "Going" | "Attended";
   onOpen: () => void;
 }) {
-  const goingCount = session.attendance.length;
-
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-md border border-white/10 bg-white/4 p-3 text-left transition hover:border-primary/25 hover:bg-white/6 sm:p-4"
+      className="group rounded-md border border-white/10 bg-white/4 p-3 text-left transition hover:border-primary/25 hover:bg-white/6"
     >
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="line-clamp-1 text-sm font-semibold text-foreground sm:text-base">
+          <h3 className="line-clamp-1 text-sm font-semibold text-foreground">
             {session.title}
           </h3>
 
@@ -119,7 +89,7 @@ function SessionCard({
 
           <span className="inline-flex items-center gap-1">
             <Users className="h-3 w-3 text-primary/80" />
-            {attendanceLabel} - {goingCount}
+            {label} - {session.attendance.length}
           </span>
         </div>
       </div>
@@ -127,59 +97,76 @@ function SessionCard({
   );
 }
 
-export function MemberZoneSessions({
+function SessionSection({
+  title,
+  emptyMessage,
+  sessions,
+  variant,
+  onOpen,
+}: {
+  title: string;
+  emptyMessage: string;
+  sessions: ClubProfileSession[];
+  variant: "upcoming" | "previous";
+  onOpen: (state: SelectedSessionState) => void;
+}) {
+  const label = variant === "previous" ? "Attended" : "Going";
+
+  return (
+    <section className="space-y-2">
+      <h3 className="text-sm font-semibold tracking-tight text-foreground">
+        {title}
+      </h3>
+
+      {sessions.length === 0 ? (
+        <div className="rounded-md border border-white/10 bg-white/4 px-3 py-4 text-sm text-muted-foreground">
+          {emptyMessage}
+        </div>
+      ) : (
+        <div className="grid gap-2">
+          {sessions.map((session) => (
+            <SessionCard
+              key={session.id}
+              session={session}
+              label={label}
+              onOpen={() => onOpen({ session, variant })}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function ClubSessionsPanel({
   upcomingSessions,
   previousSessions,
-}: MemberZoneSessionsProps) {
-  const [activeTab, setActiveTab] = useState<SessionTab>("upcoming");
-  const [selectedSessionState, setSelectedSessionState] = useState<{
-    session: MemberZoneSession;
-    tab: SessionTab;
-  } | null>(null);
+}: ClubSessionsPanelProps) {
+  const [selectedSessionState, setSelectedSessionState] =
+    useState<SelectedSessionState | null>(null);
 
   const selectedSession = selectedSessionState?.session ?? null;
-  const selectedSessionIsPrevious = selectedSessionState?.tab === "previous";
-
-  const visibleSessions =
-    activeTab === "upcoming" ? upcomingSessions : previousSessions;
-
-  const emptyMessage =
-    activeTab === "upcoming"
-      ? "No upcoming sessions shared yet."
-      : "No previous sessions found yet.";
+  const selectedSessionIsPrevious =
+    selectedSessionState?.variant === "previous";
 
   return (
     <>
-      <div className="space-y-3">
-        <SectionTabs
-          activeKey={activeTab}
-          items={sessionTabs}
-          onChange={(key) => setActiveTab(key as SessionTab)}
+      <div className="space-y-5">
+        <SessionSection
+          title="Upcoming sessions"
+          emptyMessage="No upcoming sessions shared yet."
+          sessions={upcomingSessions}
+          variant="upcoming"
+          onOpen={setSelectedSessionState}
         />
 
-        {visibleSessions.length === 0 ? (
-          <div className="rounded-md border border-white/10 bg-white/4 px-4 py-5 text-sm text-muted-foreground">
-            {emptyMessage}
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            {visibleSessions.map((session) => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                attendanceLabel={
-                  activeTab === "previous" ? "Attended" : "Going"
-                }
-                onOpen={() =>
-                  setSelectedSessionState({
-                    session,
-                    tab: activeTab,
-                  })
-                }
-              />
-            ))}
-          </div>
-        )}
+        <SessionSection
+          title="Previous sessions"
+          emptyMessage="No previous sessions found yet."
+          sessions={previousSessions}
+          variant="previous"
+          onOpen={setSelectedSessionState}
+        />
       </div>
 
       <Dialog
@@ -242,7 +229,7 @@ export function MemberZoneSessions({
                 ) : (
                   <p className="text-sm leading-6 text-foreground">
                     {selectedSession.attendance
-                      .map((attendance) => getDisplayName(attendance.member))
+                      .map((attendance) => attendance.member.displayName)
                       .join(", ")}
                   </p>
                 )}
@@ -252,8 +239,9 @@ export function MemberZoneSessions({
                 <div className="space-y-2">
                   <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
                     <StickyNote className="h-3.5 w-3.5" />
-                    Session Note
+                    Session note
                   </div>
+
                   <p className="rounded-md border border-white/10 bg-white/4 px-3 py-2 text-sm leading-6 text-muted-foreground">
                     {selectedSession.privateNotes}
                   </p>

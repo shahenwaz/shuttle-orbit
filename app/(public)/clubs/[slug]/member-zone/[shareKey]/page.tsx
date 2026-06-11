@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
-import { MapPin } from "lucide-react";
 
-import { MemberZoneSessions } from "@/components/clubs/member-zone-sessions";
+import { ClubProfileShell } from "@/components/clubs/club-profile-shell";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
+import {
+  mapClubProfileMember,
+  mapClubProfileSession,
+} from "@/lib/clubs/club-profile-mappers";
 
 type MemberZonePageProps = {
   params: Promise<{
@@ -52,11 +55,29 @@ export default async function ClubMemberZonePage({
       memberShareKey: shareKey,
       memberAccessEnabled: true,
       isManagedClub: true,
+      isPublic: true,
     },
     select: {
       id: true,
       name: true,
+      shortName: true,
+      description: true,
       homeVenue: true,
+      logoUrl: true,
+      isManagedClub: true,
+      members: {
+        where: {
+          isPublic: true,
+        },
+        orderBy: {
+          name: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+        },
+      },
     },
   });
 
@@ -93,62 +114,31 @@ export default async function ClubMemberZonePage({
     }),
   ]);
 
+  type MemberRow = (typeof club.members)[number];
   type SessionRow = (typeof upcomingSessions)[number];
-  type AttendanceRow = SessionRow["attendance"][number];
-
-  function mapSession(session: SessionRow) {
-    return {
-      id: session.id,
-      title: session.title,
-      startAt: session.startAt.toISOString(),
-      endAt: session.endAt.toISOString(),
-      courtNumbers: session.courtNumbers,
-      privateNotes: session.privateNotes,
-      attendance: session.attendance.map((attendance: AttendanceRow) => ({
-        member: {
-          id: attendance.member.id,
-          name: attendance.member.name,
-          nickname: attendance.member.nickname,
-        },
-      })),
-    };
-  }
 
   return (
-    <PageContainer className="space-y-5 py-7 sm:space-y-6 sm:py-10">
-      <section className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">
-          Private member view
-        </p>
-
-        <div className="space-y-2">
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            {club.name}
-          </h1>
-
-          {club.homeVenue ? (
-            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 text-primary/80" />
-              {club.homeVenue}
-            </p>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">
-          Our Train & Play sessions
-        </h2>
-
-        <MemberZoneSessions
-          upcomingSessions={upcomingSessions.map((session: SessionRow) =>
-            mapSession(session),
-          )}
-          previousSessions={previousSessions.map((session: SessionRow) =>
-            mapSession(session),
-          )}
-        />
-      </section>
+    <PageContainer className="py-7 sm:py-10">
+      <ClubProfileShell
+        club={{
+          name: club.name,
+          shortName: club.shortName,
+          description: club.description,
+          homeVenue: club.homeVenue,
+          logoUrl: club.logoUrl,
+          isManagedClub: club.isManagedClub,
+        }}
+        members={club.members.map((member: MemberRow) =>
+          mapClubProfileMember(member),
+        )}
+        hasSessionAccess={true}
+        upcomingSessions={upcomingSessions.map((session: SessionRow) =>
+          mapClubProfileSession(session),
+        )}
+        previousSessions={previousSessions.map((session: SessionRow) =>
+          mapClubProfileSession(session),
+        )}
+      />
     </PageContainer>
   );
 }
