@@ -54,6 +54,11 @@ export function ClubOverviewPanel({
           </p>
         ) : null}
       </div>
+
+      <div>
+        <p className="text-sm text-purple-400">I will remove it later.</p>
+        <p className="text-sm text-purple-500">This is Purple 500.</p>
+      </div>
     </section>
   );
 }

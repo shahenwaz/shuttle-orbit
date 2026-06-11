@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Clock, Grid3X3, StickyNote, Users } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronRight,
+  Clock,
+  Grid3X3,
+  StickyNote,
+  Users,
+} from "lucide-react";
 
-import type { ClubProfileSession } from "@/lib/clubs/club-profile-mappers";
 import {
   Dialog,
   DialogContent,
@@ -11,15 +17,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { ClubProfileSession } from "@/lib/clubs/club-profile-mappers";
+import { cn } from "@/lib/utils";
 
 type ClubSessionsPanelProps = {
   upcomingSessions: ClubProfileSession[];
   previousSessions: ClubProfileSession[];
 };
 
+type SessionVariant = "upcoming" | "previous";
+
 type SelectedSessionState = {
   session: ClubProfileSession;
-  variant: "upcoming" | "previous";
+  variant: SessionVariant;
 };
 
 function formatSessionDate(value: string, style: "short" | "long" = "short") {
@@ -40,58 +50,72 @@ function formatSessionTime(value: string) {
   }).format(new Date(value));
 }
 
+function SessionMetaItem({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5">
+      <span className="shrink-0 text-purple-400">{icon}</span>
+      <span className="truncate">{children}</span>
+    </span>
+  );
+}
+
 function SessionCard({
   session,
-  label,
+  variant,
   onOpen,
 }: {
   session: ClubProfileSession;
-  label: "Going" | "Attended";
+  variant: SessionVariant;
   onOpen: () => void;
 }) {
+  const label = variant === "previous" ? "Attended" : "Going";
+
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-md border border-white/10 bg-white/4 p-3 text-left transition hover:border-primary/25 hover:bg-white/6"
+      className={cn(
+        "group block rounded-md border border-white/10 bg-white/4 px-3 py-2.5 text-left transition",
+        "hover:border-purple-400/25 hover:bg-white/6",
+      )}
     >
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="line-clamp-1 text-sm font-semibold text-foreground">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-1">
+          <h3 className="truncate text-sm font-semibold leading-5 text-foreground">
             {session.title}
           </h3>
 
-          <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
-            View
-          </span>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <SessionMetaItem icon={<CalendarDays className="h-3 w-3" />}>
+              {formatSessionDate(session.startAt)}
+            </SessionMetaItem>
+
+            <SessionMetaItem icon={<Clock className="h-3 w-3" />}>
+              {formatSessionTime(session.startAt)} -{" "}
+              {formatSessionTime(session.endAt)}
+            </SessionMetaItem>
+          </div>
+
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            {session.courtNumbers ? (
+              <SessionMetaItem icon={<Grid3X3 className="h-3 w-3" />}>
+                Courts: {session.courtNumbers}
+              </SessionMetaItem>
+            ) : null}
+
+            <SessionMetaItem icon={<Users className="h-3 w-3" />}>
+              {label} - {session.attendance.length}
+            </SessionMetaItem>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <CalendarDays className="h-3 w-3 text-primary/80" />
-            {formatSessionDate(session.startAt)}
-          </span>
-
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3 text-primary/80" />
-            {formatSessionTime(session.startAt)} -{" "}
-            {formatSessionTime(session.endAt)}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {session.courtNumbers ? (
-            <span className="inline-flex items-center gap-1">
-              <Grid3X3 className="h-3 w-3 text-primary/80" />
-              Courts: {session.courtNumbers}
-            </span>
-          ) : null}
-
-          <span className="inline-flex items-center gap-1">
-            <Users className="h-3 w-3 text-primary/80" />
-            {label} - {session.attendance.length}
-          </span>
-        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-purple-300" />
       </div>
     </button>
   );
@@ -107,34 +131,55 @@ function SessionSection({
   title: string;
   emptyMessage: string;
   sessions: ClubProfileSession[];
-  variant: "upcoming" | "previous";
+  variant: SessionVariant;
   onOpen: (state: SelectedSessionState) => void;
 }) {
-  const label = variant === "previous" ? "Attended" : "Going";
-
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold tracking-tight text-foreground">
-        {title}
-      </h3>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold tracking-tight text-primary/80">
+          {title}
+        </h3>
+
+        {sessions.length > 0 ? (
+          <span className="text-xs font-medium text-muted-foreground">
+            {sessions.length}
+          </span>
+        ) : null}
+      </div>
 
       {sessions.length === 0 ? (
-        <div className="rounded-md border border-white/10 bg-white/4 px-3 py-4 text-sm text-muted-foreground">
+        <p className="rounded-md border border-white/10 bg-white/4 px-3 py-3 text-sm text-muted-foreground">
           {emptyMessage}
-        </div>
+        </p>
       ) : (
         <div className="grid gap-1.5 md:grid-cols-2 lg:grid-cols-3">
           {sessions.map((session) => (
             <SessionCard
               key={session.id}
               session={session}
-              label={label}
+              variant={variant}
               onOpen={() => onOpen({ session, variant })}
             />
           ))}
         </div>
       )}
     </section>
+  );
+}
+
+function DialogDetailRow({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <span className="shrink-0 text-purple-500">{icon}</span>
+      <span>{children}</span>
+    </div>
   );
 }
 
@@ -178,41 +223,35 @@ export function ClubSessionsPanel({
         <DialogContent className="max-h-[86vh] overflow-y-auto rounded-md border-white/10 bg-background/95 p-4 shadow-2xl sm:max-w-lg sm:p-5">
           {selectedSession ? (
             <div className="space-y-5">
-              <DialogHeader className="space-y-2">
+              <DialogHeader className="space-y-1.5">
                 <DialogTitle className="font-heading text-lg font-semibold tracking-tight text-foreground">
                   {selectedSession.title}
                 </DialogTitle>
+
                 <DialogDescription className="text-sm text-muted-foreground">
                   Session details for club members.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="grid gap-2 text-sm">
-                <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/4 px-3 py-2 text-muted-foreground">
-                  <CalendarDays className="h-4 w-4 text-primary/80" />
-                  <span>
-                    {formatSessionDate(selectedSession.startAt, "long")}
-                  </span>
-                </div>
+              <div className="space-y-2">
+                <DialogDetailRow icon={<CalendarDays className="h-4 w-4" />}>
+                  {formatSessionDate(selectedSession.startAt, "long")}
+                </DialogDetailRow>
 
-                <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/4 px-3 py-2 text-muted-foreground">
-                  <Clock className="h-4 w-4 text-primary/80" />
-                  <span>
-                    {formatSessionTime(selectedSession.startAt)} -{" "}
-                    {formatSessionTime(selectedSession.endAt)}
-                  </span>
-                </div>
+                <DialogDetailRow icon={<Clock className="h-4 w-4" />}>
+                  {formatSessionTime(selectedSession.startAt)} -{" "}
+                  {formatSessionTime(selectedSession.endAt)}
+                </DialogDetailRow>
 
                 {selectedSession.courtNumbers ? (
-                  <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/4 px-3 py-2 text-muted-foreground">
-                    <Grid3X3 className="h-4 w-4 text-primary/80" />
-                    <span>Courts: {selectedSession.courtNumbers}</span>
-                  </div>
+                  <DialogDetailRow icon={<Grid3X3 className="h-4 w-4" />}>
+                    Courts: {selectedSession.courtNumbers}
+                  </DialogDetailRow>
                 ) : null}
               </div>
 
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
+                <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-purple-400">
                   <Users className="h-3.5 w-3.5" />
                   {selectedSessionIsPrevious
                     ? "Joined this session"
@@ -237,12 +276,12 @@ export function ClubSessionsPanel({
 
               {selectedSession.privateNotes ? (
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-purple-500">
                     <StickyNote className="h-3.5 w-3.5" />
                     Session note
                   </div>
 
-                  <p className="rounded-md border border-white/10 bg-white/4 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                  <p className="text-sm leading-6 text-muted-foreground">
                     {selectedSession.privateNotes}
                   </p>
                 </div>
