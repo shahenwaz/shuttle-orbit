@@ -177,7 +177,7 @@ function DialogDetailRow({
 }) {
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <span className="shrink-0 text-purple-500">{icon}</span>
+      <span className="shrink-0 text-purple-400">{icon}</span>
       <span>{children}</span>
     </div>
   );
@@ -276,14 +276,14 @@ export function ClubSessionsPanel({
 
               {selectedSession.privateNotes ? (
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-purple-500">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
                     <StickyNote className="h-3.5 w-3.5" />
                     Session note
                   </div>
 
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {selectedSession.privateNotes}
-                  </p>
+                  <div className="rounded-md bg-white/4 px-3 py-3 text-sm leading-7 text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                    {selectedSession.privateNotes.trim()}
+                  </div>
                 </div>
               ) : null}
             </div>
