@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import type { ClubProfileSession } from "@/lib/clubs/club-profile-mappers";
 import { cn } from "@/lib/utils";
+import { SessionNote } from "@/components/clubs/session-note";
 
 type ClubSessionsPanelProps = {
   upcomingSessions: ClubProfileSession[];
@@ -281,9 +282,7 @@ export function ClubSessionsPanel({
                     Session note
                   </div>
 
-                  <div className="rounded-md bg-white/4 px-3 py-3 text-sm leading-7 text-muted-foreground whitespace-pre-wrap wrap-break-word">
-                    {selectedSession.privateNotes.trim()}
-                  </div>
+                  <SessionNote note={selectedSession.privateNotes} />
                 </div>
               ) : null}
             </div>
