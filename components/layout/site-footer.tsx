@@ -1,7 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/page-container";
+
+const currentYear = new Date().getFullYear();
 
 const footerGroups = [
   {
@@ -24,6 +29,12 @@ const footerGroups = [
 ];
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <footer className="border-t border-white/10 bg-background/70">
       <PageContainer className="py-8 sm:py-10">
@@ -74,8 +85,8 @@ export function SiteFooter() {
 
         <div className="mt-8 border-t border-white/10 pt-4">
           <p className="text-xs text-muted-foreground sm:text-sm">
-            © {new Date().getFullYear()} Shuttle Orbit. Built for community
-            badminton tournaments, results, and rankings.
+            © {currentYear} Shuttle Orbit. Built for community badminton
+            tournaments, results, and rankings.
           </p>
         </div>
       </PageContainer>
