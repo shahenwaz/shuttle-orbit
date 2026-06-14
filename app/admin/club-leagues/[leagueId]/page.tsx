@@ -2,8 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { ClubLeagueFixtureList } from "@/components/admin/club-leagues/club-league-fixture-list";
-import { ClubLeagueSidePanel } from "@/components/admin/club-leagues/club-league-side-panel";
+import { ClubLeagueDetailSections } from "@/components/admin/club-leagues/club-league-detail-sections";
+import {
+  ClubLeagueSectionTabs,
+  type ClubLeagueSectionTab,
+} from "@/components/admin/club-leagues/club-league-section-tabs";
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
@@ -14,12 +17,20 @@ type AdminClubLeagueDetailPageProps = {
   params: Promise<{
     leagueId: string;
   }>;
+  searchParams: Promise<{
+    tab?: string;
+  }>;
 };
 
 export default async function AdminClubLeagueDetailPage({
   params,
+  searchParams,
 }: AdminClubLeagueDetailPageProps) {
   const { leagueId } = await params;
+  const { tab } = await searchParams;
+
+  const activeTab: ClubLeagueSectionTab =
+    tab === "sides" || tab === "fixtures" ? tab : "overview";
 
   const league = await prisma.clubLeague.findUnique({
     where: {
@@ -78,6 +89,9 @@ export default async function AdminClubLeagueDetailPage({
           matchOrder: true,
           roundLabel: true,
           scoreSummary: true,
+          entryAId: true,
+          entryBId: true,
+          winnerEntryId: true,
           entryA: {
             select: {
               displayName: true,
@@ -112,9 +126,6 @@ export default async function AdminClubLeagueDetailPage({
               },
             },
           },
-          winnerEntryId: true,
-          entryAId: true,
-          entryBId: true,
           sets: {
             orderBy: {
               setNumber: "asc",
@@ -149,14 +160,14 @@ export default async function AdminClubLeagueDetailPage({
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader
         title={league.title}
-        description="Review generated club league sides, entries, and fixtures before entering scores."
+        description="Review sides, generated fixtures, and later record results for this internal club league."
         actions={
           <Link
             href="/admin/club-leagues"
             className={actionPillButtonClassName({ variant: "neutral" })}
           >
             <ArrowLeft className="size-4" />
-            Back to leagues
+            Back
           </Link>
         }
       />
@@ -178,21 +189,18 @@ export default async function AdminClubLeagueDetailPage({
           label="Format"
           value={league.format.replaceAll("_", " ")}
         />
-        <CompactStatPill label="Entries" value={league._count.entries} />
         <CompactStatPill label="Fixtures" value={league._count.matches} />
         <CompactStatPill label="Completed" value={completedMatches} />
       </section>
 
-      {league.rulesNote ? (
-        <p className="rounded-md border border-white/10 bg-white/4 px-4 py-3 text-sm leading-6 text-muted-foreground">
-          {league.rulesNote}
-        </p>
-      ) : null}
+      <ClubLeagueSectionTabs leagueId={league.id} activeTab={activeTab} />
 
-      <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-        <ClubLeagueSidePanel sides={league.sides} />
-        <ClubLeagueFixtureList matches={league.matches} />
-      </div>
+      <ClubLeagueDetailSections
+        activeTab={activeTab}
+        rulesNote={league.rulesNote}
+        sides={league.sides}
+        matches={league.matches}
+      />
     </PageContainer>
   );
 }
