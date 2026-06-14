@@ -46,6 +46,12 @@ enum ClubAttendanceStatus {
   NOT_GOING
 }
 
+enum ClubLeagueFormat {
+  TEAM_PAIR_MATRIX
+  FIXED_DOUBLES
+  MANUAL
+}
+
 model Player {
   id        String   @id @default(cuid())
   fullName  String
@@ -54,11 +60,14 @@ model Player {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teamEntriesAsPlayer1 TeamEntry[]            @relation("TeamEntryPlayer1")
-  teamEntriesAsPlayer2 TeamEntry[]            @relation("TeamEntryPlayer2")
-  rankingLedgers       RankingLedger[]
-  tournamentStats      PlayerTournamentStat[]
-  clubMemberships      ClubMember[]
+  teamEntriesAsPlayer1       TeamEntry[]            @relation("TeamEntryPlayer1")
+  teamEntriesAsPlayer2       TeamEntry[]            @relation("TeamEntryPlayer2")
+  rankingLedgers             RankingLedger[]
+  tournamentStats            PlayerTournamentStat[]
+  clubMemberships            ClubMember[]
+  clubLeagueStats            ClubPlayerLeagueStat[]
+  clubLeagueEntriesAsPlayer1 ClubLeagueEntry[]      @relation("ClubLeagueEntryPlayer1")
+  clubLeagueEntriesAsPlayer2 ClubLeagueEntry[]      @relation("ClubLeagueEntryPlayer2")
 }
 
 model Tournament {
@@ -274,6 +283,7 @@ model Club {
 
   members  ClubMember[]
   sessions ClubSession[]
+  leagues  ClubLeague[]
 
   @@index([slug])
   @@index([isPublic])
@@ -338,6 +348,134 @@ model ClubSessionAttendance {
 
   @@unique([sessionId, memberId])
   @@index([memberId, status])
+}
+
+model ClubLeague {
+  id String @id @default(cuid())
+
+  clubId    String
+  title     String
+  playedAt  DateTime
+  format    ClubLeagueFormat
+  rulesNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  sides       ClubLeagueSide[]
+  entries     ClubLeagueEntry[]
+  matches     ClubLeagueMatch[]
+  playerStats ClubPlayerLeagueStat[]
+
+  @@index([clubId, playedAt])
+  @@index([format])
+}
+
+model ClubLeagueSide {
+  id String @id @default(cuid())
+
+  leagueId  String
+  name      String
+  sideOrder Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  league  ClubLeague        @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  entries ClubLeagueEntry[]
+
+  @@unique([leagueId, sideOrder])
+}
+
+model ClubLeagueEntry {
+  id String @id @default(cuid())
+
+  leagueId    String
+  sideId      String?
+  player1Id   String
+  player2Id   String?
+  displayName String?
+  entryOrder  Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  league ClubLeague      @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  side   ClubLeagueSide? @relation(fields: [sideId], references: [id], onDelete: SetNull)
+
+  player1 Player  @relation("ClubLeagueEntryPlayer1", fields: [player1Id], references: [id], onDelete: Restrict)
+  player2 Player? @relation("ClubLeagueEntryPlayer2", fields: [player2Id], references: [id], onDelete: Restrict)
+
+  matchesAsEntryA ClubLeagueMatch[] @relation("ClubLeagueMatchEntryA")
+  matchesAsEntryB ClubLeagueMatch[] @relation("ClubLeagueMatchEntryB")
+  wonMatches      ClubLeagueMatch[] @relation("ClubLeagueMatchWinner")
+
+  @@index([leagueId])
+  @@index([sideId])
+}
+
+model ClubLeagueMatch {
+  id String @id @default(cuid())
+
+  leagueId      String
+  entryAId      String?
+  entryBId      String?
+  winnerEntryId String?
+  matchOrder    Int
+  roundLabel    String?
+  scoreSummary  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  league ClubLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  entryA      ClubLeagueEntry? @relation("ClubLeagueMatchEntryA", fields: [entryAId], references: [id], onDelete: Restrict)
+  entryB      ClubLeagueEntry? @relation("ClubLeagueMatchEntryB", fields: [entryBId], references: [id], onDelete: Restrict)
+  winnerEntry ClubLeagueEntry? @relation("ClubLeagueMatchWinner", fields: [winnerEntryId], references: [id], onDelete: SetNull)
+
+  sets ClubLeagueSet[]
+
+  @@unique([leagueId, matchOrder])
+}
+
+model ClubLeagueSet {
+  id String @id @default(cuid())
+
+  matchId     String
+  setNumber   Int
+  entryAScore Int
+  entryBScore Int
+
+  createdAt DateTime @default(now())
+
+  match ClubLeagueMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, setNumber])
+}
+
+model ClubPlayerLeagueStat {
+  id String @id @default(cuid())
+
+  playerId String
+  leagueId String
+
+  matchesPlayed Int @default(0)
+  matchesWon    Int @default(0)
+  matchesLost   Int @default(0)
+  pointsFor     Int @default(0)
+  pointsAgainst Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  league ClubLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, leagueId])
+  @@index([leagueId])
 }
 
 model AdminUser {
