@@ -26,7 +26,7 @@ export default async function AdminClubsPage() {
         isManagedClub: true,
         _count: {
           select: {
-            members: true,
+            players: true,
             sessions: true,
           },
         },

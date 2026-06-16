@@ -1,9 +1,9 @@
 "use server";
 
+import { ClubMemberRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { clubMemberFormSchema } from "@/lib/validations/club-member";
 
 export type ClubMemberActionState = {
   success: boolean;
@@ -22,50 +22,94 @@ export type DeleteClubMemberActionState = {
   message: string;
 };
 
+const validClubRoles = new Set<ClubMemberRole>([
+  ClubMemberRole.OWNER,
+  ClubMemberRole.ORGANIZER,
+  ClubMemberRole.MEMBER,
+]);
+
 function revalidateClubPaths(clubId: string) {
   revalidatePath(`/admin/clubs/${clubId}`);
   revalidatePath(`/admin/clubs/${clubId}/members`);
   revalidatePath(`/admin/clubs/${clubId}/edit`);
   revalidatePath("/admin/clubs");
+  revalidatePath("/clubs");
+}
+
+function getStringValue(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getBooleanValue(formData: FormData, key: string) {
+  return formData.get(key) === "on";
+}
+
+function getClubRole(value: string): ClubMemberRole | null {
+  if (!value) {
+    return ClubMemberRole.MEMBER;
+  }
+
+  if (validClubRoles.has(value as ClubMemberRole)) {
+    return value as ClubMemberRole;
+  }
+
+  return null;
 }
 
 export async function createClubMemberAction(
   _prevState: ClubMemberActionState,
   formData: FormData,
 ): Promise<ClubMemberActionState> {
-  const clubId = formData.get("clubId");
+  const clubId = getStringValue(formData, "clubId");
+  const playerId = getStringValue(formData, "playerId");
+  const role = getClubRole(getStringValue(formData, "role"));
+  const isPublic = getBooleanValue(formData, "isPublic");
 
-  if (typeof clubId !== "string" || !clubId) {
+  const fieldErrors: ClubMemberActionState["fieldErrors"] = {};
+
+  if (!clubId) {
     return {
       success: false,
       message: "Invalid club.",
     };
   }
 
-  const parsed = clubMemberFormSchema.safeParse({
-    playerId: formData.get("playerId"),
-    name: formData.get("name"),
-    nickname: formData.get("nickname"),
-    role: formData.get("role") || "MEMBER",
-    isPublic: formData.get("isPublic"),
-  });
+  if (!playerId) {
+    fieldErrors.playerId = ["Choose an existing Shuttle Orbit player."];
+  }
 
-  if (!parsed.success) {
+  if (!role) {
+    fieldErrors.role = ["Choose a valid club role."];
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
       message: "Please fix the form errors.",
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors,
     };
   }
 
-  const club = await prisma.club.findUnique({
-    where: {
-      id: clubId,
-    },
-    select: {
-      id: true,
-    },
-  });
+  const [club, player] = await Promise.all([
+    prisma.club.findUnique({
+      where: {
+        id: clubId,
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.player.findUnique({
+      where: {
+        id: playerId,
+      },
+      select: {
+        id: true,
+        clubId: true,
+      },
+    }),
+  ]);
 
   if (!club) {
     return {
@@ -74,20 +118,7 @@ export async function createClubMemberAction(
     };
   }
 
-  const linkedPlayer = parsed.data.playerId
-    ? await prisma.player.findUnique({
-        where: {
-          id: parsed.data.playerId,
-        },
-        select: {
-          id: true,
-          fullName: true,
-          nickname: true,
-        },
-      })
-    : null;
-
-  if (parsed.data.playerId && !linkedPlayer) {
+  if (!player) {
     return {
       success: false,
       message: "Selected player was not found.",
@@ -97,36 +128,36 @@ export async function createClubMemberAction(
     };
   }
 
-  if (linkedPlayer) {
-    const existingLinkedMember = await prisma.clubMember.findFirst({
-      where: {
-        clubId,
-        playerId: linkedPlayer.id,
+  if (player.clubId === clubId) {
+    return {
+      success: false,
+      message: "This player is already assigned to this club.",
+      fieldErrors: {
+        playerId: ["This player already exists in this club."],
       },
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingLinkedMember) {
-      return {
-        success: false,
-        message: "This player is already linked to this club.",
-        fieldErrors: {
-          playerId: ["This player already exists in this club."],
-        },
-      };
-    }
+    };
   }
 
-  await prisma.clubMember.create({
+  if (player.clubId && player.clubId !== clubId) {
+    return {
+      success: false,
+      message:
+        "This player is already assigned to another club. Remove them from that club first.",
+      fieldErrors: {
+        playerId: ["Player already has a club."],
+      },
+    };
+  }
+
+  await prisma.player.update({
+    where: {
+      id: player.id,
+    },
     data: {
       clubId,
-      playerId: linkedPlayer?.id,
-      name: linkedPlayer?.fullName ?? parsed.data.name ?? "Club member",
-      nickname: linkedPlayer?.nickname ?? parsed.data.nickname,
-      role: parsed.data.role,
-      isPublic: parsed.data.isPublic,
+      clubRole: role ?? ClubMemberRole.MEMBER,
+      clubProfilePublic: isPublic,
+      clubJoinedAt: new Date(),
     },
   });
 
@@ -134,7 +165,7 @@ export async function createClubMemberAction(
 
   return {
     success: true,
-    message: "Club member added successfully.",
+    message: "Player added to club successfully.",
     fieldErrors: {},
   };
 }
@@ -143,38 +174,33 @@ export async function updateClubMemberAction(
   _prevState: ClubMemberActionState,
   formData: FormData,
 ): Promise<ClubMemberActionState> {
-  const clubId = formData.get("clubId");
-  const memberId = formData.get("memberId");
+  const clubId = getStringValue(formData, "clubId");
+  const memberId = getStringValue(formData, "memberId");
+  const role = getClubRole(getStringValue(formData, "role"));
+  const isPublic = getBooleanValue(formData, "isPublic");
 
-  if (
-    typeof clubId !== "string" ||
-    !clubId ||
-    typeof memberId !== "string" ||
-    !memberId
-  ) {
+  const fieldErrors: ClubMemberActionState["fieldErrors"] = {};
+
+  if (!clubId || !memberId) {
     return {
       success: false,
       message: "Invalid club member.",
     };
   }
 
-  const parsed = clubMemberFormSchema.safeParse({
-    playerId: formData.get("playerId"),
-    name: formData.get("name"),
-    nickname: formData.get("nickname"),
-    role: formData.get("role") || "MEMBER",
-    isPublic: formData.get("isPublic"),
-  });
+  if (!role) {
+    fieldErrors.role = ["Choose a valid club role."];
+  }
 
-  if (!parsed.success) {
+  if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
       message: "Please fix the form errors.",
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors,
     };
   }
 
-  const member = await prisma.clubMember.findFirst({
+  const player = await prisma.player.findFirst({
     where: {
       id: memberId,
       clubId,
@@ -184,71 +210,20 @@ export async function updateClubMemberAction(
     },
   });
 
-  if (!member) {
+  if (!player) {
     return {
       success: false,
-      message: "Club member not found.",
+      message: "Club player not found.",
     };
   }
 
-  const linkedPlayer = parsed.data.playerId
-    ? await prisma.player.findUnique({
-        where: {
-          id: parsed.data.playerId,
-        },
-        select: {
-          id: true,
-          fullName: true,
-          nickname: true,
-        },
-      })
-    : null;
-
-  if (parsed.data.playerId && !linkedPlayer) {
-    return {
-      success: false,
-      message: "Selected player was not found.",
-      fieldErrors: {
-        playerId: ["Choose a valid player."],
-      },
-    };
-  }
-
-  if (linkedPlayer) {
-    const existingLinkedMember = await prisma.clubMember.findFirst({
-      where: {
-        clubId,
-        playerId: linkedPlayer.id,
-        NOT: {
-          id: memberId,
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingLinkedMember) {
-      return {
-        success: false,
-        message: "This player is already linked to this club.",
-        fieldErrors: {
-          playerId: ["This player already exists in this club."],
-        },
-      };
-    }
-  }
-
-  await prisma.clubMember.update({
+  await prisma.player.update({
     where: {
-      id: memberId,
+      id: player.id,
     },
     data: {
-      playerId: linkedPlayer?.id,
-      name: linkedPlayer?.fullName ?? parsed.data.name ?? "Club member",
-      nickname: linkedPlayer?.nickname ?? parsed.data.nickname,
-      role: parsed.data.role,
-      isPublic: parsed.data.isPublic,
+      clubRole: role ?? ClubMemberRole.MEMBER,
+      clubProfilePublic: isPublic,
     },
   });
 
@@ -256,7 +231,7 @@ export async function updateClubMemberAction(
 
   return {
     success: true,
-    message: "Club member updated successfully.",
+    message: "Club player updated successfully.",
     fieldErrors: {},
   };
 }
@@ -264,38 +239,43 @@ export async function updateClubMemberAction(
 export async function deleteClubMemberAction(
   formData: FormData,
 ): Promise<DeleteClubMemberActionState> {
-  const clubId = formData.get("clubId");
-  const memberId = formData.get("memberId");
+  const clubId = getStringValue(formData, "clubId");
+  const memberId = getStringValue(formData, "memberId");
 
-  if (
-    typeof clubId !== "string" ||
-    !clubId ||
-    typeof memberId !== "string" ||
-    !memberId
-  ) {
+  if (!clubId || !memberId) {
     return {
       success: false,
       message: "Invalid club member.",
     };
   }
 
-  const attendanceCount = await prisma.clubSessionAttendance.count({
+  const player = await prisma.player.findFirst({
     where: {
-      memberId,
+      id: memberId,
+      clubId,
+    },
+    select: {
+      id: true,
     },
   });
 
-  if (attendanceCount > 0) {
+  if (!player) {
     return {
       success: false,
-      message:
-        "This member cannot be removed because they already have session attendance history.",
+      message: "Club player not found.",
     };
   }
 
-  await prisma.clubMember.delete({
+  await prisma.player.update({
     where: {
-      id: memberId,
+      id: player.id,
+    },
+    data: {
+      clubId: null,
+      clubRole: ClubMemberRole.MEMBER,
+      clubProfilePublic: false,
+      clubJoinedAt: null,
+      clubNotes: null,
     },
   });
 
@@ -303,6 +283,6 @@ export async function deleteClubMemberAction(
 
   return {
     success: true,
-    message: "Club member removed successfully.",
+    message: "Player removed from club successfully.",
   };
 }

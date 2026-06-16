@@ -20,7 +20,7 @@ export type ClubSessionRow = {
   privateNotes: string | null;
   attendance: {
     id: string;
-    memberId: string;
+    playerId: string;
     status: ClubAttendanceStatus;
   }[];
 };

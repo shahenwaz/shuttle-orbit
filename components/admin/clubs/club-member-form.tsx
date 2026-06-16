@@ -85,7 +85,7 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
           onChange={(event) => handlePlayerChange(event.target.value)}
           className={inputClassName}
         >
-          <option value="">Club-only member</option>
+          <option value="">Select player</option>
           {players.map((player) => (
             <option key={player.id} value={player.id}>
               {player.fullName}
@@ -95,8 +95,8 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
         </select>
 
         <p className="text-xs leading-5 text-muted-foreground">
-          Select an existing Shuttle Orbit player to auto-fill their name and
-          nickname. Leave this as club-only for casual members or kids.
+          Select an existing Shuttle Orbit player. Club membership is now
+          handled directly from the global player profile.
         </p>
 
         <FieldError errors={state.fieldErrors?.playerId} />

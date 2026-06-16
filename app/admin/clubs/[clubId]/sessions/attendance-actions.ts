@@ -11,6 +11,7 @@ export type ClubAttendanceActionState = {
 
 function revalidateClubPaths(clubId: string) {
   revalidatePath(`/admin/clubs/${clubId}`);
+  revalidatePath(`/admin/clubs/${clubId}?tab=sessions`);
   revalidatePath("/admin/clubs");
 }
 
@@ -37,15 +38,28 @@ export async function setClubSessionAttendanceAction(
     };
   }
 
-  const session = await prisma.clubSession.findFirst({
-    where: {
-      id: sessionId,
-      clubId,
-    },
-    select: {
-      id: true,
-    },
-  });
+  const playerId = memberId;
+
+  const [session, player] = await Promise.all([
+    prisma.clubSession.findFirst({
+      where: {
+        id: sessionId,
+        clubId,
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.player.findFirst({
+      where: {
+        id: playerId,
+        clubId,
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
 
   if (!session) {
     return {
@@ -54,33 +68,23 @@ export async function setClubSessionAttendanceAction(
     };
   }
 
-  const member = await prisma.clubMember.findFirst({
-    where: {
-      id: memberId,
-      clubId,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (!member) {
+  if (!player) {
     return {
       success: false,
-      message: "Club member not found.",
+      message: "Club player not found.",
     };
   }
 
   await prisma.clubSessionAttendance.upsert({
     where: {
-      sessionId_memberId: {
+      sessionId_playerId: {
         sessionId,
-        memberId,
+        playerId,
       },
     },
     create: {
       sessionId,
-      memberId,
+      playerId,
       status,
     },
     update: {

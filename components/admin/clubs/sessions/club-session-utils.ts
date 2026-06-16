@@ -38,7 +38,7 @@ export function getMembersWithAttendance({
 }) {
   return members.map((member) => {
     const attendance = session.attendance.find(
-      (item) => item.memberId === member.id,
+      (item) => item.playerId === member.id,
     );
 
     return {

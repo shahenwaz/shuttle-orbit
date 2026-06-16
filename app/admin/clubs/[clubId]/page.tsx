@@ -43,34 +43,33 @@ export default async function ClubWorkspacePage({
   const { clubId } = await params;
   const resolvedSearchParams = await searchParams;
 
-  const [club, players] = await Promise.all([
+  const [club, availablePlayers] = await Promise.all([
     prisma.club.findUnique({
       where: {
         id: clubId,
       },
       include: {
-        members: {
+        players: {
           orderBy: [
             {
-              role: "asc",
+              clubRole: "asc",
             },
             {
-              name: "asc",
+              fullName: "asc",
             },
           ],
-          include: {
-            player: {
-              select: {
-                id: true,
-                fullName: true,
-                nickname: true,
-              },
-            },
+          select: {
+            id: true,
+            fullName: true,
+            nickname: true,
+            clubRole: true,
+            clubProfilePublic: true,
+            clubJoinedAt: true,
           },
         },
         _count: {
           select: {
-            members: true,
+            players: true,
             sessions: true,
           },
         },
@@ -88,7 +87,7 @@ export default async function ClubWorkspacePage({
             attendance: {
               select: {
                 id: true,
-                memberId: true,
+                playerId: true,
                 status: true,
               },
             },
@@ -98,6 +97,9 @@ export default async function ClubWorkspacePage({
       },
     }),
     prisma.player.findMany({
+      where: {
+        OR: [{ clubId: null }, { clubId }],
+      },
       orderBy: {
         fullName: "asc",
       },
@@ -112,6 +114,24 @@ export default async function ClubWorkspacePage({
   if (!club) {
     notFound();
   }
+
+  type ClubPlayerRow = (typeof club.players)[number];
+
+  const members = club.players.map((player: ClubPlayerRow) => ({
+    id: player.id,
+    clubId: club.id,
+    playerId: player.id,
+    name: player.fullName,
+    nickname: player.nickname,
+    role: player.clubRole,
+    isPublic: player.clubProfilePublic,
+    joinedAt: player.clubJoinedAt,
+    player: {
+      id: player.id,
+      fullName: player.fullName,
+      nickname: player.nickname,
+    },
+  }));
 
   const activeTab = getActiveTab(
     resolvedSearchParams?.tab,
@@ -146,7 +166,7 @@ export default async function ClubWorkspacePage({
     <PageContainer className="space-y-4 sm:space-y-5">
       <AdminShellHeader
         title={club.name}
-        description="Manage club profile, members, and internal tools in one compact workspace."
+        description="Manage club profile, players, and internal tools in one compact workspace."
       />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -166,7 +186,7 @@ export default async function ClubWorkspacePage({
           </Link>
         </Button>
 
-        <CompactStatPill label="Members" value={club._count.members} />
+        <CompactStatPill label="Players" value={club._count.players} />
         <CompactStatPill label="Sessions" value={club._count.sessions} />
 
         <span className="inline-flex items-center rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
@@ -270,17 +290,17 @@ export default async function ClubWorkspacePage({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <h2 className="text-base font-semibold tracking-tight text-foreground">
-                Members
+                Players
               </h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Linked players and club-only members.
+                Players assigned to this club from the global player database.
               </p>
             </div>
 
             <CreateSheet
-              triggerLabel="Add member"
-              title="Add club member"
-              description="Link an existing Shuttle Orbit player or add a club-only member."
+              triggerLabel="Add player"
+              title="Add player to club"
+              description="Assign an existing Shuttle Orbit player to this club."
               triggerClassName={actionPillButtonClassName({
                 variant: "create",
                 className:
@@ -288,11 +308,11 @@ export default async function ClubWorkspacePage({
               })}
               triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
             >
-              <ClubMemberForm clubId={club.id} players={players} />
+              <ClubMemberForm clubId={club.id} players={availablePlayers} />
             </CreateSheet>
           </div>
 
-          <ClubMembersDirectory members={club.members} players={players} />
+          <ClubMembersDirectory members={members} players={availablePlayers} />
         </section>
       ) : null}
 
@@ -323,10 +343,7 @@ export default async function ClubWorkspacePage({
             </CreateSheet>
           </div>
 
-          <ClubSessionsDirectory
-            sessions={club.sessions}
-            members={club.members}
-          />
+          <ClubSessionsDirectory sessions={club.sessions} members={members} />
         </section>
       ) : null}
     </PageContainer>

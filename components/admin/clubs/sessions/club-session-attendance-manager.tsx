@@ -48,7 +48,7 @@ export function ClubSessionAttendanceManager({
   if (members.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Add club members first before managing attendance.
+        Add club players first before managing attendance.
       </p>
     );
   }

@@ -17,7 +17,7 @@ type AdminClubRow = {
   isPublic: boolean;
   isManagedClub: boolean;
   _count: {
-    members: number;
+    players: number;
     sessions: number;
   };
 };
@@ -85,7 +85,7 @@ export function AdminClubsDirectory({ clubs }: AdminClubsDirectoryProps) {
               </div>
 
               <CompactStatRow className="justify-start">
-                <CompactStatPill label="Members" value={club._count.members} />
+                <CompactStatPill label="Players" value={club._count.players} />
                 <CompactStatPill
                   label="Sessions"
                   value={club._count.sessions}
