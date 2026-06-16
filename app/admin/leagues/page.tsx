@@ -75,10 +75,7 @@ export default async function AdminLeaguesPage() {
 
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
-      <AdminShellHeader
-        title="Community leagues"
-        description="Create and manage friendly community leagues separately from formal Shuttle Orbit tournaments and rankings."
-      />
+      <AdminShellHeader title="Community leagues" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Host club" value={clubDisplayName} />
@@ -97,10 +94,7 @@ export default async function AdminLeaguesPage() {
             })}
             triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
           >
-            <CreateLeagueForm
-              clubId={managedClub.id}
-              players={memberPlayers}
-            />
+            <CreateLeagueForm clubId={managedClub.id} players={memberPlayers} />
           </CreateSheet>
         ) : null}
       </section>

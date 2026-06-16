@@ -1,4 +1,4 @@
-import { Trophy, Users } from "lucide-react";
+import { Building2, ListOrdered, Trophy, Users } from "lucide-react";
 
 import { AdminOverviewCard } from "@/components/admin/overview/admin-overview-card";
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
@@ -11,7 +11,7 @@ const adminSections = [
   {
     title: "Players",
     description:
-      "Create and manage the reusable player base used across tournaments and team entries.",
+      "Create and manage the reusable player base used across tournaments, clubs, teams, and leagues.",
     icon: Users,
     href: "/admin/players",
     cta: "Manage players",
@@ -20,11 +20,29 @@ const adminSections = [
   {
     title: "Tournaments",
     description:
-      "Create tournaments, define categories, and manage event structures from one place.",
+      "Create tournaments, define categories, and manage official event structures from one place.",
     icon: Trophy,
     href: "/admin/tournaments",
     cta: "Manage tournaments",
     ctaVariant: "create" as const,
+  },
+  {
+    title: "Clubs",
+    description:
+      "Manage club profiles, member access, assigned players, and club session planning.",
+    icon: Building2,
+    href: "/admin/clubs",
+    cta: "Manage clubs",
+    ctaVariant: "neutral" as const,
+  },
+  {
+    title: "Leagues",
+    description:
+      "Create community leagues, generate fixtures, record results, and review standalone standings.",
+    icon: ListOrdered,
+    href: "/admin/leagues",
+    cta: "Manage leagues",
+    ctaVariant: "neutral" as const,
   },
 ];
 
@@ -33,10 +51,7 @@ export default async function AdminPage() {
 
   return (
     <PageContainer className="space-y-5 sm:space-y-6">
-      <AdminShellHeader
-        title="Admin overview"
-        description="Control tournaments, players, category structure, fixtures, and results from one workspace."
-      />
+      <AdminShellHeader title="Admin overview" />
 
       <CompactStatRow>
         <CompactStatPill label="Tour" value={stats.tournamentCount} />
@@ -45,7 +60,7 @@ export default async function AdminPage() {
         <CompactStatPill label="Matches" value={stats.matchCount} />
       </CompactStatRow>
 
-      <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+      <section className="grid gap-2 sm:gap-2.5 lg:grid-cols-2">
         {adminSections.map((section) => (
           <AdminOverviewCard
             key={section.title}

@@ -37,10 +37,7 @@ export default async function AdminClubsPage() {
 
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
-      <AdminShellHeader
-        title="Club management"
-        description="Create club profiles, manage member groups, and prepare private session planning for organized badminton communities."
-      />
+      <AdminShellHeader title="Club management" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Clubs" value={clubCount} />

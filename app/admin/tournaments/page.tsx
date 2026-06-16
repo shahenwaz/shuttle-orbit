@@ -36,10 +36,7 @@ export default async function AdminTournamentsPage() {
 
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
-      <AdminShellHeader
-        title="Tournament management"
-        description="Create tournament shells, define categories, and grow them into full operational events."
-      />
+      <AdminShellHeader title="Tournament management" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Tournaments" value={tournamentCount} />

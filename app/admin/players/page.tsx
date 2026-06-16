@@ -120,10 +120,7 @@ export default async function AdminPlayersPage() {
 
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
-      <AdminShellHeader
-        title="Player management"
-        description="Create and maintain the reusable player base for tournaments, teams, rankings, and optional club identity."
-      />
+      <AdminShellHeader title="Player management" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Players" value={playerCount} />

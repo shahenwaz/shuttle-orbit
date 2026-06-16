@@ -27,37 +27,34 @@ export function AdminOverviewCard({
   return (
     <div
       className={surfaceCardClassName({
-        className: cn("p-4 sm:p-5", className),
+        className: cn("p-3.5 sm:p-4", className),
       })}
     >
-      <div className="flex h-full flex-col gap-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-background/60">
-              <Icon className="h-4.5 w-4.5 text-primary" />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-background/60">
+              <Icon className="h-4 w-4 text-primary" />
             </div>
 
-            <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+            <h3 className="truncate text-sm font-semibold tracking-tight text-foreground sm:text-base">
               {title}
             </h3>
           </div>
 
-          <p className="text-sm leading-6 text-muted-foreground">
-            {description}
-          </p>
-        </div>
-
-        <div className="mt-auto">
           <Link
             href={href}
             className={actionPillButtonClassName({
               variant: ctaVariant,
-              className: "gap-1.5 text-xs sm:text-sm",
+              className:
+                "shrink-0 gap-1.5 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
             })}
           >
             {cta}
           </Link>
         </div>
+
+        <p className="text-sm leading-5 text-muted-foreground">{description}</p>
       </div>
     </div>
   );
