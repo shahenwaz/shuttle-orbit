@@ -1,8 +1,14 @@
-import { PenSquare } from "lucide-react";
+"use client";
 
+import { useState, useTransition } from "react";
+import { PenSquare, Undo2 } from "lucide-react";
+
+import { resetClubLeagueResultAction } from "@/app/admin/club-leagues/[leagueId]/actions";
+import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { ClubLeagueResultForm } from "@/components/admin/club-leagues/club-league-result-form";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
+import { Button } from "@/components/ui/button";
 import { MatchCard } from "@/components/tournaments/match-card";
 import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
 
@@ -134,38 +140,143 @@ export function ClubLeagueFixtureResults({
               const isCompleted = Boolean(match.winnerEntryId);
 
               return (
-                <div key={match.id} className="space-y-2">
-                  <MatchCard match={toMatchCardMatch(match)} />
-
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    <CreateSheet
-                      triggerLabel={
-                        isCompleted ? "Edit result" : "Record result"
-                      }
-                      title="Record fixture result"
-                      description={`${entryALabel} vs ${entryBLabel}`}
-                      triggerClassName={actionPillButtonClassName({
-                        variant: isCompleted ? "edit" : "create",
-                        className:
-                          "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-                      })}
-                      triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
-                    >
-                      <ClubLeagueResultForm
-                        leagueId={leagueId}
-                        matchId={match.id}
-                        entryALabel={entryALabel}
-                        entryBLabel={entryBLabel}
-                        existingSet={match.sets[0] ?? null}
-                      />
-                    </CreateSheet>
-                  </div>
-                </div>
+                <ClubLeagueResultMatchCard
+                  key={match.id}
+                  leagueId={leagueId}
+                  match={match}
+                  entryALabel={entryALabel}
+                  entryBLabel={entryBLabel}
+                  isCompleted={isCompleted}
+                />
               );
             })}
           </div>
         )}
       </div>
     </section>
+  );
+}
+
+function ClubLeagueResultMatchCard({
+  leagueId,
+  match,
+  entryALabel,
+  entryBLabel,
+  isCompleted,
+}: {
+  leagueId: string;
+  match: ClubLeagueMatch;
+  entryALabel: string;
+  entryBLabel: string;
+  isCompleted: boolean;
+}) {
+  const [isResultOpen, setIsResultOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState(false);
+  const [isResetPending, startResetTransition] = useTransition();
+
+  return (
+    <div className="space-y-2">
+      <MatchCard match={toMatchCardMatch(match)} />
+
+      <div className="flex flex-wrap justify-end gap-1.5">
+        <CreateSheet
+          open={isResultOpen}
+          onOpenChange={setIsResultOpen}
+          triggerLabel={isCompleted ? "Edit result" : "Record result"}
+          title="Record fixture result"
+          description={`${entryALabel} vs ${entryBLabel}`}
+          triggerClassName={actionPillButtonClassName({
+            variant: isCompleted ? "edit" : "create",
+            className:
+              "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+          })}
+          triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
+        >
+          <ClubLeagueResultForm
+            leagueId={leagueId}
+            matchId={match.id}
+            entryALabel={entryALabel}
+            entryBLabel={entryBLabel}
+            existingSets={match.sets}
+          />
+        </CreateSheet>
+
+        {isCompleted ? (
+          <CreateDialog
+            open={isResetOpen}
+            onOpenChange={setIsResetOpen}
+            triggerLabel="Reset result"
+            title="Reset fixture result"
+            description="This will clear the saved score and set the fixture back to pending."
+            triggerClassName={actionPillButtonClassName({
+              variant: "neutral",
+              className:
+                "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+            })}
+            triggerIcon={<Undo2 className="h-3.5 w-3.5" />}
+          >
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+
+                const formData = new FormData();
+                formData.set("leagueId", leagueId);
+                formData.set("matchId", match.id);
+
+                setResetMessage("");
+                setResetError(false);
+
+                startResetTransition(async () => {
+                  const result = await resetClubLeagueResultAction(formData);
+                  setResetError(!result.success);
+                  setResetMessage(result.message);
+
+                  if (result.success) {
+                    setIsResetOpen(false);
+                  }
+                });
+              }}
+            >
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to reset this fixture result?
+              </p>
+
+              {resetMessage ? (
+                <div
+                  className={`rounded-md border px-3 py-2 text-sm ${
+                    resetError
+                      ? "border-red-500/20 bg-red-500/10 text-red-300"
+                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  }`}
+                >
+                  {resetMessage}
+                </div>
+              ) : null}
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsResetOpen(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={isResetPending}
+                >
+                  {isResetPending ? "Resetting..." : "Reset result"}
+                </Button>
+              </div>
+            </form>
+          </CreateDialog>
+        ) : null}
+      </div>
+    </div>
   );
 }

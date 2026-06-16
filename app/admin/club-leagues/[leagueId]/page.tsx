@@ -10,7 +10,6 @@ import {
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 
 type AdminClubLeagueDetailPageProps = {
@@ -152,10 +151,6 @@ export default async function AdminClubLeagueDetailPage({
     notFound();
   }
 
-  const completedMatches = league.matches.filter(
-    (match) => match.winnerEntryId,
-  ).length;
-
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader
@@ -171,27 +166,6 @@ export default async function AdminClubLeagueDetailPage({
           </Link>
         }
       />
-
-      <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill
-          label="Club"
-          value={league.club.shortName || league.club.name}
-        />
-        <CompactStatPill
-          label="Date"
-          value={league.playedAt.toLocaleDateString("en-IE", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })}
-        />
-        <CompactStatPill
-          label="Format"
-          value={league.format.replaceAll("_", " ")}
-        />
-        <CompactStatPill label="Fixtures" value={league._count.matches} />
-        <CompactStatPill label="Completed" value={completedMatches} />
-      </section>
 
       <ClubLeagueSectionTabs leagueId={league.id} activeTab={activeTab} />
 

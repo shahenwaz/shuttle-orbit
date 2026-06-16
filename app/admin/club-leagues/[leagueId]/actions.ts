@@ -8,17 +8,30 @@ export type ClubLeagueResultActionState = {
   success: boolean;
   message: string;
   fieldErrors?: {
-    entryAScore?: string[];
-    entryBScore?: string[];
+    set1EntryAScore?: string[];
+    set1EntryBScore?: string[];
+    set2EntryAScore?: string[];
+    set2EntryBScore?: string[];
+    set3EntryAScore?: string[];
+    set3EntryBScore?: string[];
   };
 };
 
-const initialFieldErrors: ClubLeagueResultActionState["fieldErrors"] = {};
+type ParsedSetScore = {
+  setNumber: number;
+  entryAScore: number;
+  entryBScore: number;
+};
 
-function getScore(formData: FormData, key: string) {
+function getStringValue(formData: FormData, key: string) {
   const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
 
-  if (typeof value !== "string" || value.trim() === "") {
+function getOptionalScore(formData: FormData, key: string) {
+  const value = getStringValue(formData, key);
+
+  if (!value) {
     return null;
   }
 
@@ -31,9 +44,108 @@ function getScore(formData: FormData, key: string) {
   return score;
 }
 
-function getStringValue(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value : "";
+function buildScoreSummary(sets: ParsedSetScore[]) {
+  return sets.map((set) => `${set.entryAScore}-${set.entryBScore}`).join(", ");
+}
+
+function getWinnerFromSets(
+  sets: ParsedSetScore[],
+  entryAId: string,
+  entryBId: string,
+) {
+  let entryASetWins = 0;
+  let entryBSetWins = 0;
+
+  for (const set of sets) {
+    if (set.entryAScore > set.entryBScore) {
+      entryASetWins += 1;
+    } else {
+      entryBSetWins += 1;
+    }
+  }
+
+  if (entryASetWins === entryBSetWins) {
+    return null;
+  }
+
+  return entryASetWins > entryBSetWins ? entryAId : entryBId;
+}
+
+function validateAndParseSets(formData: FormData) {
+  const fieldErrors: ClubLeagueResultActionState["fieldErrors"] = {};
+
+  const rawSets = [
+    {
+      setNumber: 1,
+      entryAKey: "set1EntryAScore",
+      entryBKey: "set1EntryBScore",
+      entryAScore: getOptionalScore(formData, "set1EntryAScore"),
+      entryBScore: getOptionalScore(formData, "set1EntryBScore"),
+      required: true,
+    },
+    {
+      setNumber: 2,
+      entryAKey: "set2EntryAScore",
+      entryBKey: "set2EntryBScore",
+      entryAScore: getOptionalScore(formData, "set2EntryAScore"),
+      entryBScore: getOptionalScore(formData, "set2EntryBScore"),
+      required: false,
+    },
+    {
+      setNumber: 3,
+      entryAKey: "set3EntryAScore",
+      entryBKey: "set3EntryBScore",
+      entryAScore: getOptionalScore(formData, "set3EntryAScore"),
+      entryBScore: getOptionalScore(formData, "set3EntryBScore"),
+      required: false,
+    },
+  ] as const;
+
+  const sets: ParsedSetScore[] = [];
+
+  for (const rawSet of rawSets) {
+    const hasEntryAScore = getStringValue(formData, rawSet.entryAKey) !== "";
+    const hasEntryBScore = getStringValue(formData, rawSet.entryBKey) !== "";
+    const hasAnyScore = hasEntryAScore || hasEntryBScore;
+
+    if (rawSet.required && !hasAnyScore) {
+      fieldErrors[rawSet.entryAKey] = ["Set 1 score is required."];
+      fieldErrors[rawSet.entryBKey] = ["Set 1 score is required."];
+      continue;
+    }
+
+    if (!rawSet.required && !hasAnyScore) {
+      continue;
+    }
+
+    if (rawSet.entryAScore === null) {
+      fieldErrors[rawSet.entryAKey] = ["Enter a valid score."];
+    }
+
+    if (rawSet.entryBScore === null) {
+      fieldErrors[rawSet.entryBKey] = ["Enter a valid score."];
+    }
+
+    if (rawSet.entryAScore === null || rawSet.entryBScore === null) {
+      continue;
+    }
+
+    if (rawSet.entryAScore === rawSet.entryBScore) {
+      fieldErrors[rawSet.entryBKey] = ["A set cannot end in a draw."];
+      continue;
+    }
+
+    sets.push({
+      setNumber: rawSet.setNumber,
+      entryAScore: rawSet.entryAScore,
+      entryBScore: rawSet.entryBScore,
+    });
+  }
+
+  return {
+    sets,
+    fieldErrors,
+  };
 }
 
 export async function recordClubLeagueResultAction(
@@ -42,47 +154,14 @@ export async function recordClubLeagueResultAction(
 ): Promise<ClubLeagueResultActionState> {
   const leagueId = getStringValue(formData, "leagueId");
   const matchId = getStringValue(formData, "matchId");
-  const entryAScore = getScore(formData, "entryAScore");
-  const entryBScore = getScore(formData, "entryBScore");
 
-  const fieldErrors: ClubLeagueResultActionState["fieldErrors"] = {
-    ...initialFieldErrors,
-  };
+  const { sets, fieldErrors } = validateAndParseSets(formData);
 
-  if (entryAScore === null) {
-    fieldErrors.entryAScore = ["Enter a valid score."];
-  }
-
-  if (entryBScore === null) {
-    fieldErrors.entryBScore = ["Enter a valid score."];
-  }
-
-  if (Object.keys(fieldErrors).length > 0) {
+  if (Object.keys(fieldErrors).length > 0 || sets.length === 0) {
     return {
       success: false,
       message: "Please fix the score fields.",
       fieldErrors,
-    };
-  }
-
-  if (entryAScore === null || entryBScore === null) {
-    return {
-      success: false,
-      message: "Please fix the score fields.",
-      fieldErrors,
-    };
-  }
-
-  const safeEntryAScore = entryAScore;
-  const safeEntryBScore = entryBScore;
-
-  if (safeEntryAScore === safeEntryBScore) {
-    return {
-      success: false,
-      message: "A club league fixture cannot end in a draw.",
-      fieldErrors: {
-        entryBScore: ["Enter a score that produces a winner."],
-      },
     };
   }
 
@@ -107,8 +186,17 @@ export async function recordClubLeagueResultAction(
     };
   }
 
-  const winnerEntryId =
-    safeEntryAScore > safeEntryBScore ? match.entryAId : match.entryBId;
+  const winnerEntryId = getWinnerFromSets(sets, match.entryAId, match.entryBId);
+
+  if (!winnerEntryId) {
+    return {
+      success: false,
+      message: "Set wins are tied. Add a deciding set or adjust the scores.",
+      fieldErrors: {
+        set3EntryBScore: ["A winner is required."],
+      },
+    };
+  }
 
   await prisma.$transaction([
     prisma.clubLeagueMatch.update({
@@ -117,7 +205,7 @@ export async function recordClubLeagueResultAction(
       },
       data: {
         winnerEntryId,
-        scoreSummary: `${safeEntryAScore}-${safeEntryBScore}`,
+        scoreSummary: buildScoreSummary(sets),
       },
     }),
     prisma.clubLeagueSet.deleteMany({
@@ -125,14 +213,16 @@ export async function recordClubLeagueResultAction(
         matchId: match.id,
       },
     }),
-    prisma.clubLeagueSet.create({
-      data: {
-        matchId: match.id,
-        setNumber: 1,
-        entryAScore: safeEntryAScore,
-        entryBScore: safeEntryBScore,
-      },
-    }),
+    ...sets.map((set) =>
+      prisma.clubLeagueSet.create({
+        data: {
+          matchId: match.id,
+          setNumber: set.setNumber,
+          entryAScore: set.entryAScore,
+          entryBScore: set.entryBScore,
+        },
+      }),
+    ),
   ]);
 
   await recalculateClubLeaguePlayerStats(leagueId);
@@ -143,6 +233,54 @@ export async function recordClubLeagueResultAction(
     success: true,
     message: "Fixture result saved.",
     fieldErrors: {},
+  };
+}
+
+export async function resetClubLeagueResultAction(formData: FormData) {
+  const leagueId = getStringValue(formData, "leagueId");
+  const matchId = getStringValue(formData, "matchId");
+
+  const match = await prisma.clubLeagueMatch.findFirst({
+    where: {
+      id: matchId,
+      leagueId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!match) {
+    return {
+      success: false,
+      message: "Fixture could not be found.",
+    };
+  }
+
+  await prisma.$transaction([
+    prisma.clubLeagueMatch.update({
+      where: {
+        id: match.id,
+      },
+      data: {
+        winnerEntryId: null,
+        scoreSummary: null,
+      },
+    }),
+    prisma.clubLeagueSet.deleteMany({
+      where: {
+        matchId: match.id,
+      },
+    }),
+  ]);
+
+  await recalculateClubLeaguePlayerStats(leagueId);
+
+  revalidatePath(`/admin/club-leagues/${leagueId}`);
+
+  return {
+    success: true,
+    message: "Fixture result reset.",
   };
 }
 
@@ -222,12 +360,12 @@ async function recalculateClubLeaguePlayerStats(leagueId: string) {
   }
 
   for (const match of completedMatches) {
-    if (!match.winnerEntryId || match.sets.length === 0) {
-      continue;
-    }
-
-    const set = match.sets[0];
-    if (!match.entryA || !match.entryB) {
+    if (
+      !match.winnerEntryId ||
+      !match.entryA ||
+      !match.entryB ||
+      match.sets.length === 0
+    ) {
       continue;
     }
 
@@ -235,12 +373,23 @@ async function recalculateClubLeaguePlayerStats(leagueId: string) {
     const entryBPlayerIds = getEntryPlayerIds(match.entryB);
     const entryAWon = match.winnerEntryId === match.entryAId;
 
+    const entryAPointsFor = match.sets.reduce(
+      (total, set) => total + set.entryAScore,
+      0,
+    );
+    const entryAPointsAgainst = match.sets.reduce(
+      (total, set) => total + set.entryBScore,
+      0,
+    );
+    const entryBPointsFor = entryAPointsAgainst;
+    const entryBPointsAgainst = entryAPointsFor;
+
     for (const playerId of entryAPlayerIds) {
       const stat = ensureStat(playerId);
 
       stat.matchesPlayed += 1;
-      stat.pointsFor += set.entryAScore;
-      stat.pointsAgainst += set.entryBScore;
+      stat.pointsFor += entryAPointsFor;
+      stat.pointsAgainst += entryAPointsAgainst;
 
       if (entryAWon) {
         stat.matchesWon += 1;
@@ -253,8 +402,8 @@ async function recalculateClubLeaguePlayerStats(leagueId: string) {
       const stat = ensureStat(playerId);
 
       stat.matchesPlayed += 1;
-      stat.pointsFor += set.entryBScore;
-      stat.pointsAgainst += set.entryAScore;
+      stat.pointsFor += entryBPointsFor;
+      stat.pointsAgainst += entryBPointsAgainst;
 
       if (entryAWon) {
         stat.matchesLost += 1;
