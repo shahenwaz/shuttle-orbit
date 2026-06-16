@@ -144,6 +144,33 @@ export default async function AdminClubLeagueDetailPage({
           matches: true,
         },
       },
+      playerStats: {
+        orderBy: [
+          {
+            matchesWon: "desc",
+          },
+          {
+            pointsFor: "desc",
+          },
+          {
+            pointsAgainst: "asc",
+          },
+        ],
+        select: {
+          id: true,
+          matchesPlayed: true,
+          matchesWon: true,
+          matchesLost: true,
+          pointsFor: true,
+          pointsAgainst: true,
+          player: {
+            select: {
+              fullName: true,
+              nickname: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -175,6 +202,7 @@ export default async function AdminClubLeagueDetailPage({
         rulesNote={league.rulesNote}
         sides={league.sides}
         matches={league.matches}
+        playerStats={league.playerStats}
       />
     </PageContainer>
   );

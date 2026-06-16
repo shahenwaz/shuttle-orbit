@@ -4,6 +4,7 @@ import { ClubLeagueFixtureResults } from "@/components/admin/club-leagues/club-l
 import type { ClubLeagueSectionTab } from "@/components/admin/club-leagues/club-league-section-tabs";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
+import { ClubLeagueStandings } from "@/components/admin/club-leagues/club-league-standings";
 
 type Player = {
   fullName: string;
@@ -55,6 +56,20 @@ type ClubLeagueDetailSectionsProps = {
   rulesNote: string | null;
   sides: Side[];
   matches: Match[];
+  playerStats: PlayerStat[];
+};
+
+type PlayerStat = {
+  id: string;
+  matchesPlayed: number;
+  matchesWon: number;
+  matchesLost: number;
+  pointsFor: number;
+  pointsAgainst: number;
+  player: {
+    fullName: string;
+    nickname: string;
+  };
 };
 
 function getPlayerName(player: Player) {
@@ -81,6 +96,7 @@ export function ClubLeagueDetailSections({
   rulesNote,
   sides,
   matches,
+  playerStats,
 }: ClubLeagueDetailSectionsProps) {
   const completedMatches = matches.filter(
     (match) => match.winnerEntryId,
@@ -153,6 +169,8 @@ export function ClubLeagueDetailSections({
           {rulesNote}
         </p>
       ) : null}
+
+      <ClubLeagueStandings playerStats={playerStats} />
     </div>
   );
 }
