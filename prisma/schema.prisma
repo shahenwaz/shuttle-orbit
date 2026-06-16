@@ -46,28 +46,43 @@ enum ClubAttendanceStatus {
   NOT_GOING
 }
 
-enum ClubLeagueFormat {
+enum LeagueFormat {
+  ROUND_ROBIN
   TEAM_PAIR_MATRIX
   FIXED_DOUBLES
   MANUAL
 }
 
 model Player {
-  id        String   @id @default(cuid())
-  fullName  String
-  nickname  String   @unique
-  isActive  Boolean  @default(true)
+  id       String  @id @default(cuid())
+  fullName String
+  nickname String  @unique
+  isActive Boolean @default(true)
+
+  clubId            String?
+  clubRole          ClubMemberRole @default(MEMBER)
+  clubProfilePublic Boolean        @default(false)
+  clubJoinedAt      DateTime?
+  clubNotes         String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teamEntriesAsPlayer1       TeamEntry[]            @relation("TeamEntryPlayer1")
-  teamEntriesAsPlayer2       TeamEntry[]            @relation("TeamEntryPlayer2")
-  rankingLedgers             RankingLedger[]
-  tournamentStats            PlayerTournamentStat[]
-  clubMemberships            ClubMember[]
-  clubLeagueStats            ClubPlayerLeagueStat[]
-  clubLeagueEntriesAsPlayer1 ClubLeagueEntry[]      @relation("ClubLeagueEntryPlayer1")
-  clubLeagueEntriesAsPlayer2 ClubLeagueEntry[]      @relation("ClubLeagueEntryPlayer2")
+  club Club? @relation(fields: [clubId], references: [id], onDelete: SetNull)
+
+  teamEntriesAsPlayer1 TeamEntry[] @relation("TeamEntryPlayer1")
+  teamEntriesAsPlayer2 TeamEntry[] @relation("TeamEntryPlayer2")
+
+  rankingLedgers  RankingLedger[]
+  tournamentStats PlayerTournamentStat[]
+
+  sessionAttendance ClubSessionAttendance[]
+  leagueTeamPlayers LeagueTeamPlayer[]
+  leagueStats       PlayerLeagueStat[]
+
+  @@index([clubId])
+  @@index([clubId, isActive])
+  @@index([clubId, clubRole])
 }
 
 model Tournament {
@@ -281,35 +296,13 @@ model Club {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  members  ClubMember[]
-  sessions ClubSession[]
-  leagues  ClubLeague[]
+  players       Player[]
+  sessions      ClubSession[]
+  hostedLeagues League[]
 
   @@index([slug])
   @@index([isPublic])
   @@index([isManagedClub])
-}
-
-model ClubMember {
-  id        String         @id @default(cuid())
-  clubId    String
-  playerId  String?
-  name      String
-  nickname  String?
-  role      ClubMemberRole @default(MEMBER)
-  isPublic  Boolean        @default(false)
-  joinedAt  DateTime       @default(now())
-  notes     String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  club       Club                    @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  player     Player?                 @relation(fields: [playerId], references: [id], onDelete: SetNull)
-  attendance ClubSessionAttendance[]
-
-  @@unique([clubId, playerId])
-  @@index([clubId])
-  @@index([playerId])
 }
 
 model ClubSession {
@@ -337,130 +330,117 @@ model ClubSession {
 model ClubSessionAttendance {
   id        String               @id @default(cuid())
   sessionId String
-  memberId  String
+  playerId  String
   status    ClubAttendanceStatus @default(NOT_GOING)
   note      String?
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
 
   session ClubSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  member  ClubMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  player  Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@unique([sessionId, memberId])
-  @@index([memberId, status])
+  @@unique([sessionId, playerId])
+  @@index([playerId, status])
 }
 
-model ClubLeague {
-  id String @id @default(cuid())
+model League {
+  id         String       @id @default(cuid())
+  title      String
+  slug       String       @unique
+  playedAt   DateTime
+  location   String?
+  format     LeagueFormat
+  rulesNote  String?
+  hostClubId String?
+  isPublic   Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  clubId    String
-  title     String
-  playedAt  DateTime
-  format    ClubLeagueFormat
-  rulesNote String?
+  hostClub    Club?              @relation(fields: [hostClubId], references: [id], onDelete: SetNull)
+  teams       LeagueTeam[]
+  matches     LeagueMatch[]
+  playerStats PlayerLeagueStat[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
-
-  sides       ClubLeagueSide[]
-  entries     ClubLeagueEntry[]
-  matches     ClubLeagueMatch[]
-  playerStats ClubPlayerLeagueStat[]
-
-  @@index([clubId, playedAt])
-  @@index([format])
+  @@index([playedAt])
+  @@index([hostClubId])
 }
 
-model ClubLeagueSide {
-  id String @id @default(cuid())
-
-  leagueId  String
-  name      String
-  sideOrder Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  league  ClubLeague        @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  entries ClubLeagueEntry[]
-
-  @@unique([leagueId, sideOrder])
-}
-
-model ClubLeagueEntry {
-  id String @id @default(cuid())
-
+model LeagueTeam {
+  id          String   @id @default(cuid())
   leagueId    String
-  sideId      String?
-  player1Id   String
-  player2Id   String?
-  displayName String?
-  entryOrder  Int
+  name        String
+  shortName   String?
+  teamOrder   Int
+  originLabel String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
 
-  league ClubLeague      @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  side   ClubLeagueSide? @relation(fields: [sideId], references: [id], onDelete: SetNull)
+  players        LeagueTeamPlayer[]
+  playerStats    PlayerLeagueStat[]
+  matchesAsTeamA LeagueMatch[]      @relation("LeagueMatchTeamA")
+  matchesAsTeamB LeagueMatch[]      @relation("LeagueMatchTeamB")
+  wonMatches     LeagueMatch[]      @relation("LeagueMatchWinner")
 
-  player1 Player  @relation("ClubLeagueEntryPlayer1", fields: [player1Id], references: [id], onDelete: Restrict)
-  player2 Player? @relation("ClubLeagueEntryPlayer2", fields: [player2Id], references: [id], onDelete: Restrict)
-
-  matchesAsEntryA ClubLeagueMatch[] @relation("ClubLeagueMatchEntryA")
-  matchesAsEntryB ClubLeagueMatch[] @relation("ClubLeagueMatchEntryB")
-  wonMatches      ClubLeagueMatch[] @relation("ClubLeagueMatchWinner")
-
+  @@unique([leagueId, teamOrder])
   @@index([leagueId])
-  @@index([sideId])
 }
 
-model ClubLeagueMatch {
-  id String @id @default(cuid())
+model LeagueTeamPlayer {
+  id       String  @id @default(cuid())
+  teamId   String
+  playerId String
+  role     String?
 
-  leagueId      String
-  entryAId      String?
-  entryBId      String?
-  winnerEntryId String?
-  matchOrder    Int
-  roundLabel    String?
-  scoreSummary  String?
+  team   LeagueTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player Player     @relation(fields: [playerId], references: [id], onDelete: Restrict)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@unique([teamId, playerId])
+  @@index([playerId])
+}
 
-  league ClubLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+model LeagueMatch {
+  id           String    @id @default(cuid())
+  leagueId     String
+  teamAId      String?
+  teamBId      String?
+  winnerTeamId String?
+  matchOrder   Int
+  roundLabel   String?
+  scoreSummary String?
+  scheduledAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  entryA      ClubLeagueEntry? @relation("ClubLeagueMatchEntryA", fields: [entryAId], references: [id], onDelete: Restrict)
-  entryB      ClubLeagueEntry? @relation("ClubLeagueMatchEntryB", fields: [entryBId], references: [id], onDelete: Restrict)
-  winnerEntry ClubLeagueEntry? @relation("ClubLeagueMatchWinner", fields: [winnerEntryId], references: [id], onDelete: SetNull)
-
-  sets ClubLeagueSet[]
+  league     League      @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  teamA      LeagueTeam? @relation("LeagueMatchTeamA", fields: [teamAId], references: [id], onDelete: Restrict)
+  teamB      LeagueTeam? @relation("LeagueMatchTeamB", fields: [teamBId], references: [id], onDelete: Restrict)
+  winnerTeam LeagueTeam? @relation("LeagueMatchWinner", fields: [winnerTeamId], references: [id], onDelete: SetNull)
+  sets       LeagueSet[]
 
   @@unique([leagueId, matchOrder])
+  @@index([leagueId])
 }
 
-model ClubLeagueSet {
-  id String @id @default(cuid())
+model LeagueSet {
+  id         String   @id @default(cuid())
+  matchId    String
+  setNumber  Int
+  teamAScore Int
+  teamBScore Int
+  createdAt  DateTime @default(now())
 
-  matchId     String
-  setNumber   Int
-  entryAScore Int
-  entryBScore Int
-
-  createdAt DateTime @default(now())
-
-  match ClubLeagueMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  match LeagueMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   @@unique([matchId, setNumber])
 }
 
-model ClubPlayerLeagueStat {
-  id String @id @default(cuid())
-
+model PlayerLeagueStat {
+  id       String  @id @default(cuid())
   playerId String
   leagueId String
+  teamId   String?
 
   matchesPlayed Int @default(0)
   matchesWon    Int @default(0)
@@ -471,11 +451,13 @@ model ClubPlayerLeagueStat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  player Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  league ClubLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  player Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  league League      @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  team   LeagueTeam? @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
   @@unique([playerId, leagueId])
   @@index([leagueId])
+  @@index([teamId])
 }
 
 model AdminUser {
