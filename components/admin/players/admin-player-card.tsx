@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Building2, MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 import {
   deletePlayerAction,
@@ -19,11 +19,20 @@ import {
 import { PlayerIdentityRow } from "@/components/players/player-identity-row";
 import { surfaceCardClassName } from "@/components/shared/surface-card";
 
+type ClubOption = {
+  id: string;
+  name: string;
+  shortName: string | null;
+};
+
 type AdminPlayerCardProps = {
+  clubs: ClubOption[];
   player: {
     id: string;
     fullName: string;
     nickname: string;
+    clubId: string | null;
+    club: ClubOption | null;
     categoryCodes?: string[];
   };
 };
@@ -33,7 +42,7 @@ const initialDeleteState: DeletePlayerActionState = {
   message: "",
 };
 
-export function AdminPlayerCard({ player }: AdminPlayerCardProps) {
+export function AdminPlayerCard({ player, clubs }: AdminPlayerCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteState, setDeleteState] =
@@ -49,13 +58,24 @@ export function AdminPlayerCard({ player }: AdminPlayerCardProps) {
       })}
     >
       <div className="flex items-center justify-between gap-2">
-        <PlayerIdentityRow
-          fullName={player.fullName}
-          nickname={player.nickname}
-          categoryCodes={player.categoryCodes}
-          className="min-w-0 flex-1"
-          categoriesClassName="max-w-21 truncate text-[12px] font-medium uppercase tracking-[0.16em] text-primary sm:max-w-25 sm:text-[11px]"
-        />
+        <div className="min-w-0 flex-1 space-y-1">
+          <PlayerIdentityRow
+            fullName={player.fullName}
+            nickname={player.nickname}
+            categoryCodes={player.categoryCodes}
+            className="min-w-0"
+            categoriesClassName="max-w-21 truncate text-[12px] font-medium uppercase tracking-[0.16em] text-primary sm:max-w-25 sm:text-[11px]"
+          />
+
+          <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <Building2 className="h-3 w-3 shrink-0 text-purple-400/80" />
+            <span className="truncate">
+              {player.club
+                ? (player.club.shortName ?? player.club.name)
+                : "No club"}
+            </span>
+          </div>
+        </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
           <DropdownMenu>
@@ -104,10 +124,11 @@ export function AdminPlayerCard({ player }: AdminPlayerCardProps) {
         triggerLabel=""
         hideTrigger
         title="Edit player"
-        description="Update the player details."
+        description="Update the player details and optional club."
       >
         <EditPlayerForm
           player={player}
+          clubs={clubs}
           onSuccess={() => setIsEditOpen(false)}
         />
       </CreateDialog>

@@ -11,13 +11,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+type ClubOption = {
+  id: string;
+  name: string;
+  shortName: string | null;
+};
+
+type CreatePlayerFormProps = {
+  clubs: ClubOption[];
+};
+
 const initialState: CreatePlayerActionState = {
   success: false,
   message: "",
   fieldErrors: {},
 };
 
-export function CreatePlayerForm() {
+export function CreatePlayerForm({ clubs }: CreatePlayerFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [state, formAction, isPending] = useActionState(
@@ -67,6 +77,29 @@ export function CreatePlayerForm() {
             </p>
           ) : null}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="clubId">Club</Label>
+        <select
+          id="clubId"
+          name="clubId"
+          defaultValue=""
+          className="h-11 w-full rounded-2xl border border-white/10 bg-background/50 px-3 text-sm text-foreground outline-none transition focus:border-primary/40"
+        >
+          <option value="">No club</option>
+          {clubs.map((club) => (
+            <option key={club.id} value={club.id}>
+              {club.shortName ? `${club.name} (${club.shortName})` : club.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Optional. If selected, this player will appear under that club.
+        </p>
+        {state.fieldErrors?.clubId ? (
+          <p className="text-sm text-red-400">{state.fieldErrors.clubId[0]}</p>
+        ) : null}
       </div>
 
       {state.message ? (

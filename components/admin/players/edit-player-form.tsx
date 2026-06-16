@@ -9,11 +9,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+type ClubOption = {
+  id: string;
+  name: string;
+  shortName: string | null;
+};
+
 type EditPlayerFormProps = {
+  clubs: ClubOption[];
   player: {
     id: string;
     fullName: string;
     nickname: string;
+    clubId: string | null;
   };
   onSuccess?: () => void;
 };
@@ -24,7 +32,11 @@ const initialState: UpdatePlayerActionState = {
   fieldErrors: {},
 };
 
-export function EditPlayerForm({ player, onSuccess }: EditPlayerFormProps) {
+export function EditPlayerForm({
+  player,
+  clubs,
+  onSuccess,
+}: EditPlayerFormProps) {
   const [state, formAction, isPending] = useActionState(
     updatePlayerAction,
     initialState,
@@ -77,6 +89,31 @@ export function EditPlayerForm({ player, onSuccess }: EditPlayerFormProps) {
           <p className="text-sm text-red-400">
             {state.fieldErrors.nickname[0]}
           </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor={`clubId-${player.id}`}
+          className="text-sm font-medium text-foreground"
+        >
+          Club
+        </label>
+        <select
+          id={`clubId-${player.id}`}
+          name="clubId"
+          defaultValue={player.clubId ?? ""}
+          className="h-10 w-full rounded-xl border border-white/10 bg-background/50 px-3 text-sm text-foreground outline-none transition focus:border-primary/40"
+        >
+          <option value="">No club</option>
+          {clubs.map((club) => (
+            <option key={club.id} value={club.id}>
+              {club.shortName ? `${club.name} (${club.shortName})` : club.name}
+            </option>
+          ))}
+        </select>
+        {state.fieldErrors?.clubId?.length ? (
+          <p className="text-sm text-red-400">{state.fieldErrors.clubId[0]}</p>
         ) : null}
       </div>
 

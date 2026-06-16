@@ -1,13 +1,17 @@
 export type ClubProfileMemberInput = {
   id: string;
-  name: string;
+  fullName: string;
   nickname: string | null;
-  playerId?: string | null;
+  clubId?: string | null;
 };
 
-export type ClubProfileMember = ClubProfileMemberInput & {
+export type ClubProfileMember = {
+  id: string;
+  name: string;
+  nickname: string | null;
+  playerId: string;
   displayName: string;
-  playerType: "tour-player" | "club-only";
+  playerType: "tour-player";
 };
 
 export type ClubProfileSessionInput = {
@@ -18,7 +22,7 @@ export type ClubProfileSessionInput = {
   courtNumbers: string | null;
   privateNotes: string | null;
   attendance: {
-    member: ClubProfileMemberInput;
+    player: ClubProfileMemberInput;
   }[];
 };
 
@@ -35,20 +39,22 @@ export type ClubProfileSession = {
 };
 
 export function getClubMemberDisplayName(member: {
-  name: string;
+  fullName: string;
   nickname: string | null;
 }) {
-  return (member.nickname?.trim() || member.name).toUpperCase();
+  return (member.nickname?.trim() || member.fullName).toUpperCase();
 }
 
 export function mapClubProfileMember(
   member: ClubProfileMemberInput,
 ): ClubProfileMember {
   return {
-    ...member,
-    playerId: member.playerId ?? null,
+    id: member.id,
+    name: member.fullName,
+    nickname: member.nickname,
+    playerId: member.id,
     displayName: getClubMemberDisplayName(member),
-    playerType: member.playerId ? "tour-player" : "club-only",
+    playerType: "tour-player",
   };
 }
 
@@ -63,7 +69,7 @@ export function mapClubProfileSession(
     courtNumbers: session.courtNumbers,
     privateNotes: session.privateNotes,
     attendance: session.attendance.map((attendance) => ({
-      member: mapClubProfileMember(attendance.member),
+      member: mapClubProfileMember(attendance.player),
     })),
   };
 }

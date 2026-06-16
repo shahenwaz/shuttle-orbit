@@ -25,18 +25,19 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
       homeVenue: true,
       logoUrl: true,
       isPublic: true,
-      members: {
+      players: {
         where: {
-          isPublic: true,
+          isActive: true,
+          clubProfilePublic: true,
         },
         orderBy: {
-          name: "asc",
+          fullName: "asc",
         },
         select: {
           id: true,
-          name: true,
+          fullName: true,
           nickname: true,
-          playerId: true,
+          clubId: true,
         },
       },
     },
@@ -46,7 +47,7 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
     notFound();
   }
 
-  type MemberRow = (typeof club.members)[number];
+  type PlayerRow = (typeof club.players)[number];
 
   return (
     <PageContainer className="py-7 sm:py-10">
@@ -58,8 +59,8 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
           homeVenue: club.homeVenue,
           logoUrl: club.logoUrl,
         }}
-        members={club.members.map((member: MemberRow) =>
-          mapClubProfileMember(member),
+        members={club.players.map((player: PlayerRow) =>
+          mapClubProfileMember(player),
         )}
         hasSessionAccess={false}
       />

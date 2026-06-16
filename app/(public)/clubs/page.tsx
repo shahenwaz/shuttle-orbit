@@ -22,7 +22,7 @@ export default async function PublicClubsPage() {
       isManagedClub: true,
       _count: {
         select: {
-          members: true,
+          players: true,
         },
       },
     },
@@ -79,7 +79,7 @@ export default async function PublicClubsPage() {
                 ) : null}
 
                 <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  <span>{club._count.members} members</span>
+                  <span>{club._count.players} players</span>
                   {club.isManagedClub ? <span>Managed</span> : null}
                 </div>
               </div>

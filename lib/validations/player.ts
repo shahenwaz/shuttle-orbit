@@ -15,6 +15,11 @@ export const createPlayerSchema = z.object({
       /^[a-z0-9._-]+$/,
       "Username can only contain lowercase letters, numbers, dot, underscore, and hyphen.",
     ),
+  clubId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : null)),
 });
 
 export type CreatePlayerInput = z.infer<typeof createPlayerSchema>;

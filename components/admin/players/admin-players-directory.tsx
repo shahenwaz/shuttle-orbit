@@ -17,18 +17,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 
+type ClubOption = {
+  id: string;
+  name: string;
+  shortName: string | null;
+};
+
 type AdminPlayersDirectoryProps = {
+  clubs: ClubOption[];
   players: Array<{
     id: string;
     fullName: string;
     nickname: string;
     createdAt: Date;
+    clubId: string | null;
+    club: ClubOption | null;
     categoryCodes: string[];
   }>;
 };
 
 type SortKey = "recent" | "name-asc" | "name-desc";
 type CategoryFilter = "all" | "A" | "B" | "C";
+type ClubFilter = "all" | "none" | string;
 
 function getSortLabel(sortKey: SortKey) {
   switch (sortKey) {
@@ -45,16 +55,36 @@ function getSortLabel(sortKey: SortKey) {
 function isDefaultFilterState(
   sortKey: SortKey,
   categoryFilter: CategoryFilter,
+  clubFilter: ClubFilter,
 ) {
-  return sortKey === "recent" && categoryFilter === "all";
+  return (
+    sortKey === "recent" && categoryFilter === "all" && clubFilter === "all"
+  );
 }
 
-export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
+export function AdminPlayersDirectory({
+  players,
+  clubs,
+}: AdminPlayersDirectoryProps) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("recent");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [clubFilter, setClubFilter] = useState<ClubFilter>("all");
 
-  const hasActiveFilters = !isDefaultFilterState(sortKey, categoryFilter);
+  const hasActiveFilters = !isDefaultFilterState(
+    sortKey,
+    categoryFilter,
+    clubFilter,
+  );
+
+  const selectedClubLabel =
+    clubFilter === "all"
+      ? ""
+      : clubFilter === "none"
+        ? "No club"
+        : (clubs.find((club) => club.id === clubFilter)?.shortName ??
+          clubs.find((club) => club.id === clubFilter)?.name ??
+          "Club");
 
   const filteredPlayers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -62,9 +92,14 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
     const searched = !normalizedQuery
       ? players
       : players.filter((player) => {
+          const clubName = player.club?.name ?? "";
+          const clubShortName = player.club?.shortName ?? "";
+
           return (
             player.fullName.toLowerCase().includes(normalizedQuery) ||
             player.nickname.toLowerCase().includes(normalizedQuery) ||
+            clubName.toLowerCase().includes(normalizedQuery) ||
+            clubShortName.toLowerCase().includes(normalizedQuery) ||
             player.categoryCodes.some((code) =>
               code.toLowerCase().includes(normalizedQuery),
             )
@@ -78,7 +113,14 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
             player.categoryCodes.includes(categoryFilter),
           );
 
-    const sorted = [...categoryFiltered];
+    const clubFiltered =
+      clubFilter === "all"
+        ? categoryFiltered
+        : clubFilter === "none"
+          ? categoryFiltered.filter((player) => !player.clubId)
+          : categoryFiltered.filter((player) => player.clubId === clubFilter);
+
+    const sorted = [...clubFiltered];
 
     sorted.sort((a, b) => {
       switch (sortKey) {
@@ -97,7 +139,7 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
     });
 
     return sorted;
-  }, [players, query, sortKey, categoryFilter]);
+  }, [players, query, sortKey, categoryFilter, clubFilter]);
 
   return (
     <section className="space-y-3 sm:space-y-4">
@@ -107,7 +149,7 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name, nickname, or category"
+            placeholder="Search by name, nickname, club, or category"
             className="h-10 rounded-xl border-white/10 bg-white/4 pl-10 text-sm placeholder:text-muted-foreground/50"
           />
         </div>
@@ -131,7 +173,7 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
 
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
+            className="w-60 rounded-2xl border border-white/10 bg-[#0b1018]/95 p-1.5 text-foreground shadow-2xl backdrop-blur-xl"
           >
             <DropdownMenuLabel className="px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground/80">
               Sort players
@@ -203,6 +245,41 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
                 Category C
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+
+            <DropdownMenuSeparator className="my-1 bg-white/10" />
+
+            <DropdownMenuLabel className="px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground/80">
+              Filter club
+            </DropdownMenuLabel>
+
+            <DropdownMenuRadioGroup
+              value={clubFilter}
+              onValueChange={(value) => setClubFilter(value)}
+            >
+              <DropdownMenuRadioItem
+                value="all"
+                className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+              >
+                All clubs
+              </DropdownMenuRadioItem>
+
+              <DropdownMenuRadioItem
+                value="none"
+                className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+              >
+                No club
+              </DropdownMenuRadioItem>
+
+              {clubs.map((club) => (
+                <DropdownMenuRadioItem
+                  key={club.id}
+                  value={club.id}
+                  className="cursor-pointer rounded-xl text-sm text-foreground outline-none transition focus:bg-white/8 data-[state=checked]:bg-white/8 data-[state=checked]:text-primary"
+                >
+                  {club.shortName ?? club.name}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -211,6 +288,7 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
         <p className="text-xs text-muted-foreground">
           {getSortLabel(sortKey)}
           {categoryFilter !== "all" ? ` · Category ${categoryFilter}` : ""}
+          {clubFilter !== "all" ? ` · ${selectedClubLabel}` : ""}
         </p>
       ) : null}
 
@@ -219,7 +297,7 @@ export function AdminPlayersDirectory({ players }: AdminPlayersDirectoryProps) {
       ) : (
         <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2 lg:grid-cols-3">
           {filteredPlayers.map((player) => (
-            <AdminPlayerCard key={player.id} player={player} />
+            <AdminPlayerCard key={player.id} player={player} clubs={clubs} />
           ))}
         </div>
       )}

@@ -27,17 +27,17 @@ const sessionSelect = {
       status: "GOING" as const,
     },
     orderBy: {
-      member: {
-        name: "asc" as const,
+      player: {
+        fullName: "asc" as const,
       },
     },
     select: {
-      member: {
+      player: {
         select: {
           id: true,
-          name: true,
+          fullName: true,
           nickname: true,
-          playerId: true,
+          clubId: true,
         },
       },
     },
@@ -66,18 +66,19 @@ export default async function ClubMemberZonePage({
       homeVenue: true,
       logoUrl: true,
       isManagedClub: true,
-      members: {
+      players: {
         where: {
-          isPublic: true,
+          isActive: true,
+          clubProfilePublic: true,
         },
         orderBy: {
-          name: "asc",
+          fullName: "asc",
         },
         select: {
           id: true,
-          name: true,
+          fullName: true,
           nickname: true,
-          playerId: true,
+          clubId: true,
         },
       },
     },
@@ -116,7 +117,7 @@ export default async function ClubMemberZonePage({
     }),
   ]);
 
-  type MemberRow = (typeof club.members)[number];
+  type PlayerRow = (typeof club.players)[number];
   type SessionRow = (typeof upcomingSessions)[number];
 
   return (
@@ -129,8 +130,8 @@ export default async function ClubMemberZonePage({
           homeVenue: club.homeVenue,
           logoUrl: club.logoUrl,
         }}
-        members={club.members.map((member: MemberRow) =>
-          mapClubProfileMember(member),
+        members={club.players.map((player: PlayerRow) =>
+          mapClubProfileMember(player),
         )}
         hasSessionAccess={true}
         upcomingSessions={upcomingSessions.map((session: SessionRow) =>

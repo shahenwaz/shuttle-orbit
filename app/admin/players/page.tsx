@@ -38,7 +38,7 @@ function sortCategoryCodes(codes: string[]) {
 }
 
 export default async function AdminPlayersPage() {
-  const [players, playerCount] = await Promise.all([
+  const [players, playerCount, clubs] = await Promise.all([
     prisma.player.findMany({
       orderBy: {
         createdAt: "desc",
@@ -48,6 +48,14 @@ export default async function AdminPlayersPage() {
         fullName: true,
         nickname: true,
         createdAt: true,
+        clubId: true,
+        club: {
+          select: {
+            id: true,
+            name: true,
+            shortName: true,
+          },
+        },
         teamEntriesAsPlayer1: {
           select: {
             category: {
@@ -69,6 +77,16 @@ export default async function AdminPlayersPage() {
       },
     }),
     prisma.player.count(),
+    prisma.club.findMany({
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        shortName: true,
+      },
+    }),
   ]);
 
   type AdminPlayerRow = (typeof players)[number];
@@ -94,6 +112,8 @@ export default async function AdminPlayersPage() {
       fullName: player.fullName,
       nickname: player.nickname,
       createdAt: player.createdAt,
+      clubId: player.clubId,
+      club: player.club,
       categoryCodes: sortCategoryCodes(categoryCodes),
     };
   });
@@ -102,16 +122,17 @@ export default async function AdminPlayersPage() {
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader
         title="Player management"
-        description="Create and maintain the reusable player base for tournaments, teams, and rankings."
+        description="Create and maintain the reusable player base for tournaments, teams, rankings, and optional club identity."
       />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Players" value={playerCount} />
+        <CompactStatPill label="Clubs" value={clubs.length} />
 
         <CreateDialog
           triggerLabel="Add player"
           title="Create player"
-          description="Add a player once, then reuse them across tournament teams."
+          description="Add a player once, then optionally assign them to a club."
           triggerClassName={actionPillButtonClassName({
             variant: "create",
             className:
@@ -119,14 +140,14 @@ export default async function AdminPlayersPage() {
           })}
           triggerIcon={<UserPlus className="h-3.5 w-3.5" />}
         >
-          <CreatePlayerForm />
+          <CreatePlayerForm clubs={clubs} />
         </CreateDialog>
       </section>
 
       {normalizedPlayers.length === 0 ? (
         <EmptyState message="No players added yet. Create the first player to start building your tournament pool." />
       ) : (
-        <AdminPlayersDirectory players={normalizedPlayers} />
+        <AdminPlayersDirectory players={normalizedPlayers} clubs={clubs} />
       )}
     </PageContainer>
   );

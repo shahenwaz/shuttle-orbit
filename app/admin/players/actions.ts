@@ -11,6 +11,7 @@ export type CreatePlayerActionState = {
   fieldErrors?: {
     fullName?: string[];
     nickname?: string[];
+    clubId?: string[];
   };
 };
 
@@ -20,6 +21,7 @@ export type UpdatePlayerActionState = {
   fieldErrors?: {
     fullName?: string[];
     nickname?: string[];
+    clubId?: string[];
   };
 };
 
@@ -28,6 +30,23 @@ export type DeletePlayerActionState = {
   message: string;
 };
 
+async function getValidClubId(clubId: string | null) {
+  if (!clubId) {
+    return null;
+  }
+
+  const club = await prisma.club.findUnique({
+    where: {
+      id: clubId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return club?.id ?? null;
+}
+
 export async function createPlayerAction(
   _prevState: CreatePlayerActionState,
   formData: FormData,
@@ -35,6 +54,7 @@ export async function createPlayerAction(
   const rawValues = {
     fullName: formData.get("fullName"),
     nickname: formData.get("nickname"),
+    clubId: formData.get("clubId"),
   };
 
   const parsed = createPlayerSchema.safeParse(rawValues);
@@ -47,7 +67,7 @@ export async function createPlayerAction(
     };
   }
 
-  const { fullName, nickname } = parsed.data;
+  const { fullName, nickname, clubId } = parsed.data;
 
   const existingPlayer = await prisma.player.findUnique({
     where: { nickname },
@@ -64,14 +84,30 @@ export async function createPlayerAction(
     };
   }
 
+  const validClubId = await getValidClubId(clubId);
+
+  if (clubId && !validClubId) {
+    return {
+      success: false,
+      message: "Selected club was not found.",
+      fieldErrors: {
+        clubId: ["Choose a valid club."],
+      },
+    };
+  }
+
   await prisma.player.create({
     data: {
       fullName,
       nickname,
+      clubId: validClubId,
+      clubProfilePublic: Boolean(validClubId),
+      clubJoinedAt: validClubId ? new Date() : null,
     },
   });
 
   revalidatePath("/admin/players");
+  revalidatePath("/clubs");
 
   return {
     success: true,
@@ -96,6 +132,7 @@ export async function updatePlayerAction(
   const rawValues = {
     fullName: formData.get("fullName"),
     nickname: formData.get("nickname"),
+    clubId: formData.get("clubId"),
   };
 
   const parsed = createPlayerSchema.safeParse(rawValues);
@@ -108,19 +145,38 @@ export async function updatePlayerAction(
     };
   }
 
-  const { fullName, nickname } = parsed.data;
+  const { fullName, nickname, clubId } = parsed.data;
 
-  const existingPlayer = await prisma.player.findFirst({
-    where: {
-      nickname,
-      NOT: {
+  const [existingPlayer, currentPlayer] = await Promise.all([
+    prisma.player.findFirst({
+      where: {
+        nickname,
+        NOT: {
+          id: playerId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.player.findUnique({
+      where: {
         id: playerId,
       },
-    },
-    select: {
-      id: true,
-    },
-  });
+      select: {
+        id: true,
+        clubId: true,
+        clubJoinedAt: true,
+      },
+    }),
+  ]);
+
+  if (!currentPlayer) {
+    return {
+      success: false,
+      message: "Player was not found.",
+    };
+  }
 
   if (existingPlayer) {
     return {
@@ -132,15 +188,35 @@ export async function updatePlayerAction(
     };
   }
 
+  const validClubId = await getValidClubId(clubId);
+
+  if (clubId && !validClubId) {
+    return {
+      success: false,
+      message: "Selected club was not found.",
+      fieldErrors: {
+        clubId: ["Choose a valid club."],
+      },
+    };
+  }
+
+  const isJoiningNewClub = validClubId && currentPlayer.clubId !== validClubId;
+
   await prisma.player.update({
     where: { id: playerId },
     data: {
       fullName,
       nickname,
+      clubId: validClubId,
+      clubProfilePublic: Boolean(validClubId),
+      clubJoinedAt: validClubId
+        ? (currentPlayer.clubJoinedAt ?? (isJoiningNewClub ? new Date() : null))
+        : null,
     },
   });
 
   revalidatePath("/admin/players");
+  revalidatePath("/clubs");
 
   return {
     success: true,
@@ -182,6 +258,7 @@ export async function deletePlayerAction(
   });
 
   revalidatePath("/admin/players");
+  revalidatePath("/clubs");
 
   return {
     success: true,
