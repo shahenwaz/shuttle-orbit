@@ -125,7 +125,7 @@ export function LeagueDetailSections({
 
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
                   <UsersRound className="size-3.5" />
-                  {side.entries.length} entries
+                  {side.entries.length} pairs
                 </span>
               </div>
             </div>
@@ -159,7 +159,7 @@ export function LeagueDetailSections({
     <div className="space-y-4">
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Sides" value={sides.length} />
-        <CompactStatPill label="Entries" value={entryCount} />
+        <CompactStatPill label="Pairs" value={entryCount} />
         <CompactStatPill label="Fixtures" value={matches.length} />
         <CompactStatPill label="Completed" value={completedMatches} />
       </section>

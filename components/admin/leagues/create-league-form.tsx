@@ -38,10 +38,7 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="text-xs text-red-300">{errors[0]}</p>;
 }
 
-export function CreateLeagueForm({
-  clubId,
-  players,
-}: CreateLeagueFormProps) {
+export function CreateLeagueForm({ clubId, players }: CreateLeagueFormProps) {
   const [state, formAction, pending] = useActionState(
     createTeamPairMatrixLeagueAction,
     initialState,
@@ -79,7 +76,7 @@ export function CreateLeagueForm({
         <input
           key={`side-a-${playerId}`}
           type="hidden"
-          name="sideAMemberIds"
+          name="sideAPlayerIds"
           value={playerId}
         />
       ))}
@@ -88,7 +85,7 @@ export function CreateLeagueForm({
         <input
           key={`side-b-${playerId}`}
           type="hidden"
-          name="sideBMemberIds"
+          name="sideBPlayerIds"
           value={playerId}
         />
       ))}
@@ -104,12 +101,8 @@ export function CreateLeagueForm({
           <input
             id="title"
             name="title"
-            defaultValue={formatLeagueDisplayName(
-              "Friday Team Doubles League",
-            )}
-            placeholder={formatLeagueDisplayName(
-              "Friday Team Doubles League",
-            )}
+            defaultValue={formatLeagueDisplayName("Friday Team Doubles League")}
+            placeholder={formatLeagueDisplayName("Friday Team Doubles League")}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.title} />
@@ -184,7 +177,7 @@ export function CreateLeagueForm({
           selectedIds={sideAPlayerIds}
           blockedIds={sideBPlayerIds}
           onToggle={(playerId) => togglePlayer("A", playerId)}
-          error={state.fieldErrors?.sideAMemberIds}
+          error={state.fieldErrors?.sideAPlayerIds}
         />
 
         <PlayerSidePicker
@@ -193,7 +186,7 @@ export function CreateLeagueForm({
           selectedIds={sideBPlayerIds}
           blockedIds={sideAPlayerIds}
           onToggle={(playerId) => togglePlayer("B", playerId)}
-          error={state.fieldErrors?.sideBMemberIds}
+          error={state.fieldErrors?.sideBPlayerIds}
         />
 
         <div className="space-y-2 sm:col-span-2">

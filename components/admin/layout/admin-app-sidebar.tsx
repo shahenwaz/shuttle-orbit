@@ -81,7 +81,7 @@ export function AdminAppSidebar() {
               Admin workspace
             </p>
             <p className="truncate font-heading text-[13px] font-semibold leading-5 text-foreground">
-              Tournament Control
+              Shuttle Orbit Control
             </p>
           </div>
         </Link>

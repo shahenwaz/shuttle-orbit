@@ -63,7 +63,7 @@ export default async function AdminLeaguesPage() {
     }),
   ]);
 
-  const memberPlayers =
+  const leaguePlayers =
     managedClub?.players.map((player) => ({
       id: player.id,
       fullName: player.fullName,
@@ -79,7 +79,7 @@ export default async function AdminLeaguesPage() {
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Host club" value={clubDisplayName} />
-        <CompactStatPill label="Players" value={memberPlayers.length} />
+        <CompactStatPill label="Players" value={leaguePlayers.length} />
         <CompactStatPill label="Leagues" value={leagueCount} />
 
         {managedClub ? (
@@ -94,7 +94,7 @@ export default async function AdminLeaguesPage() {
             })}
             triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
           >
-            <CreateLeagueForm clubId={managedClub.id} players={memberPlayers} />
+            <CreateLeagueForm clubId={managedClub.id} players={leaguePlayers} />
           </CreateSheet>
         ) : null}
       </section>

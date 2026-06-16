@@ -223,18 +223,20 @@ export async function getCategoryByTournamentAndCode(
 }
 
 export async function getAdminDashboardStats() {
-  const [tournamentCount, playerCount, teamCount, matchCount] =
+  const [tournamentCount, playerCount, matchCount, clubCount, leagueCount] =
     await Promise.all([
       prisma.tournament.count(),
       prisma.player.count(),
-      prisma.teamEntry.count(),
       prisma.match.count(),
+      prisma.club.count(),
+      prisma.league.count(),
     ]);
 
   return {
     tournamentCount,
     playerCount,
-    teamCount,
     matchCount,
+    clubCount,
+    leagueCount,
   };
 }

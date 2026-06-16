@@ -18,8 +18,8 @@ export type LeagueActionState = {
     playedAt?: string[];
     sideAName?: string[];
     sideBName?: string[];
-    sideAMemberIds?: string[];
-    sideBMemberIds?: string[];
+    sideAPlayerIds?: string[];
+    sideBPlayerIds?: string[];
   };
 };
 
@@ -68,8 +68,8 @@ export async function createTeamPairMatrixLeagueAction(
   const rulesNote = getStringValue(formData, "rulesNote");
   const sideAName = getStringValue(formData, "sideAName") || "Team A";
   const sideBName = getStringValue(formData, "sideBName") || "Team B";
-  const sideAMemberIds = getStringArray(formData, "sideAMemberIds");
-  const sideBMemberIds = getStringArray(formData, "sideBMemberIds");
+  const sideAPlayerIds = getStringArray(formData, "sideAPlayerIds");
+  const sideBPlayerIds = getStringArray(formData, "sideBPlayerIds");
 
   const fieldErrors: LeagueActionState["fieldErrors"] = {};
 
@@ -81,20 +81,20 @@ export async function createTeamPairMatrixLeagueAction(
     fieldErrors.playedAt = ["Played date is required."];
   }
 
-  if (sideAMemberIds.length < 2) {
-    fieldErrors.sideAMemberIds = ["Select at least 2 players for Side A."];
+  if (sideAPlayerIds.length < 2) {
+    fieldErrors.sideAPlayerIds = ["Select at least 2 players for Side A."];
   }
 
-  if (sideBMemberIds.length < 2) {
-    fieldErrors.sideBMemberIds = ["Select at least 2 players for Side B."];
+  if (sideBPlayerIds.length < 2) {
+    fieldErrors.sideBPlayerIds = ["Select at least 2 players for Side B."];
   }
 
-  const allPlayerIds = [...sideAMemberIds, ...sideBMemberIds];
+  const allPlayerIds = [...sideAPlayerIds, ...sideBPlayerIds];
   const uniquePlayerIds = new Set(allPlayerIds);
 
   if (uniquePlayerIds.size !== allPlayerIds.length) {
-    fieldErrors.sideAMemberIds = ["A player can only be selected once."];
-    fieldErrors.sideBMemberIds = ["A player can only be selected once."];
+    fieldErrors.sideAPlayerIds = ["A player can only be selected once."];
+    fieldErrors.sideBPlayerIds = ["A player can only be selected once."];
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -165,7 +165,7 @@ export async function createTeamPairMatrixLeagueAction(
     });
   }
 
-  const sideAPlayers: PlayerInput[] = sideAMemberIds.map((playerId: string) => {
+  const sideAPlayers: PlayerInput[] = sideAPlayerIds.map((playerId: string) => {
     const player = playerMap.get(playerId);
 
     if (!player) {
@@ -175,7 +175,7 @@ export async function createTeamPairMatrixLeagueAction(
     return player;
   });
 
-  const sideBPlayers: PlayerInput[] = sideBMemberIds.map((playerId: string) => {
+  const sideBPlayers: PlayerInput[] = sideBPlayerIds.map((playerId: string) => {
     const player = playerMap.get(playerId);
 
     if (!player) {

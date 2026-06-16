@@ -54,9 +54,10 @@ export default async function AdminPage() {
       <AdminShellHeader title="Admin overview" />
 
       <CompactStatRow>
-        <CompactStatPill label="Tour" value={stats.tournamentCount} />
         <CompactStatPill label="Players" value={stats.playerCount} />
-        <CompactStatPill label="Teams" value={stats.teamCount} />
+        <CompactStatPill label="Clubs" value={stats.clubCount} />
+        <CompactStatPill label="Tournaments" value={stats.tournamentCount} />
+        <CompactStatPill label="Leagues" value={stats.leagueCount} />
         <CompactStatPill label="Matches" value={stats.matchCount} />
       </CompactStatRow>
 
