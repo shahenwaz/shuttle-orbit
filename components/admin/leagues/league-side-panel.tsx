@@ -1,6 +1,6 @@
 import { UsersRound } from "lucide-react";
 
-type ClubLeagueSidePanelProps = {
+type LeagueSidePanelProps = {
   sides: {
     id: string;
     name: string;
@@ -11,11 +11,11 @@ type ClubLeagueSidePanelProps = {
       entryOrder: number;
       player1: {
         fullName: string;
-        nickname: string;
+        nickname: string | null;
       };
       player2: {
         fullName: string;
-        nickname: string;
+        nickname: string | null;
       } | null;
     }[];
   }[];
@@ -26,7 +26,7 @@ function getPlayerName(player: { fullName: string; nickname: string }) {
 }
 
 function getEntryName(
-  entry: ClubLeagueSidePanelProps["sides"][number]["entries"][number],
+  entry: LeagueSidePanelProps["sides"][number]["entries"][number],
 ) {
   if (entry.displayName) {
     return entry.displayName;
@@ -39,7 +39,7 @@ function getEntryName(
   return `${getPlayerName(entry.player1)} + ${getPlayerName(entry.player2)}`;
 }
 
-export function ClubLeagueSidePanel({ sides }: ClubLeagueSidePanelProps) {
+export function LeagueSidePanel({ sides }: LeagueSidePanelProps) {
   return (
     <section className="space-y-3">
       {sides.map((side) => (

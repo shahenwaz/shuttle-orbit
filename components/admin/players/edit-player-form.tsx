@@ -20,7 +20,7 @@ type EditPlayerFormProps = {
   player: {
     id: string;
     fullName: string;
-    nickname: string;
+    nickname: string | null;
     clubId: string | null;
   };
   onSuccess?: () => void;

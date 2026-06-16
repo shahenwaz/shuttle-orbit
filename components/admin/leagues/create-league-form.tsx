@@ -4,10 +4,10 @@ import { useActionState, useState } from "react";
 
 import {
   createTeamPairMatrixLeagueAction,
-  type ClubLeagueActionState,
-} from "@/app/admin/club-leagues/actions";
+  type LeagueActionState,
+} from "@/app/admin/leagues/actions";
 import { Button } from "@/components/ui/button";
-import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
 type PlayerOption = {
   id: string;
@@ -15,12 +15,12 @@ type PlayerOption = {
   nickname: string | null;
 };
 
-type CreateClubLeagueFormProps = {
+type CreateLeagueFormProps = {
   clubId: string;
   players: PlayerOption[];
 };
 
-const initialState: ClubLeagueActionState = {
+const initialState: LeagueActionState = {
   success: false,
   message: "",
   fieldErrors: {},
@@ -38,10 +38,10 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="text-xs text-red-300">{errors[0]}</p>;
 }
 
-export function CreateClubLeagueForm({
+export function CreateLeagueForm({
   clubId,
   players,
-}: CreateClubLeagueFormProps) {
+}: CreateLeagueFormProps) {
   const [state, formAction, pending] = useActionState(
     createTeamPairMatrixLeagueAction,
     initialState,
@@ -104,10 +104,10 @@ export function CreateClubLeagueForm({
           <input
             id="title"
             name="title"
-            defaultValue={formatClubLeagueDisplayName(
+            defaultValue={formatLeagueDisplayName(
               "Friday Team Doubles League",
             )}
-            placeholder={formatClubLeagueDisplayName(
+            placeholder={formatLeagueDisplayName(
               "Friday Team Doubles League",
             )}
             className={inputClassName}
@@ -141,7 +141,7 @@ export function CreateClubLeagueForm({
           <input
             id="rulesNote"
             name="rulesNote"
-            defaultValue={formatClubLeagueDisplayName("Team Pair Matrix")}
+            defaultValue={formatLeagueDisplayName("Team Pair Matrix")}
             className={inputClassName}
           />
         </div>
@@ -156,7 +156,7 @@ export function CreateClubLeagueForm({
           <input
             id="sideAName"
             name="sideAName"
-            defaultValue={formatClubLeagueDisplayName("Team A")}
+            defaultValue={formatLeagueDisplayName("Team A")}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.sideAName} />
@@ -172,7 +172,7 @@ export function CreateClubLeagueForm({
           <input
             id="sideBName"
             name="sideBName"
-            defaultValue={formatClubLeagueDisplayName("Team B")}
+            defaultValue={formatLeagueDisplayName("Team B")}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.sideBName} />
@@ -206,7 +206,7 @@ export function CreateClubLeagueForm({
           <textarea
             id="rulesDescription"
             name="rulesNote"
-            defaultValue={formatClubLeagueDisplayName(
+            defaultValue={formatLeagueDisplayName(
               "Each side creates all doubles pairs and every pair plays every pair from the other side.",
             )}
             className={textareaClassName}

@@ -1,6 +1,6 @@
 import { Swords } from "lucide-react";
 
-export function ClubLeagueEmptyState() {
+export function LeagueEmptyState() {
   return (
     <div className="rounded-md border border-dashed border-white/15 bg-white/4 p-6">
       <div className="flex max-w-xl gap-3">
@@ -10,7 +10,7 @@ export function ClubLeagueEmptyState() {
 
         <div>
           <h2 className="text-sm font-semibold text-foreground">
-            No club leagues yet
+            No community leagues yet
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             Create the first internal league night for BDBC. Start with Team

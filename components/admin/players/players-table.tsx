@@ -3,7 +3,7 @@ import { formatDate } from "@/lib/utils/format";
 type PlayerRow = {
   id: string;
   fullName: string;
-  nickname: string;
+  nickname: string | null;
   isActive: boolean;
   createdAt: Date;
 };

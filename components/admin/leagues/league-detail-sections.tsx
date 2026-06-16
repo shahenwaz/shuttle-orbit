@@ -1,14 +1,14 @@
 import { UsersRound } from "lucide-react";
 
-import { ClubLeagueFixtureResults } from "@/components/admin/club-leagues/club-league-fixture-results";
-import type { ClubLeagueSectionTab } from "@/components/admin/club-leagues/club-league-section-tabs";
+import { LeagueFixtureResults } from "@/components/admin/leagues/league-fixture-results";
+import type { LeagueSectionTab } from "@/components/admin/leagues/league-section-tabs";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
-import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
-import { ClubLeagueStandings } from "@/components/admin/club-leagues/club-league-standings";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
+import { LeagueStandings } from "@/components/admin/leagues/league-standings";
 
 type Player = {
   fullName: string;
-  nickname: string;
+  nickname: string | null;
 };
 
 type Entry = {
@@ -50,9 +50,9 @@ type Match = {
   }[];
 };
 
-type ClubLeagueDetailSectionsProps = {
+type LeagueDetailSectionsProps = {
   leagueId: string;
-  activeTab: ClubLeagueSectionTab;
+  activeTab: LeagueSectionTab;
   rulesNote: string | null;
   sides: Side[];
   matches: Match[];
@@ -68,19 +68,19 @@ type PlayerStat = {
   pointsAgainst: number;
   player: {
     fullName: string;
-    nickname: string;
+    nickname: string | null;
   };
 };
 
 function getPlayerName(player: Player) {
-  return formatClubLeagueDisplayName(player.nickname || player.fullName);
+  return formatLeagueDisplayName(player.nickname || player.fullName);
 }
 
 function getEntryName(entry: Entry | null) {
   if (!entry) return "TBC";
 
   if (entry.displayName) {
-    return formatClubLeagueDisplayName(entry.displayName);
+    return formatLeagueDisplayName(entry.displayName);
   }
 
   if (!entry.player2) {
@@ -90,14 +90,14 @@ function getEntryName(entry: Entry | null) {
   return `${getPlayerName(entry.player1)} + ${getPlayerName(entry.player2)}`;
 }
 
-export function ClubLeagueDetailSections({
+export function LeagueDetailSections({
   leagueId,
   activeTab,
   rulesNote,
   sides,
   matches,
   playerStats,
-}: ClubLeagueDetailSectionsProps) {
+}: LeagueDetailSectionsProps) {
   const completedMatches = matches.filter(
     (match) => match.winnerEntryId,
   ).length;
@@ -152,7 +152,7 @@ export function ClubLeagueDetailSections({
   }
 
   if (activeTab === "fixtures") {
-    return <ClubLeagueFixtureResults leagueId={leagueId} matches={matches} />;
+    return <LeagueFixtureResults leagueId={leagueId} matches={matches} />;
   }
 
   return (
@@ -170,7 +170,7 @@ export function ClubLeagueDetailSections({
         </p>
       ) : null}
 
-      <ClubLeagueStandings playerStats={playerStats} />
+      <LeagueStandings playerStats={playerStats} />
     </div>
   );
 }

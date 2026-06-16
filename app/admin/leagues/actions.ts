@@ -7,10 +7,10 @@ import { redirect } from "next/navigation";
 import {
   createDoublesEntries,
   createTeamPairMatrixMatches,
-} from "@/lib/club-league/team-pair-matrix";
+} from "@/lib/leagues/team-pair-matrix";
 import { prisma } from "@/lib/db/prisma";
 
-export type ClubLeagueActionState = {
+export type LeagueActionState = {
   success: boolean;
   message: string;
   fieldErrors?: {
@@ -59,9 +59,9 @@ function getPlayerDisplayName(player: {
 }
 
 export async function createTeamPairMatrixLeagueAction(
-  _state: ClubLeagueActionState,
+  _state: LeagueActionState,
   formData: FormData,
-): Promise<ClubLeagueActionState> {
+): Promise<LeagueActionState> {
   const clubId = getStringValue(formData, "clubId");
   const title = getStringValue(formData, "title");
   const playedAtValue = getStringValue(formData, "playedAt");
@@ -71,7 +71,7 @@ export async function createTeamPairMatrixLeagueAction(
   const sideAMemberIds = getStringArray(formData, "sideAMemberIds");
   const sideBMemberIds = getStringArray(formData, "sideBMemberIds");
 
-  const fieldErrors: ClubLeagueActionState["fieldErrors"] = {};
+  const fieldErrors: LeagueActionState["fieldErrors"] = {};
 
   if (!title) {
     fieldErrors.title = ["League title is required."];
@@ -287,6 +287,6 @@ export async function createTeamPairMatrixLeagueAction(
     },
   );
 
-  revalidatePath("/admin/club-leagues");
-  redirect(`/admin/club-leagues/${league.id}`);
+  revalidatePath("/admin/leagues");
+  redirect(`/admin/leagues/${league.id}`);
 }

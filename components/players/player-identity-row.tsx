@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 type PlayerIdentityRowProps = {
   fullName: string;
-  nickname: string;
+  nickname: string | null;
   categoryCodes?: string[];
   className?: string;
   nameClassName?: string;

@@ -3,18 +3,18 @@
 import { useState, useTransition } from "react";
 import { PenSquare, Undo2 } from "lucide-react";
 
-import { resetClubLeagueResultAction } from "@/app/admin/club-leagues/[leagueId]/actions";
+import { resetLeagueResultAction } from "@/app/admin/leagues/[leagueId]/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
-import { ClubLeagueResultForm } from "@/components/admin/club-leagues/club-league-result-form";
+import { LeagueResultForm } from "@/components/admin/leagues/league-result-form";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { Button } from "@/components/ui/button";
 import { MatchCard } from "@/components/tournaments/match-card";
-import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
 type Player = {
   fullName: string;
-  nickname: string;
+  nickname: string | null;
 };
 
 type Entry = {
@@ -23,7 +23,7 @@ type Entry = {
   player2: Player | null;
 };
 
-type ClubLeagueMatch = {
+type LeagueMatch = {
   id: string;
   matchOrder: number;
   roundLabel: string | null;
@@ -41,20 +41,20 @@ type ClubLeagueMatch = {
   }[];
 };
 
-type ClubLeagueFixtureResultsProps = {
+type LeagueFixtureResultsProps = {
   leagueId: string;
-  matches: ClubLeagueMatch[];
+  matches: LeagueMatch[];
 };
 
 function getPlayerName(player: Player) {
-  return formatClubLeagueDisplayName(player.nickname || player.fullName);
+  return formatLeagueDisplayName(player.nickname || player.fullName);
 }
 
 function getEntryName(entry: Entry | null) {
   if (!entry) return "TBD";
 
   if (entry.displayName) {
-    return formatClubLeagueDisplayName(entry.displayName);
+    return formatLeagueDisplayName(entry.displayName);
   }
 
   if (!entry.player2) {
@@ -64,7 +64,7 @@ function getEntryName(entry: Entry | null) {
   return `${getPlayerName(entry.player1)} + ${getPlayerName(entry.player2)}`;
 }
 
-function toMatchCardMatch(match: ClubLeagueMatch) {
+function toMatchCardMatch(match: LeagueMatch) {
   return {
     id: match.id,
     roundLabel: match.roundLabel ?? `Match ${match.matchOrder}`,
@@ -97,10 +97,10 @@ function toMatchCardMatch(match: ClubLeagueMatch) {
   };
 }
 
-export function ClubLeagueFixtureResults({
+export function LeagueFixtureResults({
   leagueId,
   matches,
-}: ClubLeagueFixtureResultsProps) {
+}: LeagueFixtureResultsProps) {
   const completedMatches = matches.filter(
     (match) => match.winnerEntryId,
   ).length;
@@ -165,7 +165,7 @@ function ClubLeagueResultMatchCard({
   isCompleted,
 }: {
   leagueId: string;
-  match: ClubLeagueMatch;
+  match: LeagueMatch;
   entryALabel: string;
   entryBLabel: string;
   isCompleted: boolean;
@@ -194,7 +194,7 @@ function ClubLeagueResultMatchCard({
           })}
           triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
         >
-          <ClubLeagueResultForm
+          <LeagueResultForm
             leagueId={leagueId}
             matchId={match.id}
             entryALabel={entryALabel}
@@ -230,7 +230,7 @@ function ClubLeagueResultMatchCard({
                 setResetError(false);
 
                 startResetTransition(async () => {
-                  const result = await resetClubLeagueResultAction(formData);
+                  const result = await resetLeagueResultAction(formData);
                   setResetError(!result.success);
                   setResetMessage(result.message);
 

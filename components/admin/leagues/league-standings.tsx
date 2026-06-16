@@ -1,8 +1,8 @@
 import { Trophy } from "lucide-react";
 
-import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
-type ClubLeagueStanding = {
+type LeagueStanding = {
   id: string;
   matchesPlayed: number;
   matchesWon: number;
@@ -11,19 +11,19 @@ type ClubLeagueStanding = {
   pointsAgainst: number;
   player: {
     fullName: string;
-    nickname: string;
+    nickname: string | null;
   };
 };
 
-type ClubLeagueStandingsProps = {
-  playerStats: ClubLeagueStanding[];
+type LeagueStandingsProps = {
+  playerStats: LeagueStanding[];
 };
 
-function getPlayerName(player: ClubLeagueStanding["player"]) {
-  return formatClubLeagueDisplayName(player.nickname || player.fullName);
+function getPlayerName(player: LeagueStanding["player"]) {
+  return formatLeagueDisplayName(player.nickname || player.fullName);
 }
 
-export function ClubLeagueStandings({ playerStats }: ClubLeagueStandingsProps) {
+export function LeagueStandings({ playerStats }: LeagueStandingsProps) {
   const sortedStats = [...playerStats].sort((a, b) => {
     const aDiff = a.pointsFor - a.pointsAgainst;
     const bDiff = b.pointsFor - b.pointsAgainst;

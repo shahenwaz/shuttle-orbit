@@ -4,16 +4,16 @@ import { useActionState, useRef } from "react";
 import { Loader2, Save } from "lucide-react";
 
 import {
-  recordClubLeagueResultAction,
-  type ClubLeagueResultActionState,
-} from "@/app/admin/club-leagues/[leagueId]/actions";
+  recordLeagueResultAction,
+  type LeagueResultActionState,
+} from "@/app/admin/leagues/[leagueId]/actions";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
-type ClubLeagueResultFormProps = {
+type LeagueResultFormProps = {
   leagueId: string;
   matchId: string;
   entryALabel: string;
@@ -25,34 +25,34 @@ type ClubLeagueResultFormProps = {
   }[];
 };
 
-const initialState: ClubLeagueResultActionState = {
+const initialState: LeagueResultActionState = {
   success: false,
   message: "",
   fieldErrors: {},
 };
 
 function getExistingSet(
-  existingSets: ClubLeagueResultFormProps["existingSets"],
+  existingSets: LeagueResultFormProps["existingSets"],
   setNumber: number,
 ) {
   return existingSets?.find((set) => set.setNumber === setNumber) ?? null;
 }
 
-export function ClubLeagueResultForm({
+export function LeagueResultForm({
   leagueId,
   matchId,
   entryALabel,
   entryBLabel,
   existingSets = [],
-}: ClubLeagueResultFormProps) {
+}: LeagueResultFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(
-    recordClubLeagueResultAction,
+    recordLeagueResultAction,
     initialState,
   );
 
-  const formattedEntryALabel = formatClubLeagueDisplayName(entryALabel);
-  const formattedEntryBLabel = formatClubLeagueDisplayName(entryBLabel);
+  const formattedEntryALabel = formatLeagueDisplayName(entryALabel);
+  const formattedEntryBLabel = formatLeagueDisplayName(entryBLabel);
   const hasExistingResult = existingSets.length > 0;
 
   return (
@@ -70,10 +70,10 @@ export function ClubLeagueResultForm({
         const existingSet = getExistingSet(existingSets, setNumber);
         const isRequired = setNumber === 1;
         const entryAKey = `set${setNumber}EntryAScore` as keyof NonNullable<
-          ClubLeagueResultActionState["fieldErrors"]
+          LeagueResultActionState["fieldErrors"]
         >;
         const entryBKey = `set${setNumber}EntryBScore` as keyof NonNullable<
-          ClubLeagueResultActionState["fieldErrors"]
+          LeagueResultActionState["fieldErrors"]
         >;
 
         return (

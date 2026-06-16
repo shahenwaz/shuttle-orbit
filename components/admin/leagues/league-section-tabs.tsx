@@ -2,15 +2,15 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-export type ClubLeagueSectionTab = "overview" | "sides" | "fixtures";
+export type LeagueSectionTab = "overview" | "sides" | "fixtures";
 
-type ClubLeagueSectionTabsProps = {
+type LeagueSectionTabsProps = {
   leagueId: string;
-  activeTab: ClubLeagueSectionTab;
+  activeTab: LeagueSectionTab;
 };
 
 const tabs: {
-  value: ClubLeagueSectionTab;
+  value: LeagueSectionTab;
   label: string;
 }[] = [
   { value: "overview", label: "Overview" },
@@ -18,10 +18,10 @@ const tabs: {
   { value: "fixtures", label: "Fixtures" },
 ];
 
-export function ClubLeagueSectionTabs({
+export function LeagueSectionTabs({
   leagueId,
   activeTab,
-}: ClubLeagueSectionTabsProps) {
+}: LeagueSectionTabsProps) {
   return (
     <div className="flex w-fit flex-wrap gap-1 rounded-md border border-white/10 bg-white/4 p-1">
       {tabs.map((tab) => {
@@ -30,7 +30,7 @@ export function ClubLeagueSectionTabs({
         return (
           <Link
             key={tab.value}
-            href={`/admin/club-leagues/${leagueId}?tab=${tab.value}`}
+            href={`/admin/leagues/${leagueId}?tab=${tab.value}`}
             className={cn(
               "rounded-md px-3 py-1.5 text-xs font-medium transition",
               isActive

@@ -29,7 +29,7 @@ import {
 type ClubMemberPlayer = {
   id: string;
   fullName: string;
-  nickname: string;
+  nickname: string | null;
 };
 
 type ClubMemberRow = {

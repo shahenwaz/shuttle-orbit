@@ -28,7 +28,7 @@ type AdminPlayersDirectoryProps = {
   players: Array<{
     id: string;
     fullName: string;
-    nickname: string;
+    nickname: string | null;
     createdAt: Date;
     clubId: string | null;
     club: ClubOption | null;

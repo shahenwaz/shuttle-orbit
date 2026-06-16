@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 type PlayerOption = {
   id: string;
   fullName: string;
-  nickname: string;
+  nickname: string | null;
 };
 
 type CreateTeamEntryFormProps = {

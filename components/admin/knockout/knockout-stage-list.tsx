@@ -54,22 +54,22 @@ type KnockoutStageListProps = {
         teamName: string | null;
         player1: {
           fullName: string;
-          nickname: string;
+          nickname: string | null;
         };
         player2: {
           fullName: string;
-          nickname: string;
+          nickname: string | null;
         };
       } | null;
       teamB: {
         teamName: string | null;
         player1: {
           fullName: string;
-          nickname: string;
+          nickname: string | null;
         };
         player2: {
           fullName: string;
-          nickname: string;
+          nickname: string | null;
         };
       } | null;
     }>;

@@ -5,7 +5,7 @@ type PlayerCardProps = {
   player: {
     id: string;
     fullName: string;
-    nickname: string;
+    nickname: string | null;
     categoryCodes?: string[];
   };
 };

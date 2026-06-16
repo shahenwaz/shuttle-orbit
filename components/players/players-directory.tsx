@@ -23,7 +23,7 @@ type PlayersDirectoryProps = {
   players: Array<{
     id: string;
     fullName: string;
-    nickname: string;
+    nickname: string | null;
     createdAt: Date;
     categoryCodes: string[];
   }>;

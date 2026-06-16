@@ -3,18 +3,18 @@
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 
-import { deleteClubLeagueAction } from "@/app/admin/club-leagues/[leagueId]/actions";
+import { deleteLeagueAction } from "@/app/admin/leagues/[leagueId]/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { Button } from "@/components/ui/button";
 
-type DeleteClubLeagueButtonProps = {
+type DeleteLeagueButtonProps = {
   leagueId: string;
 };
 
-export function DeleteClubLeagueButton({
+export function DeleteLeagueButton({
   leagueId,
-}: DeleteClubLeagueButtonProps) {
+}: DeleteLeagueButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -25,7 +25,7 @@ export function DeleteClubLeagueButton({
       open={isOpen}
       onOpenChange={setIsOpen}
       triggerLabel="Delete"
-      title="Delete club league"
+      title="Delete community league"
       description="This will permanently delete this test league and its generated fixtures."
       triggerClassName={actionPillButtonClassName({
         variant: "danger",
@@ -44,7 +44,7 @@ export function DeleteClubLeagueButton({
           setIsError(false);
 
           startTransition(async () => {
-            const result = await deleteClubLeagueAction(formData);
+            const result = await deleteLeagueAction(formData);
 
             if (result) {
               setIsError(!result.success);
@@ -54,7 +54,7 @@ export function DeleteClubLeagueButton({
         }}
       >
         <p className="text-sm leading-6 text-muted-foreground">
-          Are you sure you want to delete this club league? This is mainly for
+          Are you sure you want to delete this community league? This is mainly for
           removing test leagues before real results are recorded.
         </p>
 

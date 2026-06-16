@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleDotDashed, Swords } from "lucide-react";
 
-type ClubLeagueFixtureListProps = {
+type LeagueFixtureListProps = {
   matches: {
     id: string;
     matchOrder: number;
@@ -24,11 +24,11 @@ type Entry = {
   displayName: string | null;
   player1: {
     fullName: string;
-    nickname: string;
+    nickname: string | null;
   };
   player2: {
     fullName: string;
-    nickname: string;
+    nickname: string | null;
   } | null;
 };
 
@@ -52,7 +52,7 @@ function getEntryName(entry: Entry | null) {
   return `${getPlayerName(entry.player1)} + ${getPlayerName(entry.player2)}`;
 }
 
-function getScoreText(match: ClubLeagueFixtureListProps["matches"][number]) {
+function getScoreText(match: LeagueFixtureListProps["matches"][number]) {
   if (match.scoreSummary) {
     return match.scoreSummary;
   }
@@ -66,7 +66,7 @@ function getScoreText(match: ClubLeagueFixtureListProps["matches"][number]) {
     .join(", ");
 }
 
-export function ClubLeagueFixtureList({ matches }: ClubLeagueFixtureListProps) {
+export function LeagueFixtureList({ matches }: LeagueFixtureListProps) {
   return (
     <section className="rounded-md border border-white/10 bg-white/4">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">

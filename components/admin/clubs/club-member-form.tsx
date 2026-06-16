@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 type ClubMemberFormPlayer = {
   id: string;
   fullName: string;
-  nickname: string;
+  nickname: string | null;
 };
 
 type ClubMemberFormProps = {
@@ -56,7 +56,7 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
 
     if (player) {
       setName(player.fullName);
-      setNickname(player.nickname);
+      setNickname(player.nickname ?? "");
       return;
     }
 
@@ -88,7 +88,8 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
           <option value="">Club-only member</option>
           {players.map((player) => (
             <option key={player.id} value={player.id}>
-              {player.fullName} (@{player.nickname})
+              {player.fullName}
+              {player.nickname ? ` (@${player.nickname})` : ""}
             </option>
           ))}
         </select>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, Swords, UsersRound } from "lucide-react";
 
-type ClubLeagueCardProps = {
+type LeagueCardProps = {
   league: {
     id: string;
     title: string;
@@ -18,13 +18,13 @@ type ClubLeagueCardProps = {
   };
 };
 
-export function ClubLeagueCard({ league }: ClubLeagueCardProps) {
+export function LeagueCard({ league }: LeagueCardProps) {
   const hostLabel =
     league.hostClub?.shortName || league.hostClub?.name || "Community";
 
   return (
     <Link
-      href={`/admin/club-leagues/${league.id}`}
+      href={`/admin/leagues/${league.id}`}
       className="group block rounded-md border border-white/10 bg-white/4 px-4 py-3 transition hover:border-primary/35 hover:bg-white/6"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

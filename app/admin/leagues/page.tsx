@@ -1,16 +1,16 @@
 import { PlusSquare } from "lucide-react";
 
 import { CreateSheet } from "@/components/admin/create-sheet";
-import { ClubLeagueCard } from "@/components/admin/club-leagues/club-league-card";
-import { ClubLeagueEmptyState } from "@/components/admin/club-leagues/club-league-empty-state";
-import { CreateClubLeagueForm } from "@/components/admin/club-leagues/create-club-league-form";
+import { LeagueCard } from "@/components/admin/leagues/league-card";
+import { LeagueEmptyState } from "@/components/admin/leagues/league-empty-state";
+import { CreateLeagueForm } from "@/components/admin/leagues/create-league-form";
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 
-export default async function AdminClubLeaguesPage() {
+export default async function AdminLeaguesPage() {
   const managedClub = await prisma.club.findFirst({
     where: {
       OR: [{ slug: "bdbc" }, { isManagedClub: true }],
@@ -97,7 +97,7 @@ export default async function AdminClubLeaguesPage() {
             })}
             triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
           >
-            <CreateClubLeagueForm
+            <CreateLeagueForm
               clubId={managedClub.id}
               players={memberPlayers}
             />
@@ -107,10 +107,10 @@ export default async function AdminClubLeaguesPage() {
 
       <div className="space-y-3">
         {leagues.length === 0 ? (
-          <ClubLeagueEmptyState />
+          <LeagueEmptyState />
         ) : (
           leagues.map((league) => (
-            <ClubLeagueCard key={league.id} league={league} />
+            <LeagueCard key={league.id} league={league} />
           ))
         )}
       </div>

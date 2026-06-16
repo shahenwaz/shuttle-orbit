@@ -10,11 +10,11 @@ type PlayerAppearanceCardProps = {
     teamName: string | null;
     player1: {
       fullName: string;
-      nickname: string;
+      nickname: string | null;
     };
     player2: {
       fullName: string;
-      nickname: string;
+      nickname: string | null;
     };
     category: {
       code: string;

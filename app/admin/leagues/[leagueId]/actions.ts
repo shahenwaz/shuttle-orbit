@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db/prisma";
 
-export type ClubLeagueResultActionState = {
+export type LeagueResultActionState = {
   success: boolean;
   message: string;
   fieldErrors?: {
@@ -73,7 +73,7 @@ function getWinnerFromSets(
 }
 
 function validateAndParseSets(formData: FormData) {
-  const fieldErrors: ClubLeagueResultActionState["fieldErrors"] = {};
+  const fieldErrors: LeagueResultActionState["fieldErrors"] = {};
 
   const rawSets = [
     {
@@ -149,10 +149,10 @@ function validateAndParseSets(formData: FormData) {
   };
 }
 
-export async function recordClubLeagueResultAction(
-  _prevState: ClubLeagueResultActionState,
+export async function recordLeagueResultAction(
+  _prevState: LeagueResultActionState,
   formData: FormData,
-): Promise<ClubLeagueResultActionState> {
+): Promise<LeagueResultActionState> {
   const leagueId = getStringValue(formData, "leagueId");
   const matchId = getStringValue(formData, "matchId");
 
@@ -226,9 +226,9 @@ export async function recordClubLeagueResultAction(
     ),
   ]);
 
-  await recalculateClubLeaguePlayerStats(leagueId);
+  await recalculateLeaguePlayerStats(leagueId);
 
-  revalidatePath(`/admin/club-leagues/${leagueId}`);
+  revalidatePath(`/admin/leagues/${leagueId}`);
 
   return {
     success: true,
@@ -237,7 +237,7 @@ export async function recordClubLeagueResultAction(
   };
 }
 
-export async function resetClubLeagueResultAction(formData: FormData) {
+export async function resetLeagueResultAction(formData: FormData) {
   const leagueId = getStringValue(formData, "leagueId");
   const matchId = getStringValue(formData, "matchId");
 
@@ -275,9 +275,9 @@ export async function resetClubLeagueResultAction(formData: FormData) {
     }),
   ]);
 
-  await recalculateClubLeaguePlayerStats(leagueId);
+  await recalculateLeaguePlayerStats(leagueId);
 
-  revalidatePath(`/admin/club-leagues/${leagueId}`);
+  revalidatePath(`/admin/leagues/${leagueId}`);
 
   return {
     success: true,
@@ -285,7 +285,7 @@ export async function resetClubLeagueResultAction(formData: FormData) {
   };
 }
 
-export async function deleteClubLeagueAction(formData: FormData) {
+export async function deleteLeagueAction(formData: FormData) {
   const leagueId = getStringValue(formData, "leagueId");
 
   const league = await prisma.clubLeague.findUnique({
@@ -305,7 +305,7 @@ export async function deleteClubLeagueAction(formData: FormData) {
   if (!league) {
     return {
       success: false,
-      message: "Club league could not be found.",
+      message: "Community league could not be found.",
     };
   }
 
@@ -326,11 +326,11 @@ export async function deleteClubLeagueAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/admin/club-leagues");
-  redirect("/admin/club-leagues");
+  revalidatePath("/admin/leagues");
+  redirect("/admin/leagues");
 }
 
-async function recalculateClubLeaguePlayerStats(leagueId: string) {
+async function recalculateLeaguePlayerStats(leagueId: string) {
   const completedMatches = await prisma.clubLeagueMatch.findMany({
     where: {
       leagueId,

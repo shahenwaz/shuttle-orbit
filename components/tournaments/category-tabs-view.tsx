@@ -21,12 +21,12 @@ type CategoryTabsViewProps = {
       player1: {
         id: string;
         fullName: string;
-        nickname: string;
+        nickname: string | null;
       };
       player2: {
         id: string;
         fullName: string;
-        nickname: string;
+        nickname: string | null;
       };
     }>;
     stages: Array<{

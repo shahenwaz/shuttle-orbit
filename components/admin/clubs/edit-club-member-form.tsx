@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 type EditClubMemberFormPlayer = {
   id: string;
   fullName: string;
-  nickname: string;
+  nickname: string | null;
 };
 
 type EditClubMemberFormMember = {

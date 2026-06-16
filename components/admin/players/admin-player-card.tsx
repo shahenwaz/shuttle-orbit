@@ -30,7 +30,7 @@ type AdminPlayerCardProps = {
   player: {
     id: string;
     fullName: string;
-    nickname: string;
+    nickname: string | null;
     clubId: string | null;
     club: ClubOption | null;
     categoryCodes?: string[];
