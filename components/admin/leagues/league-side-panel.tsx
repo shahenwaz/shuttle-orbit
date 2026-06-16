@@ -21,7 +21,7 @@ type LeagueSidePanelProps = {
   }[];
 };
 
-function getPlayerName(player: { fullName: string; nickname: string }) {
+function getPlayerName(player: { fullName: string; nickname: string | null }) {
   return player.nickname || player.fullName;
 }
 

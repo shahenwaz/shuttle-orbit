@@ -140,7 +140,7 @@ export function LeagueFixtureResults({
               const isCompleted = Boolean(match.winnerEntryId);
 
               return (
-                <ClubLeagueResultMatchCard
+                <LeagueResultMatchCard
                   key={match.id}
                   leagueId={leagueId}
                   match={match}
@@ -157,7 +157,7 @@ export function LeagueFixtureResults({
   );
 }
 
-function ClubLeagueResultMatchCard({
+function LeagueResultMatchCard({
   leagueId,
   match,
   entryALabel,

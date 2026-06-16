@@ -290,10 +290,10 @@ export default async function ClubWorkspacePage({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <h2 className="text-base font-semibold tracking-tight text-foreground">
-                Players
+                Club Members
               </h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Players assigned to this club from the global player database.
+                Members assigned to this club from the global player database.
               </p>
             </div>
 

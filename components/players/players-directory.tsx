@@ -64,7 +64,7 @@ export function PlayersDirectory({ players }: PlayersDirectoryProps) {
       : players.filter((player) => {
           return (
             player.fullName.toLowerCase().includes(normalizedQuery) ||
-            player.nickname.toLowerCase().includes(normalizedQuery) ||
+            (player.nickname ?? "").toLowerCase().includes(normalizedQuery) ||
             player.categoryCodes.some((code) =>
               code.toLowerCase().includes(normalizedQuery),
             )

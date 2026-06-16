@@ -81,7 +81,7 @@ export function EditClubMemberForm({
 
     if (player) {
       setName(player.fullName);
-      setNickname(player.nickname);
+      setNickname(player.nickname ?? "");
       return;
     }
 

@@ -51,25 +51,25 @@ function buildScoreSummary(sets: ParsedSetScore[]) {
 
 function getWinnerFromSets(
   sets: ParsedSetScore[],
-  entryAId: string,
-  entryBId: string,
+  teamAId: string,
+  teamBId: string,
 ) {
-  let entryASetWins = 0;
-  let entryBSetWins = 0;
+  let teamASetWins = 0;
+  let teamBSetWins = 0;
 
   for (const set of sets) {
     if (set.entryAScore > set.entryBScore) {
-      entryASetWins += 1;
+      teamASetWins += 1;
     } else {
-      entryBSetWins += 1;
+      teamBSetWins += 1;
     }
   }
 
-  if (entryASetWins === entryBSetWins) {
+  if (teamASetWins === teamBSetWins) {
     return null;
   }
 
-  return entryASetWins > entryBSetWins ? entryAId : entryBId;
+  return teamASetWins > teamBSetWins ? teamAId : teamBId;
 }
 
 function validateAndParseSets(formData: FormData) {
@@ -166,7 +166,7 @@ export async function recordLeagueResultAction(
     };
   }
 
-  const match = await prisma.clubLeagueMatch.findFirst({
+  const match = await prisma.leagueMatch.findFirst({
     where: {
       id: matchId,
       leagueId,
@@ -174,12 +174,12 @@ export async function recordLeagueResultAction(
     select: {
       id: true,
       leagueId: true,
-      entryAId: true,
-      entryBId: true,
+      teamAId: true,
+      teamBId: true,
     },
   });
 
-  if (!match || !match.entryAId || !match.entryBId) {
+  if (!match || !match.teamAId || !match.teamBId) {
     return {
       success: false,
       message: "Fixture could not be found.",
@@ -187,9 +187,9 @@ export async function recordLeagueResultAction(
     };
   }
 
-  const winnerEntryId = getWinnerFromSets(sets, match.entryAId, match.entryBId);
+  const winnerTeamId = getWinnerFromSets(sets, match.teamAId, match.teamBId);
 
-  if (!winnerEntryId) {
+  if (!winnerTeamId) {
     return {
       success: false,
       message: "Set wins are tied. Add a deciding set or adjust the scores.",
@@ -200,27 +200,27 @@ export async function recordLeagueResultAction(
   }
 
   await prisma.$transaction([
-    prisma.clubLeagueMatch.update({
+    prisma.leagueMatch.update({
       where: {
         id: match.id,
       },
       data: {
-        winnerEntryId,
+        winnerTeamId,
         scoreSummary: buildScoreSummary(sets),
       },
     }),
-    prisma.clubLeagueSet.deleteMany({
+    prisma.leagueSet.deleteMany({
       where: {
         matchId: match.id,
       },
     }),
     ...sets.map((set) =>
-      prisma.clubLeagueSet.create({
+      prisma.leagueSet.create({
         data: {
           matchId: match.id,
           setNumber: set.setNumber,
-          entryAScore: set.entryAScore,
-          entryBScore: set.entryBScore,
+          teamAScore: set.entryAScore,
+          teamBScore: set.entryBScore,
         },
       }),
     ),
@@ -241,7 +241,7 @@ export async function resetLeagueResultAction(formData: FormData) {
   const leagueId = getStringValue(formData, "leagueId");
   const matchId = getStringValue(formData, "matchId");
 
-  const match = await prisma.clubLeagueMatch.findFirst({
+  const match = await prisma.leagueMatch.findFirst({
     where: {
       id: matchId,
       leagueId,
@@ -259,16 +259,16 @@ export async function resetLeagueResultAction(formData: FormData) {
   }
 
   await prisma.$transaction([
-    prisma.clubLeagueMatch.update({
+    prisma.leagueMatch.update({
       where: {
         id: match.id,
       },
       data: {
-        winnerEntryId: null,
+        winnerTeamId: null,
         scoreSummary: null,
       },
     }),
-    prisma.clubLeagueSet.deleteMany({
+    prisma.leagueSet.deleteMany({
       where: {
         matchId: match.id,
       },
@@ -288,7 +288,7 @@ export async function resetLeagueResultAction(formData: FormData) {
 export async function deleteLeagueAction(formData: FormData) {
   const leagueId = getStringValue(formData, "leagueId");
 
-  const league = await prisma.clubLeague.findUnique({
+  const league = await prisma.league.findUnique({
     where: {
       id: leagueId,
     },
@@ -296,7 +296,7 @@ export async function deleteLeagueAction(formData: FormData) {
       id: true,
       matches: {
         select: {
-          winnerEntryId: true,
+          winnerTeamId: true,
         },
       },
     },
@@ -310,7 +310,7 @@ export async function deleteLeagueAction(formData: FormData) {
   }
 
   const hasRecordedResults = league.matches.some((match) =>
-    Boolean(match.winnerEntryId),
+    Boolean(match.winnerTeamId),
   );
 
   if (hasRecordedResults) {
@@ -320,7 +320,7 @@ export async function deleteLeagueAction(formData: FormData) {
     };
   }
 
-  await prisma.clubLeague.delete({
+  await prisma.league.delete({
     where: {
       id: league.id,
     },
@@ -331,36 +331,42 @@ export async function deleteLeagueAction(formData: FormData) {
 }
 
 async function recalculateLeaguePlayerStats(leagueId: string) {
-  const completedMatches = await prisma.clubLeagueMatch.findMany({
+  const completedMatches = await prisma.leagueMatch.findMany({
     where: {
       leagueId,
-      winnerEntryId: {
+      winnerTeamId: {
         not: null,
       },
     },
     select: {
-      winnerEntryId: true,
-      entryAId: true,
-      entryBId: true,
+      winnerTeamId: true,
+      teamAId: true,
+      teamBId: true,
       sets: {
         orderBy: {
           setNumber: "asc",
         },
         select: {
-          entryAScore: true,
-          entryBScore: true,
+          teamAScore: true,
+          teamBScore: true,
         },
       },
-      entryA: {
+      teamA: {
         select: {
-          player1Id: true,
-          player2Id: true,
+          players: {
+            select: {
+              playerId: true,
+            },
+          },
         },
       },
-      entryB: {
+      teamB: {
         select: {
-          player1Id: true,
-          player2Id: true,
+          players: {
+            select: {
+              playerId: true,
+            },
+          },
         },
       },
     },
@@ -396,62 +402,61 @@ async function recalculateLeaguePlayerStats(leagueId: string) {
     return created;
   }
 
-  function getEntryPlayerIds(entry: {
-    player1Id: string;
-    player2Id: string | null;
+  function getTeamPlayerIds(team: {
+    players: {
+      playerId: string;
+    }[];
   }) {
-    return [entry.player1Id, entry.player2Id].filter(
-      (playerId): playerId is string => Boolean(playerId),
-    );
+    return team.players.map((teamPlayer) => teamPlayer.playerId);
   }
 
   for (const match of completedMatches) {
     if (
-      !match.winnerEntryId ||
-      !match.entryA ||
-      !match.entryB ||
+      !match.winnerTeamId ||
+      !match.teamA ||
+      !match.teamB ||
       match.sets.length === 0
     ) {
       continue;
     }
 
-    const entryAPlayerIds = getEntryPlayerIds(match.entryA);
-    const entryBPlayerIds = getEntryPlayerIds(match.entryB);
-    const entryAWon = match.winnerEntryId === match.entryAId;
+    const teamAPlayerIds = getTeamPlayerIds(match.teamA);
+    const teamBPlayerIds = getTeamPlayerIds(match.teamB);
+    const teamAWon = match.winnerTeamId === match.teamAId;
 
-    const entryAPointsFor = match.sets.reduce(
-      (total, set) => total + set.entryAScore,
+    const teamAPointsFor = match.sets.reduce(
+      (total, set) => total + set.teamAScore,
       0,
     );
-    const entryAPointsAgainst = match.sets.reduce(
-      (total, set) => total + set.entryBScore,
+    const teamAPointsAgainst = match.sets.reduce(
+      (total, set) => total + set.teamBScore,
       0,
     );
-    const entryBPointsFor = entryAPointsAgainst;
-    const entryBPointsAgainst = entryAPointsFor;
+    const teamBPointsFor = teamAPointsAgainst;
+    const teamBPointsAgainst = teamAPointsFor;
 
-    for (const playerId of entryAPlayerIds) {
+    for (const playerId of teamAPlayerIds) {
       const stat = ensureStat(playerId);
 
       stat.matchesPlayed += 1;
-      stat.pointsFor += entryAPointsFor;
-      stat.pointsAgainst += entryAPointsAgainst;
+      stat.pointsFor += teamAPointsFor;
+      stat.pointsAgainst += teamAPointsAgainst;
 
-      if (entryAWon) {
+      if (teamAWon) {
         stat.matchesWon += 1;
       } else {
         stat.matchesLost += 1;
       }
     }
 
-    for (const playerId of entryBPlayerIds) {
+    for (const playerId of teamBPlayerIds) {
       const stat = ensureStat(playerId);
 
       stat.matchesPlayed += 1;
-      stat.pointsFor += entryBPointsFor;
-      stat.pointsAgainst += entryBPointsAgainst;
+      stat.pointsFor += teamBPointsFor;
+      stat.pointsAgainst += teamBPointsAgainst;
 
-      if (entryAWon) {
+      if (teamAWon) {
         stat.matchesLost += 1;
       } else {
         stat.matchesWon += 1;
@@ -460,13 +465,13 @@ async function recalculateLeaguePlayerStats(leagueId: string) {
   }
 
   await prisma.$transaction([
-    prisma.clubPlayerLeagueStat.deleteMany({
+    prisma.playerLeagueStat.deleteMany({
       where: {
         leagueId,
       },
     }),
     ...Array.from(statMap.entries()).map(([playerId, stat]) =>
-      prisma.clubPlayerLeagueStat.create({
+      prisma.playerLeagueStat.create({
         data: {
           playerId,
           leagueId,

@@ -82,7 +82,7 @@ export function EditPlayerForm({
         <Input
           id={`nickname-${player.id}`}
           name="nickname"
-          defaultValue={player.nickname}
+          defaultValue={player.nickname ?? ""}
           placeholder="Enter username"
         />
         {state.fieldErrors?.nickname?.length ? (

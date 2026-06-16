@@ -97,7 +97,7 @@ export function AdminPlayersDirectory({
 
           return (
             player.fullName.toLowerCase().includes(normalizedQuery) ||
-            player.nickname.toLowerCase().includes(normalizedQuery) ||
+            player.nickname?.toLowerCase().includes(normalizedQuery) ||
             clubName.toLowerCase().includes(normalizedQuery) ||
             clubShortName.toLowerCase().includes(normalizedQuery) ||
             player.categoryCodes.some((code) =>
