@@ -196,6 +196,7 @@ export default async function AdminClubLeagueDetailPage({
       <ClubLeagueSectionTabs leagueId={league.id} activeTab={activeTab} />
 
       <ClubLeagueDetailSections
+        leagueId={league.id}
         activeTab={activeTab}
         rulesNote={league.rulesNote}
         sides={league.sides}

@@ -7,6 +7,7 @@ import {
   type ClubLeagueActionState,
 } from "@/app/admin/club-leagues/actions";
 import { Button } from "@/components/ui/button";
+import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
 
 type PlayerOption = {
   id: string;
@@ -103,8 +104,12 @@ export function CreateClubLeagueForm({
           <input
             id="title"
             name="title"
-            defaultValue="Friday Team Doubles League"
-            placeholder="Friday Team Doubles League"
+            defaultValue={formatClubLeagueDisplayName(
+              "Friday Team Doubles League",
+            )}
+            placeholder={formatClubLeagueDisplayName(
+              "Friday Team Doubles League",
+            )}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.title} />
@@ -136,7 +141,7 @@ export function CreateClubLeagueForm({
           <input
             id="rulesNote"
             name="rulesNote"
-            defaultValue="Team Pair Matrix"
+            defaultValue={formatClubLeagueDisplayName("Team Pair Matrix")}
             className={inputClassName}
           />
         </div>
@@ -151,7 +156,7 @@ export function CreateClubLeagueForm({
           <input
             id="sideAName"
             name="sideAName"
-            defaultValue="Team A"
+            defaultValue={formatClubLeagueDisplayName("Team A")}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.sideAName} />
@@ -167,7 +172,7 @@ export function CreateClubLeagueForm({
           <input
             id="sideBName"
             name="sideBName"
-            defaultValue="Team B"
+            defaultValue={formatClubLeagueDisplayName("Team B")}
             className={inputClassName}
           />
           <FieldError errors={state.fieldErrors?.sideBName} />
@@ -201,7 +206,9 @@ export function CreateClubLeagueForm({
           <textarea
             id="rulesDescription"
             name="rulesNote"
-            defaultValue="Each side creates all doubles pairs and every pair plays every pair from the other side."
+            defaultValue={formatClubLeagueDisplayName(
+              "Each side creates all doubles pairs and every pair plays every pair from the other side.",
+            )}
             className={textareaClassName}
           />
         </div>

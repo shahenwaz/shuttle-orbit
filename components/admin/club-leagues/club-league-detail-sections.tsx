@@ -1,7 +1,9 @@
-import { Swords, UsersRound } from "lucide-react";
+import { UsersRound } from "lucide-react";
 
+import { ClubLeagueFixtureResults } from "@/components/admin/club-leagues/club-league-fixture-results";
 import type { ClubLeagueSectionTab } from "@/components/admin/club-leagues/club-league-section-tabs";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
+import { formatClubLeagueDisplayName } from "@/lib/club-league/display";
 
 type Player = {
   fullName: string;
@@ -34,6 +36,8 @@ type Match = {
   matchOrder: number;
   roundLabel: string | null;
   scoreSummary: string | null;
+  entryAId: string | null;
+  entryBId: string | null;
   winnerEntryId: string | null;
   entryA: Entry | null;
   entryB: Entry | null;
@@ -46,6 +50,7 @@ type Match = {
 };
 
 type ClubLeagueDetailSectionsProps = {
+  leagueId: string;
   activeTab: ClubLeagueSectionTab;
   rulesNote: string | null;
   sides: Side[];
@@ -53,27 +58,25 @@ type ClubLeagueDetailSectionsProps = {
 };
 
 function getPlayerName(player: Player) {
-  return player.nickname || player.fullName;
+  return formatClubLeagueDisplayName(player.nickname || player.fullName);
 }
 
 function getEntryName(entry: Entry | null) {
   if (!entry) return "TBC";
-  if (entry.displayName) return entry.displayName;
-  if (!entry.player2) return getPlayerName(entry.player1);
+
+  if (entry.displayName) {
+    return formatClubLeagueDisplayName(entry.displayName);
+  }
+
+  if (!entry.player2) {
+    return getPlayerName(entry.player1);
+  }
 
   return `${getPlayerName(entry.player1)} + ${getPlayerName(entry.player2)}`;
 }
 
-function getScoreText(match: Match) {
-  if (match.scoreSummary) return match.scoreSummary;
-  if (match.sets.length === 0) return "Pending";
-
-  return match.sets
-    .map((set) => `${set.entryAScore}-${set.entryBScore}`)
-    .join(", ");
-}
-
 export function ClubLeagueDetailSections({
+  leagueId,
   activeTab,
   rulesNote,
   sides,
@@ -82,6 +85,7 @@ export function ClubLeagueDetailSections({
   const completedMatches = matches.filter(
     (match) => match.winnerEntryId,
   ).length;
+
   const entryCount = sides.reduce(
     (total, side) => total + side.entries.length,
     0,
@@ -91,27 +95,26 @@ export function ClubLeagueDetailSections({
     return (
       <div className="grid gap-3 lg:grid-cols-2">
         {sides.map((side) => (
-          <section
-            key={side.id}
-            className="rounded-md border border-white/10 bg-white/4 p-4"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-primary/80">
-                  Side {side.sideOrder}
-                </p>
-                <h2 className="mt-1 text-base font-semibold text-foreground">
-                  {side.name}
-                </h2>
-              </div>
+          <section key={side.id} className="surface-card overflow-hidden">
+            <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-primary/80">
+                    Side {side.sideOrder}
+                  </p>
+                  <h2 className="mt-1 text-base font-semibold text-foreground">
+                    {side.name}
+                  </h2>
+                </div>
 
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
-                <UsersRound className="size-3.5" />
-                {side.entries.length} entries
-              </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
+                  <UsersRound className="size-3.5" />
+                  {side.entries.length} entries
+                </span>
+              </div>
             </div>
 
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2 p-4 sm:p-5">
               {side.entries.map((entry) => (
                 <div
                   key={entry.id}
@@ -133,71 +136,7 @@ export function ClubLeagueDetailSections({
   }
 
   if (activeTab === "fixtures") {
-    return (
-      <section className="rounded-md border border-white/10 bg-white/4">
-        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-primary/80">
-              Fixtures
-            </p>
-            <h2 className="mt-1 text-base font-semibold text-foreground">
-              Generated match list
-            </h2>
-          </div>
-
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
-            <Swords className="size-3.5" />
-            {matches.length} total
-          </span>
-        </div>
-
-        <div className="divide-y divide-white/10">
-          {matches.map((match) => (
-            <div key={match.id} className="px-4 py-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-white/10 bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground">
-                      Match {match.matchOrder}
-                    </span>
-                    {match.roundLabel ? (
-                      <span className="text-xs text-muted-foreground">
-                        {match.roundLabel}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
-                    <span>{getEntryName(match.entryA)}</span>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      vs
-                    </span>
-                    <span>{getEntryName(match.entryB)}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
-                    {getScoreText(match)}
-                  </span>
-
-                  <span
-                    className={[
-                      "rounded-full border px-3 py-1.5 text-xs",
-                      match.winnerEntryId
-                        ? "border-primary/20 bg-primary/10 text-primary"
-                        : "border-white/10 bg-background/70 text-muted-foreground",
-                    ].join(" ")}
-                  >
-                    {match.winnerEntryId ? "Completed" : "Pending"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
+    return <ClubLeagueFixtureResults leagueId={leagueId} matches={matches} />;
   }
 
   return (
