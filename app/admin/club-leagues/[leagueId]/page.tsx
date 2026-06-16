@@ -10,6 +10,7 @@ import {
 import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
+import { DeleteClubLeagueButton } from "@/components/admin/club-leagues/delete-club-league-button";
 import { prisma } from "@/lib/db/prisma";
 
 type AdminClubLeagueDetailPageProps = {
@@ -184,13 +185,16 @@ export default async function AdminClubLeagueDetailPage({
         title={league.title}
         description="Review sides, generated fixtures, and later record results for this internal club league."
         actions={
-          <Link
-            href="/admin/club-leagues"
-            className={actionPillButtonClassName({ variant: "neutral" })}
-          >
-            <ArrowLeft className="size-4" />
-            Back
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/club-leagues"
+              className={actionPillButtonClassName({ variant: "neutral" })}
+            >
+              <ArrowLeft className="size-4" />
+              Back
+            </Link>
+            <DeleteClubLeagueButton leagueId={league.id} />
+          </div>
         }
       />
 

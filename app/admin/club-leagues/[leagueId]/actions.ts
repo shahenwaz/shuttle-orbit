@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db/prisma";
 
@@ -282,6 +283,51 @@ export async function resetClubLeagueResultAction(formData: FormData) {
     success: true,
     message: "Fixture result reset.",
   };
+}
+
+export async function deleteClubLeagueAction(formData: FormData) {
+  const leagueId = getStringValue(formData, "leagueId");
+
+  const league = await prisma.clubLeague.findUnique({
+    where: {
+      id: leagueId,
+    },
+    select: {
+      id: true,
+      matches: {
+        select: {
+          winnerEntryId: true,
+        },
+      },
+    },
+  });
+
+  if (!league) {
+    return {
+      success: false,
+      message: "Club league could not be found.",
+    };
+  }
+
+  const hasRecordedResults = league.matches.some((match) =>
+    Boolean(match.winnerEntryId),
+  );
+
+  if (hasRecordedResults) {
+    return {
+      success: false,
+      message: "Reset recorded results before deleting this league.",
+    };
+  }
+
+  await prisma.clubLeague.delete({
+    where: {
+      id: league.id,
+    },
+  });
+
+  revalidatePath("/admin/club-leagues");
+  redirect("/admin/club-leagues");
 }
 
 async function recalculateClubLeaguePlayerStats(leagueId: string) {

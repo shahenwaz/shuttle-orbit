@@ -217,8 +217,8 @@ export async function createTeamPairMatrixLeagueAction(
   );
 
   const generatedMatches = createTeamPairMatrixMatches(
-    sideAEntries.length,
-    sideBEntries.length,
+    sideAEntries,
+    sideBEntries,
   );
 
   const league = await prisma.$transaction(
