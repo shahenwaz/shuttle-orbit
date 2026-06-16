@@ -1,6 +1,8 @@
 import {
   BarChart3,
+  Building2,
   LayoutDashboard,
+  ListOrdered,
   Swords,
   Trophy,
   Users,
@@ -20,10 +22,22 @@ export const adminNavItems = [
     match: (pathname: string) => pathname.startsWith("/admin/players"),
   },
   {
+    title: "Clubs",
+    href: "/admin/clubs",
+    icon: Building2,
+    match: (pathname: string) => pathname.startsWith("/admin/clubs"),
+  },
+  {
     title: "Tournaments",
     href: "/admin/tournaments",
     icon: Trophy,
     match: (pathname: string) => pathname.startsWith("/admin/tournaments"),
+  },
+  {
+    title: "Leagues",
+    href: "/admin/leagues",
+    icon: ListOrdered,
+    match: (pathname: string) => pathname.startsWith("/admin/leagues"),
   },
   {
     title: "Rankings",
