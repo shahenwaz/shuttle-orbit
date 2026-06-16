@@ -54,7 +54,8 @@ export function AdminPlayerCard({ player, clubs }: AdminPlayerCardProps) {
       className={surfaceCardClassName({
         interactive: true,
         blur: true,
-        className: "px-3 py-0.5 sm:px-3.5 sm:py-2.5",
+        className:
+          "relative overflow-hidden px-3 py-2.5 transition sm:px-3.5 sm:py-3",
       })}
     >
       <div className="flex items-center justify-between gap-2">
@@ -108,7 +109,7 @@ export function AdminPlayerCard({ player, clubs }: AdminPlayerCardProps) {
                   setDeleteState(initialDeleteState);
                   setIsDeleteOpen(true);
                 }}
-                className="cursor-pointer rounded-xl text-sm text-foreground focus:bg-white/8"
+                className="cursor-pointer rounded-xl text-sm text-red-200 focus:bg-red-500/10 focus:text-red-100"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Remove player
