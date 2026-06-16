@@ -7,18 +7,21 @@ type ClubLeagueCardProps = {
     title: string;
     playedAt: Date;
     format: string;
-    club: {
+    hostClub: {
       name: string;
       shortName: string | null;
-    };
+    } | null;
     _count: {
-      entries: number;
+      teams: number;
       matches: number;
     };
   };
 };
 
 export function ClubLeagueCard({ league }: ClubLeagueCardProps) {
+  const hostLabel =
+    league.hostClub?.shortName || league.hostClub?.name || "Community";
+
   return (
     <Link
       href={`/admin/club-leagues/${league.id}`}
@@ -32,9 +35,7 @@ export function ClubLeagueCard({ league }: ClubLeagueCardProps) {
               {league.format.replaceAll("_", " ")}
             </span>
 
-            <span className="text-xs text-muted-foreground">
-              {league.club.shortName || league.club.name}
-            </span>
+            <span className="text-xs text-muted-foreground">{hostLabel}</span>
           </div>
 
           <h2 className="mt-2 truncate text-base font-semibold text-foreground">
@@ -54,7 +55,7 @@ export function ClubLeagueCard({ league }: ClubLeagueCardProps) {
 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5">
             <UsersRound className="size-3.5" />
-            {league._count.entries} entries
+            {league._count.teams} teams
           </span>
 
           <span className="rounded-full border border-white/10 bg-background/70 px-3 py-1.5">

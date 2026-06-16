@@ -19,34 +19,32 @@ export default async function AdminClubLeaguesPage() {
       id: true,
       name: true,
       shortName: true,
-      members: {
-        orderBy: { name: "asc" },
+      players: {
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          fullName: "asc",
+        },
         select: {
           id: true,
-          name: true,
+          fullName: true,
           nickname: true,
-          player: {
-            select: {
-              id: true,
-              fullName: true,
-              nickname: true,
-            },
-          },
         },
       },
     },
   });
 
   const [leagues, leagueCount] = await Promise.all([
-    prisma.clubLeague.findMany({
-      where: managedClub ? { clubId: managedClub.id } : undefined,
+    prisma.league.findMany({
+      where: managedClub ? { hostClubId: managedClub.id } : undefined,
       orderBy: { playedAt: "desc" },
       select: {
         id: true,
         title: true,
         playedAt: true,
         format: true,
-        club: {
+        hostClub: {
           select: {
             name: true,
             shortName: true,
@@ -54,22 +52,22 @@ export default async function AdminClubLeaguesPage() {
         },
         _count: {
           select: {
-            entries: true,
+            teams: true,
             matches: true,
           },
         },
       },
     }),
-    prisma.clubLeague.count({
-      where: managedClub ? { clubId: managedClub.id } : undefined,
+    prisma.league.count({
+      where: managedClub ? { hostClubId: managedClub.id } : undefined,
     }),
   ]);
 
   const memberPlayers =
-    managedClub?.members.map((member) => ({
-      id: member.id,
-      fullName: member.player?.fullName ?? member.name,
-      nickname: member.player?.nickname ?? member.nickname,
+    managedClub?.players.map((player) => ({
+      id: player.id,
+      fullName: player.fullName,
+      nickname: player.nickname,
     })) ?? [];
 
   const clubDisplayName =
@@ -78,20 +76,20 @@ export default async function AdminClubLeaguesPage() {
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader
-        title="Club leagues"
-        description="Create and manage BDBC internal competitive leagues separately from formal Shuttle Orbit tournaments."
+        title="Community leagues"
+        description="Create and manage friendly community leagues separately from formal Shuttle Orbit tournaments and rankings."
       />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Club" value={clubDisplayName} />
-        <CompactStatPill label="Members" value={memberPlayers.length} />
+        <CompactStatPill label="Host club" value={clubDisplayName} />
+        <CompactStatPill label="Players" value={memberPlayers.length} />
         <CompactStatPill label="Leagues" value={leagueCount} />
 
         {managedClub ? (
           <CreateSheet
             triggerLabel="New league"
-            title="Create club league"
-            description="Create an internal BDBC league and generate fixtures from selected club members."
+            title="Create community league"
+            description="Create a friendly league and generate fixtures from selected players."
             triggerClassName={actionPillButtonClassName({
               variant: "create",
               className:

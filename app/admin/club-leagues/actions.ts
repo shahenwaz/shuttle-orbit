@@ -1,6 +1,6 @@
 "use server";
 
-import { ClubLeagueFormat, type Prisma } from "@prisma/client";
+import { LeagueFormat, type Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -39,11 +39,23 @@ function getStringArray(formData: FormData, key: string) {
     .filter((value): value is string => typeof value === "string");
 }
 
-function createPlayerNickname(member: {
-  name: string;
+function createLeagueSlug(title: string, playedAt: Date) {
+  const base = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  const datePart = playedAt.toISOString().slice(0, 10);
+
+  return `${base || "league"}-${datePart}-${Date.now()}`;
+}
+
+function getPlayerDisplayName(player: {
+  fullName: string;
   nickname: string | null;
 }) {
-  return member.nickname?.trim() || member.name.trim();
+  return player.nickname?.trim() || player.fullName.trim();
 }
 
 export async function createTeamPairMatrixLeagueAction(
@@ -70,19 +82,19 @@ export async function createTeamPairMatrixLeagueAction(
   }
 
   if (sideAMemberIds.length < 2) {
-    fieldErrors.sideAMemberIds = ["Select at least 2 members for Side A."];
+    fieldErrors.sideAMemberIds = ["Select at least 2 players for Side A."];
   }
 
   if (sideBMemberIds.length < 2) {
-    fieldErrors.sideBMemberIds = ["Select at least 2 members for Side B."];
+    fieldErrors.sideBMemberIds = ["Select at least 2 players for Side B."];
   }
 
-  const allMemberIds = [...sideAMemberIds, ...sideBMemberIds];
-  const uniqueMemberIds = new Set(allMemberIds);
+  const allPlayerIds = [...sideAMemberIds, ...sideBMemberIds];
+  const uniquePlayerIds = new Set(allPlayerIds);
 
-  if (uniqueMemberIds.size !== allMemberIds.length) {
-    fieldErrors.sideAMemberIds = ["A member can only be selected once."];
-    fieldErrors.sideBMemberIds = ["A member can only be selected once."];
+  if (uniquePlayerIds.size !== allPlayerIds.length) {
+    fieldErrors.sideAMemberIds = ["A player can only be selected once."];
+    fieldErrors.sideBMemberIds = ["A player can only be selected once."];
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -112,24 +124,19 @@ export async function createTeamPairMatrixLeagueAction(
     },
     select: {
       id: true,
-      members: {
+      name: true,
+      shortName: true,
+      players: {
         where: {
           id: {
-            in: allMemberIds,
+            in: allPlayerIds,
           },
+          isActive: true,
         },
         select: {
           id: true,
-          name: true,
+          fullName: true,
           nickname: true,
-          playerId: true,
-          player: {
-            select: {
-              id: true,
-              fullName: true,
-              nickname: true,
-            },
-          },
         },
       },
     },
@@ -142,68 +149,37 @@ export async function createTeamPairMatrixLeagueAction(
     };
   }
 
-  if (managedClub.members.length !== allMemberIds.length) {
+  if (managedClub.players.length !== allPlayerIds.length) {
     return {
       success: false,
-      message: "Only managed club members can be selected.",
+      message: "Only active players from the selected club can be selected.",
     };
   }
 
-  const memberPlayerMap = new Map<string, PlayerInput>();
+  const playerMap = new Map<string, PlayerInput>();
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    for (const member of managedClub.members) {
-      if (member.player) {
-        memberPlayerMap.set(member.id, {
-          id: member.player.id,
-          name: member.player.nickname || member.player.fullName,
-        });
-        continue;
-      }
+  for (const player of managedClub.players) {
+    playerMap.set(player.id, {
+      id: player.id,
+      name: getPlayerDisplayName(player),
+    });
+  }
 
-      const createdPlayer = await tx.player.create({
-        data: {
-          fullName: member.name,
-          nickname: createPlayerNickname(member),
-        },
-        select: {
-          id: true,
-          fullName: true,
-          nickname: true,
-        },
-      });
-
-      await tx.clubMember.update({
-        where: {
-          id: member.id,
-        },
-        data: {
-          playerId: createdPlayer.id,
-        },
-      });
-
-      memberPlayerMap.set(member.id, {
-        id: createdPlayer.id,
-        name: createdPlayer.nickname || createdPlayer.fullName,
-      });
-    }
-  });
-
-  const sideAPlayers: PlayerInput[] = sideAMemberIds.map((memberId: string) => {
-    const player = memberPlayerMap.get(memberId);
+  const sideAPlayers: PlayerInput[] = sideAMemberIds.map((playerId: string) => {
+    const player = playerMap.get(playerId);
 
     if (!player) {
-      throw new Error("A selected Side A member could not be resolved.");
+      throw new Error("A selected Side A player could not be resolved.");
     }
 
     return player;
   });
 
-  const sideBPlayers: PlayerInput[] = sideBMemberIds.map((memberId: string) => {
-    const player = memberPlayerMap.get(memberId);
+  const sideBPlayers: PlayerInput[] = sideBMemberIds.map((playerId: string) => {
+    const player = playerMap.get(playerId);
 
     if (!player) {
-      throw new Error("A selected Side B member could not be resolved.");
+      throw new Error("A selected Side B player could not be resolved.");
     }
 
     return player;
@@ -223,69 +199,83 @@ export async function createTeamPairMatrixLeagueAction(
 
   const league = await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
-      const createdLeague = await tx.clubLeague.create({
+      const createdLeague = await tx.league.create({
         data: {
-          clubId: managedClub.id,
           title,
+          slug: createLeagueSlug(title, playedAt),
           playedAt,
-          format: ClubLeagueFormat.TEAM_PAIR_MATRIX,
+          location: managedClub.shortName || managedClub.name,
+          format: LeagueFormat.TEAM_PAIR_MATRIX,
           rulesNote: rulesNote || null,
-        },
-      });
-
-      const sideA = await tx.clubLeagueSide.create({
-        data: {
-          leagueId: createdLeague.id,
-          name: sideAName,
-          sideOrder: 1,
-        },
-      });
-
-      const sideB = await tx.clubLeagueSide.create({
-        data: {
-          leagueId: createdLeague.id,
-          name: sideBName,
-          sideOrder: 2,
+          hostClubId: managedClub.id,
         },
       });
 
       const createdSideAEntries = await Promise.all(
-        sideAEntries.map((entry) =>
-          tx.clubLeagueEntry.create({
+        sideAEntries.map(async (entry) => {
+          const team = await tx.leagueTeam.create({
             data: {
               leagueId: createdLeague.id,
-              sideId: sideA.id,
-              player1Id: entry.player1Id,
-              player2Id: entry.player2Id,
-              displayName: entry.displayName,
-              entryOrder: entry.entryOrder,
+              name: entry.displayName,
+              shortName: entry.displayName,
+              teamOrder: entry.entryOrder,
+              originLabel: sideAName,
             },
-          }),
-        ),
+          });
+
+          await tx.leagueTeamPlayer.createMany({
+            data: [
+              {
+                teamId: team.id,
+                playerId: entry.player1Id,
+              },
+              {
+                teamId: team.id,
+                playerId: entry.player2Id,
+              },
+            ],
+          });
+
+          return team;
+        }),
       );
 
       const createdSideBEntries = await Promise.all(
-        sideBEntries.map((entry) =>
-          tx.clubLeagueEntry.create({
+        sideBEntries.map(async (entry) => {
+          const team = await tx.leagueTeam.create({
             data: {
               leagueId: createdLeague.id,
-              sideId: sideB.id,
-              player1Id: entry.player1Id,
-              player2Id: entry.player2Id,
-              displayName: entry.displayName,
-              entryOrder: entry.entryOrder,
+              name: entry.displayName,
+              shortName: entry.displayName,
+              teamOrder: entry.entryOrder,
+              originLabel: sideBName,
             },
-          }),
-        ),
+          });
+
+          await tx.leagueTeamPlayer.createMany({
+            data: [
+              {
+                teamId: team.id,
+                playerId: entry.player1Id,
+              },
+              {
+                teamId: team.id,
+                playerId: entry.player2Id,
+              },
+            ],
+          });
+
+          return team;
+        }),
       );
 
       await Promise.all(
         generatedMatches.map((match) =>
-          tx.clubLeagueMatch.create({
+          tx.leagueMatch.create({
             data: {
               leagueId: createdLeague.id,
-              entryAId: createdSideAEntries[match.entryAIndex].id,
-              entryBId: createdSideBEntries[match.entryBIndex].id,
+              teamAId: createdSideAEntries[match.entryAIndex].id,
+              teamBId: createdSideBEntries[match.entryBIndex].id,
               matchOrder: match.matchOrder,
               roundLabel: match.roundLabel,
             },
