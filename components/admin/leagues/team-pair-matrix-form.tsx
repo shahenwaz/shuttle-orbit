@@ -1,0 +1,223 @@
+"use client";
+
+import { useActionState, useState } from "react";
+
+import {
+  createTeamPairMatrixLeagueAction,
+  type LeagueActionState,
+} from "@/app/admin/leagues/actions";
+import {
+  FieldError,
+  inputClassName,
+  textareaClassName,
+} from "@/components/admin/leagues/league-form-fields";
+import type { PlayerOption } from "@/components/admin/leagues/league-form-types";
+import { PlayerSidePicker } from "@/components/admin/leagues/player-side-picker";
+import { Button } from "@/components/ui/button";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
+
+type TeamPairMatrixFormProps = {
+  clubId: string;
+  players: PlayerOption[];
+};
+
+const initialState: LeagueActionState = {
+  success: false,
+  message: "",
+  fieldErrors: {},
+};
+
+export function TeamPairMatrixForm({
+  clubId,
+  players,
+}: TeamPairMatrixFormProps) {
+  const [state, formAction, pending] = useActionState(
+    createTeamPairMatrixLeagueAction,
+    initialState,
+  );
+
+  const [sideAPlayerIds, setSideAPlayerIds] = useState<string[]>([]);
+  const [sideBPlayerIds, setSideBPlayerIds] = useState<string[]>([]);
+  const [sideAQuery, setSideAQuery] = useState("");
+  const [sideBQuery, setSideBQuery] = useState("");
+
+  function togglePlayer(side: "A" | "B", playerId: string) {
+    const otherSideIds = side === "A" ? sideBPlayerIds : sideAPlayerIds;
+
+    if (otherSideIds.includes(playerId)) return;
+
+    if (side === "A") {
+      setSideAPlayerIds((current) =>
+        current.includes(playerId)
+          ? current.filter((id) => id !== playerId)
+          : [...current, playerId],
+      );
+      return;
+    }
+
+    setSideBPlayerIds((current) =>
+      current.includes(playerId)
+        ? current.filter((id) => id !== playerId)
+        : [...current, playerId],
+    );
+  }
+
+  return (
+    <form action={formAction} className="space-y-5">
+      <input type="hidden" name="clubId" value={clubId} />
+
+      {sideAPlayerIds.map((playerId) => (
+        <input
+          key={`side-a-${playerId}`}
+          type="hidden"
+          name="sideAPlayerIds"
+          value={playerId}
+        />
+      ))}
+
+      {sideBPlayerIds.map((playerId) => (
+        <input
+          key={`side-b-${playerId}`}
+          type="hidden"
+          name="sideBPlayerIds"
+          value={playerId}
+        />
+      ))}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2 sm:col-span-2">
+          <label
+            htmlFor="title"
+            className="text-sm font-medium text-foreground"
+          >
+            League title
+          </label>
+          <input
+            id="title"
+            name="title"
+            defaultValue={formatLeagueDisplayName("Friday Team Doubles League")}
+            placeholder={formatLeagueDisplayName("Friday Team Doubles League")}
+            className={inputClassName}
+          />
+          <FieldError errors={state.fieldErrors?.title} />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="playedAt"
+            className="text-sm font-medium text-foreground"
+          >
+            Played at
+          </label>
+          <input
+            id="playedAt"
+            name="playedAt"
+            type="date"
+            className={inputClassName}
+          />
+          <FieldError errors={state.fieldErrors?.playedAt} />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="rulesNote"
+            className="text-sm font-medium text-foreground"
+          >
+            Format
+          </label>
+          <input
+            id="rulesNote"
+            name="rulesNote"
+            defaultValue={formatLeagueDisplayName("Team Pair Matrix")}
+            className={inputClassName}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="sideAName"
+            className="text-sm font-medium text-foreground"
+          >
+            Side A name
+          </label>
+          <input
+            id="sideAName"
+            name="sideAName"
+            defaultValue={formatLeagueDisplayName("Team A")}
+            className={inputClassName}
+          />
+          <FieldError errors={state.fieldErrors?.sideAName} />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="sideBName"
+            className="text-sm font-medium text-foreground"
+          >
+            Side B name
+          </label>
+          <input
+            id="sideBName"
+            name="sideBName"
+            defaultValue={formatLeagueDisplayName("Team B")}
+            className={inputClassName}
+          />
+          <FieldError errors={state.fieldErrors?.sideBName} />
+        </div>
+
+        <PlayerSidePicker
+          title="Side A players"
+          players={players}
+          selectedIds={sideAPlayerIds}
+          blockedIds={sideBPlayerIds}
+          query={sideAQuery}
+          onQueryChange={setSideAQuery}
+          onToggle={(playerId) => togglePlayer("A", playerId)}
+          error={state.fieldErrors?.sideAPlayerIds}
+        />
+
+        <PlayerSidePicker
+          title="Side B players"
+          players={players}
+          selectedIds={sideBPlayerIds}
+          blockedIds={sideAPlayerIds}
+          query={sideBQuery}
+          onQueryChange={setSideBQuery}
+          onToggle={(playerId) => togglePlayer("B", playerId)}
+          error={state.fieldErrors?.sideBPlayerIds}
+        />
+
+        <div className="space-y-2 sm:col-span-2">
+          <label
+            htmlFor="rulesDescription"
+            className="text-sm font-medium text-foreground"
+          >
+            Rules note
+          </label>
+          <textarea
+            id="rulesDescription"
+            name="rulesNote"
+            defaultValue={formatLeagueDisplayName(
+              "Each side creates all doubles pairs and every pair plays every pair from the other side.",
+            )}
+            className={textareaClassName}
+          />
+        </div>
+      </div>
+
+      {state.message ? (
+        <p
+          className={
+            state.success ? "text-sm text-primary" : "text-sm text-red-300"
+          }
+        >
+          {state.message}
+        </p>
+      ) : null}
+
+      <Button type="submit" disabled={pending} className="rounded-md">
+        {pending ? "Creating..." : "Create league"}
+      </Button>
+    </form>
+  );
+}
