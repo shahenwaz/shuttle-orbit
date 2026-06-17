@@ -6,6 +6,12 @@ import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { formatLeagueDisplayName } from "@/lib/leagues/display";
 import { LeagueStandings } from "@/components/admin/leagues/league-standings";
 
+type LeagueDetailFormat =
+  | "ROUND_ROBIN"
+  | "TEAM_PAIR_MATRIX"
+  | "FIXED_DOUBLES"
+  | "MANUAL";
+
 type Player = {
   fullName: string;
   nickname: string | null;
@@ -53,6 +59,7 @@ type Match = {
 type LeagueDetailSectionsProps = {
   leagueId: string;
   activeTab: LeagueSectionTab;
+  leagueFormat: LeagueDetailFormat;
   rulesNote: string | null;
   sides: Side[];
   matches: Match[];
@@ -93,6 +100,7 @@ function getEntryName(entry: Entry | null) {
 export function LeagueDetailSections({
   leagueId,
   activeTab,
+  leagueFormat,
   rulesNote,
   sides,
   matches,
@@ -106,6 +114,10 @@ export function LeagueDetailSections({
     (total, side) => total + side.entries.length,
     0,
   );
+
+  const isFixedDoubles = leagueFormat === "FIXED_DOUBLES";
+  const entryLabel = isFixedDoubles ? "teams" : "pairs";
+  const entryStatLabel = isFixedDoubles ? "Teams" : "Pairs";
 
   if (activeTab === "sides") {
     return (
@@ -122,7 +134,7 @@ export function LeagueDetailSections({
 
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
                   <UsersRound className="size-3.5" />
-                  {side.entries.length} pairs
+                  {side.entries.length} {entryLabel}
                 </span>
               </div>
             </div>
@@ -155,8 +167,10 @@ export function LeagueDetailSections({
   return (
     <div className="space-y-4">
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Sides" value={sides.length} />
-        <CompactStatPill label="Pairs" value={entryCount} />
+        {isFixedDoubles ? null : (
+          <CompactStatPill label="Sides" value={sides.length} />
+        )}
+        <CompactStatPill label={entryStatLabel} value={entryCount} />
         <CompactStatPill label="Fixtures" value={matches.length} />
         <CompactStatPill label="Completed" value={completedMatches} />
       </section>

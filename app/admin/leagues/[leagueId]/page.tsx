@@ -198,22 +198,28 @@ export default async function AdminLeagueDetailPage({
     notFound();
   }
 
+  const isFixedDoubles = league.format === "FIXED_DOUBLES";
+
   type LeagueTeamRow = (typeof league.teams)[number];
   type LeagueMatchRow = (typeof league.matches)[number];
 
-  const sideLabels = Array.from(
-    new Set(
-      league.teams.map((team: LeagueTeamRow) => team.originLabel ?? "Teams"),
-    ),
-  );
+  const sideLabels = isFixedDoubles
+    ? ["Fixed doubles teams"]
+    : Array.from(
+        new Set(
+          league.teams.map(
+            (team: LeagueTeamRow) => team.originLabel ?? "Teams",
+          ),
+        ),
+      );
 
   const sides = sideLabels.map((sideLabel, sideIndex) => ({
     id: `${league.id}-${sideLabel}`,
     name: sideLabel,
     sideOrder: sideIndex + 1,
     entries: league.teams
-      .filter(
-        (team: LeagueTeamRow) => (team.originLabel ?? "Teams") === sideLabel,
+      .filter((team: LeagueTeamRow) =>
+        isFixedDoubles ? true : (team.originLabel ?? "Teams") === sideLabel,
       )
       .map((team: LeagueTeamRow) => {
         const { player1, player2 } = getTeamPlayers(team);
@@ -266,7 +272,7 @@ export default async function AdminLeagueDetailPage({
             },
           }
         : null,
-      sets: match.sets.map((set) => ({
+      sets: match.sets.map((set: LeagueMatchRow["sets"][number]) => ({
         id: set.id,
         setNumber: set.setNumber,
         entryAScore: set.teamAScore,
@@ -293,11 +299,16 @@ export default async function AdminLeagueDetailPage({
         }
       />
 
-      <LeagueSectionTabs leagueId={league.id} activeTab={activeTab} />
+      <LeagueSectionTabs
+        leagueId={league.id}
+        activeTab={activeTab}
+        leagueFormat={league.format}
+      />
 
       <LeagueDetailSections
         leagueId={league.id}
         activeTab={activeTab}
+        leagueFormat={league.format}
         rulesNote={league.rulesNote}
         sides={sides}
         matches={matches}

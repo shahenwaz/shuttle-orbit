@@ -4,12 +4,19 @@ import { cn } from "@/lib/utils";
 
 export type LeagueSectionTab = "overview" | "sides" | "fixtures";
 
+type LeagueSectionTabsFormat =
+  | "ROUND_ROBIN"
+  | "TEAM_PAIR_MATRIX"
+  | "FIXED_DOUBLES"
+  | "MANUAL";
+
 type LeagueSectionTabsProps = {
   leagueId: string;
   activeTab: LeagueSectionTab;
+  leagueFormat: LeagueSectionTabsFormat;
 };
 
-const tabs: {
+const baseTabs: {
   value: LeagueSectionTab;
   label: string;
 }[] = [
@@ -21,7 +28,19 @@ const tabs: {
 export function LeagueSectionTabs({
   leagueId,
   activeTab,
+  leagueFormat,
 }: LeagueSectionTabsProps) {
+  const tabs = baseTabs.map((tab) => {
+    if (tab.value !== "sides") {
+      return tab;
+    }
+
+    return {
+      ...tab,
+      label: leagueFormat === "FIXED_DOUBLES" ? "Teams" : "Sides",
+    };
+  });
+
   return (
     <div className="flex w-fit flex-wrap gap-1 rounded-md border border-white/10 bg-white/4 p-1">
       {tabs.map((tab) => {
