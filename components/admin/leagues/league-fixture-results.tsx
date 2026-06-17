@@ -12,6 +12,12 @@ import { Button } from "@/components/ui/button";
 import { MatchCard } from "@/components/tournaments/match-card";
 import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
+type LeagueFixtureFormat =
+  | "ROUND_ROBIN"
+  | "TEAM_PAIR_MATRIX"
+  | "FIXED_DOUBLES"
+  | "MANUAL";
+
 type Player = {
   fullName: string;
   nickname: string | null;
@@ -43,6 +49,7 @@ type LeagueMatch = {
 
 type LeagueFixtureResultsProps = {
   leagueId: string;
+  leagueFormat: LeagueFixtureFormat;
   matches: LeagueMatch[];
 };
 
@@ -99,11 +106,17 @@ function toMatchCardMatch(match: LeagueMatch) {
 
 export function LeagueFixtureResults({
   leagueId,
+  leagueFormat,
   matches,
 }: LeagueFixtureResultsProps) {
   const completedMatches = matches.filter(
     (match) => match.winnerEntryId,
   ).length;
+
+  const isFixedDoubles = leagueFormat === "FIXED_DOUBLES";
+  const resultTitle = isFixedDoubles
+    ? "Record team result"
+    : "Record pair result";
 
   return (
     <section className="surface-card overflow-hidden">
@@ -147,6 +160,7 @@ export function LeagueFixtureResults({
                   entryALabel={entryALabel}
                   entryBLabel={entryBLabel}
                   isCompleted={isCompleted}
+                  resultTitle={resultTitle}
                 />
               );
             })}
@@ -163,12 +177,14 @@ function LeagueResultMatchCard({
   entryALabel,
   entryBLabel,
   isCompleted,
+  resultTitle,
 }: {
   leagueId: string;
   match: LeagueMatch;
   entryALabel: string;
   entryBLabel: string;
   isCompleted: boolean;
+  resultTitle: string;
 }) {
   const [isResultOpen, setIsResultOpen] = useState(false);
   const [isResetOpen, setIsResetOpen] = useState(false);
@@ -185,7 +201,7 @@ function LeagueResultMatchCard({
           open={isResultOpen}
           onOpenChange={setIsResultOpen}
           triggerLabel={isCompleted ? "Edit result" : "Record result"}
-          title="Record fixture result"
+          title={resultTitle}
           description={`${entryALabel} vs ${entryBLabel}`}
           triggerClassName={actionPillButtonClassName({
             variant: isCompleted ? "edit" : "create",

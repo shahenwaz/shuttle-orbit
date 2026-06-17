@@ -1,5 +1,3 @@
-import { UsersRound } from "lucide-react";
-
 import { LeagueFixtureResults } from "@/components/admin/leagues/league-fixture-results";
 import type { LeagueSectionTab } from "@/components/admin/leagues/league-section-tabs";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
@@ -132,8 +130,7 @@ export function LeagueDetailSections({
                   </h3>
                 </div>
 
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
-                  <UsersRound className="size-3.5" />
+                <span className="text-xs text-muted-foreground">
                   {side.entries.length} {entryLabel}
                 </span>
               </div>
@@ -161,7 +158,13 @@ export function LeagueDetailSections({
   }
 
   if (activeTab === "fixtures") {
-    return <LeagueFixtureResults leagueId={leagueId} matches={matches} />;
+    return (
+      <LeagueFixtureResults
+        leagueId={leagueId}
+        leagueFormat={leagueFormat}
+        matches={matches}
+      />
+    );
   }
 
   return (
