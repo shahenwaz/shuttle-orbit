@@ -153,7 +153,7 @@ export function FixedDoublesForm({ clubId, players }: FixedDoublesFormProps) {
             htmlFor="fixed-playedAt"
             className="text-sm font-medium text-foreground"
           >
-            Played at
+            League date
           </label>
           <input
             id="fixed-playedAt"
