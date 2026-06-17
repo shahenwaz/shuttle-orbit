@@ -49,12 +49,9 @@ export function LeagueSidePanel({ sides }: LeagueSidePanelProps) {
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-primary/80">
-                Side {side.sideOrder}
-              </p>
-              <h2 className="mt-1 text-base font-semibold text-foreground">
+              <h3 className="text-base font-semibold text-foreground">
                 {side.name}
-              </h2>
+              </h3>
             </div>
 
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
