@@ -9,6 +9,7 @@ import {
   createTeamPairMatrixMatches,
 } from "@/lib/leagues/team-pair-matrix";
 import { prisma } from "@/lib/db/prisma";
+import { createFixedDoublesMatches } from "@/lib/leagues/fixed-doubles";
 
 export type LeagueActionState = {
   success: boolean;
@@ -20,6 +21,16 @@ export type LeagueActionState = {
     sideBName?: string[];
     sideAPlayerIds?: string[];
     sideBPlayerIds?: string[];
+  };
+};
+
+export type FixedDoublesLeagueActionState = {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    title?: string[];
+    playedAt?: string[];
+    teams?: string[];
   };
 };
 
@@ -56,6 +67,14 @@ function getPlayerDisplayName(player: {
   nickname: string | null;
 }) {
   return player.nickname?.trim() || player.fullName.trim();
+}
+
+function getIndexedStringValue(formData: FormData, key: string, index: number) {
+  return getStringValue(formData, `${key}-${index}`);
+}
+
+function getIndexedStringArray(formData: FormData, key: string, index: number) {
+  return getStringArray(formData, `${key}-${index}`);
 }
 
 export async function createTeamPairMatrixLeagueAction(
@@ -279,6 +298,211 @@ export async function createTeamPairMatrixLeagueAction(
               leagueId: createdLeague.id,
               teamAId: createdSideAEntries[match.entryAIndex].id,
               teamBId: createdSideBEntries[match.entryBIndex].id,
+              matchOrder: match.matchOrder,
+              roundLabel: match.roundLabel,
+            },
+          }),
+        ),
+      );
+
+      return createdLeague;
+    },
+  );
+
+  revalidatePath("/admin/leagues");
+  redirect(`/admin/leagues/${league.id}`);
+}
+
+export async function createFixedDoublesLeagueAction(
+  _state: FixedDoublesLeagueActionState,
+  formData: FormData,
+): Promise<FixedDoublesLeagueActionState> {
+  const clubId = getStringValue(formData, "clubId");
+  const title = getStringValue(formData, "title");
+  const playedAtValue = getStringValue(formData, "playedAt");
+  const rulesNote = getStringValue(formData, "rulesNote");
+  const teamCountValue = getStringValue(formData, "teamCount");
+  const teamCount = Number(teamCountValue);
+
+  const fieldErrors: FixedDoublesLeagueActionState["fieldErrors"] = {};
+
+  if (!title) {
+    fieldErrors.title = ["League title is required."];
+  }
+
+  if (!playedAtValue) {
+    fieldErrors.playedAt = ["Played date is required."];
+  }
+
+  if (!Number.isInteger(teamCount) || teamCount < 2) {
+    fieldErrors.teams = ["Add at least 2 fixed doubles teams."];
+  }
+
+  const teamInputs =
+    Number.isInteger(teamCount) && teamCount > 0
+      ? Array.from({ length: teamCount }, (_, index) => {
+          const name = getIndexedStringValue(formData, "teamName", index);
+          const playerIds = getIndexedStringArray(
+            formData,
+            "teamPlayerIds",
+            index,
+          );
+
+          return {
+            name,
+            playerIds,
+          };
+        })
+      : [];
+
+  for (const [index, team] of teamInputs.entries()) {
+    if (!team.name) {
+      fieldErrors.teams = [
+        `Team ${index + 1} needs a name. Example: BDBC 1 or Mubin 2.`,
+      ];
+      break;
+    }
+
+    if (team.playerIds.length !== 2) {
+      fieldErrors.teams = [`Team ${index + 1} must have exactly 2 players.`];
+      break;
+    }
+  }
+
+  const allPlayerIds = teamInputs.flatMap((team) => team.playerIds);
+  const uniquePlayerIds = new Set(allPlayerIds);
+
+  if (uniquePlayerIds.size !== allPlayerIds.length) {
+    fieldErrors.teams = [
+      "A player can only be selected once across all teams.",
+    ];
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return {
+      success: false,
+      message: "Please fix the highlighted fields.",
+      fieldErrors,
+    };
+  }
+
+  const playedAt = new Date(`${playedAtValue}T00:00:00`);
+
+  if (Number.isNaN(playedAt.getTime())) {
+    return {
+      success: false,
+      message: "Please enter a valid played date.",
+      fieldErrors: {
+        playedAt: ["Invalid date."],
+      },
+    };
+  }
+
+  const [managedClub, selectedPlayers] = await Promise.all([
+    prisma.club.findFirst({
+      where: {
+        id: clubId,
+        isManagedClub: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        shortName: true,
+      },
+    }),
+    prisma.player.findMany({
+      where: {
+        id: {
+          in: Array.from(uniquePlayerIds),
+        },
+        isActive: true,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        nickname: true,
+      },
+    }),
+  ]);
+
+  if (!managedClub) {
+    return {
+      success: false,
+      message: "Managed club could not be found.",
+    };
+  }
+
+  if (selectedPlayers.length !== uniquePlayerIds.size) {
+    return {
+      success: false,
+      message:
+        "Only active players from the community player database can be selected.",
+    };
+  }
+
+  const playerMap = new Map<string, PlayerInput>();
+
+  for (const player of selectedPlayers) {
+    playerMap.set(player.id, {
+      id: player.id,
+      name: getPlayerDisplayName(player),
+    });
+  }
+
+  const generatedMatches = createFixedDoublesMatches(teamInputs.length);
+
+  const league = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const createdLeague = await tx.league.create({
+        data: {
+          title,
+          slug: createLeagueSlug(title, playedAt),
+          playedAt,
+          location: managedClub.shortName || managedClub.name,
+          format: LeagueFormat.FIXED_DOUBLES,
+          rulesNote: rulesNote || null,
+          hostClubId: managedClub.id,
+        },
+      });
+
+      const createdTeams = await Promise.all(
+        teamInputs.map(async (teamInput, index) => {
+          const team = await tx.leagueTeam.create({
+            data: {
+              leagueId: createdLeague.id,
+              name: teamInput.name,
+              shortName: teamInput.name,
+              teamOrder: index + 1,
+              originLabel: "Fixed doubles",
+            },
+          });
+
+          await tx.leagueTeamPlayer.createMany({
+            data: teamInput.playerIds.map((playerId) => {
+              const player = playerMap.get(playerId);
+
+              if (!player) {
+                throw new Error("A selected player could not be found.");
+              }
+
+              return {
+                teamId: team.id,
+                playerId: player.id,
+              };
+            }),
+          });
+
+          return team;
+        }),
+      );
+
+      await Promise.all(
+        generatedMatches.map((match) =>
+          tx.leagueMatch.create({
+            data: {
+              leagueId: createdLeague.id,
+              teamAId: createdTeams[match.teamAIndex].id,
+              teamBId: createdTeams[match.teamBIndex].id,
               matchOrder: match.matchOrder,
               roundLabel: match.roundLabel,
             },
