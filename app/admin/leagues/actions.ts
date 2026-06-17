@@ -117,30 +117,32 @@ export async function createTeamPairMatrixLeagueAction(
     };
   }
 
-  const managedClub = await prisma.club.findFirst({
-    where: {
-      id: clubId,
-      isManagedClub: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      shortName: true,
-      players: {
-        where: {
-          id: {
-            in: allPlayerIds,
-          },
-          isActive: true,
-        },
-        select: {
-          id: true,
-          fullName: true,
-          nickname: true,
-        },
+  const [managedClub, selectedPlayers] = await Promise.all([
+    prisma.club.findFirst({
+      where: {
+        id: clubId,
+        isManagedClub: true,
       },
-    },
-  });
+      select: {
+        id: true,
+        name: true,
+        shortName: true,
+      },
+    }),
+    prisma.player.findMany({
+      where: {
+        id: {
+          in: allPlayerIds,
+        },
+        isActive: true,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        nickname: true,
+      },
+    }),
+  ]);
 
   if (!managedClub) {
     return {
@@ -149,16 +151,17 @@ export async function createTeamPairMatrixLeagueAction(
     };
   }
 
-  if (managedClub.players.length !== allPlayerIds.length) {
+  if (selectedPlayers.length !== uniquePlayerIds.size) {
     return {
       success: false,
-      message: "Only active players from the selected club can be selected.",
+      message:
+        "Only active players from the community player database can be selected.",
     };
   }
 
   const playerMap = new Map<string, PlayerInput>();
 
-  for (const player of managedClub.players) {
+  for (const player of selectedPlayers) {
     playerMap.set(player.id, {
       id: player.id,
       name: getPlayerDisplayName(player),
@@ -169,7 +172,7 @@ export async function createTeamPairMatrixLeagueAction(
     const player = playerMap.get(playerId);
 
     if (!player) {
-      throw new Error("A selected Side A player could not be resolved.");
+      throw new Error("A selected Side A player could not be found.");
     }
 
     return player;
@@ -179,7 +182,7 @@ export async function createTeamPairMatrixLeagueAction(
     const player = playerMap.get(playerId);
 
     if (!player) {
-      throw new Error("A selected Side B player could not be resolved.");
+      throw new Error("A selected Side B player could not be found.");
     }
 
     return player;
