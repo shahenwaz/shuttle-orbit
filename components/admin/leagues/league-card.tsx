@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays } from "lucide-react";
+import { formatLeagueFormat } from "@/lib/leagues/format";
 
 type LeagueCardProps = {
   league: {
@@ -17,13 +18,6 @@ type LeagueCardProps = {
     };
   };
 };
-
-function formatLeagueFormat(format: string) {
-  return format
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 export function LeagueCard({ league }: LeagueCardProps) {
   const hostLabel =

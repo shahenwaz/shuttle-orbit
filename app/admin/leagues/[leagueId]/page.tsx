@@ -9,6 +9,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 import { HeaderSurface } from "@/components/shared/header-surface";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
+import { formatLeagueFormat } from "@/lib/leagues/format";
 
 type AdminLeagueDetailPageProps = {
   params: Promise<{
@@ -39,13 +40,6 @@ function getTeamPlayers(team: {
       nickname: null,
     },
   };
-}
-
-function formatLeagueFormat(format: string) {
-  return format
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function formatLeagueDate(date: Date) {
