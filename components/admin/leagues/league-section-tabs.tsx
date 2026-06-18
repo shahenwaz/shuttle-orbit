@@ -1,6 +1,7 @@
-import Link from "next/link";
-
-import { cn } from "@/lib/utils";
+import {
+  ConnectedTabs,
+  type ConnectedTabItem,
+} from "@/components/shared/connected-tabs";
 
 export type LeagueSectionTab = "sides" | "fixtures" | "standings";
 
@@ -29,28 +30,10 @@ export function LeagueSectionTabs({
   leagueId,
   activeTab,
 }: LeagueSectionTabsProps) {
-  return (
-    <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <nav className="flex min-w-max items-end gap-1">
-        {tabs.map((tab) => {
-          const isActive = tab.value === activeTab;
+  const items: ConnectedTabItem<LeagueSectionTab>[] = tabs.map((tab) => ({
+    ...tab,
+    href: `/admin/leagues/${leagueId}?tab=${tab.value}`,
+  }));
 
-          return (
-            <Link
-              key={tab.value}
-              href={`/admin/leagues/${leagueId}?tab=${tab.value}`}
-              className={cn(
-                "relative -mb-px rounded-t-md px-4 py-2 text-sm font-semibold transition",
-                isActive
-                  ? "bg-[#0b1118] text-foreground"
-                  : "bg-white/8 text-muted-foreground hover:bg-white/12 hover:text-foreground",
-              )}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
-  );
+  return <ConnectedTabs items={items} activeValue={activeTab} />;
 }
