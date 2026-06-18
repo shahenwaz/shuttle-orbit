@@ -84,29 +84,31 @@ export function HeaderSurface({
         )}
       >
         <div className="space-y-3 pb-3">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 space-y-2">
             <div className="min-w-0">
               <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 {title}
               </h1>
             </div>
 
+            {meta ? (
+              <div className="flex min-w-0 items-center gap-2 text-xs">
+                {meta}
+              </div>
+            ) : null}
+
+            {summary ? (
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                {summary}
+              </div>
+            ) : null}
+
             {actions ? (
-              <div className="flex shrink-0 items-center gap-2">{actions}</div>
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 sm:gap-2">
+                {actions}
+              </div>
             ) : null}
           </div>
-
-          {meta ? (
-            <div className="flex min-w-0 items-center gap-2 text-xs">
-              {meta}
-            </div>
-          ) : null}
-
-          {summary ? (
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              {summary}
-            </div>
-          ) : null}
         </div>
 
         {children ? (
