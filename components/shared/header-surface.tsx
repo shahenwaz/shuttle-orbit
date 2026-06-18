@@ -1,81 +1,70 @@
 import type { ReactNode } from "react";
 
-import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
+import { cn } from "@/lib/utils";
 
-type AdminDetailHeaderVariant =
+export type HeaderSurfaceVariant =
   | "default"
   | "league"
   | "tournament"
   | "club"
   | "player";
 
-type AdminDetailHeaderProps = {
+type HeaderSurfaceProps = {
   title: string;
   actions?: ReactNode;
   meta?: ReactNode;
   summary?: ReactNode;
   children?: ReactNode;
-  variant?: AdminDetailHeaderVariant;
+  variant?: HeaderSurfaceVariant;
+  className?: string;
+  innerClassName?: string;
 };
 
-const variantClassNames: Record<AdminDetailHeaderVariant, string> = {
+const surfaceClassNames: Record<HeaderSurfaceVariant, string> = {
   default: "bg-[linear-gradient(135deg,#101923_0%,#0f1b22_48%,#0b1118_100%)]",
-
-  // Old club style → now league
   league: "bg-[linear-gradient(135deg,#0f1b16_0%,#10261c_46%,#0b1118_100%)]",
-
-  // Old league style → now tournament
   tournament:
     "bg-[linear-gradient(135deg,#101923_0%,#10231d_46%,#0c171d_100%)]",
-
-  // Old player style → now club
   club: "bg-[linear-gradient(135deg,#101826_0%,#121f31_46%,#0b1118_100%)]",
-
-  // Old ranking style → now player
   player: "bg-[linear-gradient(135deg,#11151f_0%,#17172a_46%,#0b1118_100%)]",
 };
 
-const accentClassNames: Record<AdminDetailHeaderVariant, string> = {
+const accentClassNames: Record<HeaderSurfaceVariant, string> = {
   default:
     "bg-[linear-gradient(115deg,rgba(52,211,153,0.1)_0%,transparent_34%),linear-gradient(255deg,rgba(14,165,233,0.07)_0%,transparent_42%)]",
-
-  // League: deeper community emerald
   league:
     "bg-[linear-gradient(115deg,rgba(34,197,94,0.12)_0%,transparent_34%),linear-gradient(255deg,rgba(20,184,166,0.07)_0%,transparent_42%)]",
-
-  // Tournament: premium competition green/teal
   tournament:
     "bg-[linear-gradient(115deg,rgba(52,211,153,0.13)_0%,transparent_34%),linear-gradient(255deg,rgba(45,212,191,0.07)_0%,transparent_42%)]",
-
-  // Club: cooler blue/green identity surface
   club: "bg-[linear-gradient(115deg,rgba(96,165,250,0.1)_0%,transparent_34%),linear-gradient(255deg,rgba(52,211,153,0.06)_0%,transparent_42%)]",
-
-  // Player: purple profile energy, not ranking
   player:
     "bg-[linear-gradient(115deg,rgba(168,85,247,0.1)_0%,transparent_34%),linear-gradient(255deg,rgba(52,211,153,0.06)_0%,transparent_42%)]",
 };
 
-export function AdminDetailHeader({
+export function HeaderSurface({
   title,
   actions,
   meta,
   summary,
   children,
   variant = "default",
-}: AdminDetailHeaderProps) {
+  className,
+  innerClassName,
+}: HeaderSurfaceProps) {
   return (
     <section
-      className={[
-        "relative -mx-4 overflow-hidden px-4 pt-5 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8",
-        variantClassNames[variant],
-      ].join(" ")}
+      className={cn(
+        "relative w-full overflow-hidden",
+        surfaceClassNames[variant],
+        className,
+      )}
     >
       <div
         aria-hidden="true"
-        className={[
+        className={cn(
           "pointer-events-none absolute inset-0",
           accentClassNames[variant],
-        ].join(" ")}
+        )}
       />
 
       <div
@@ -88,9 +77,24 @@ export function AdminDetailHeader({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-b from-transparent via-[#0b1118]/8 to-[#0b1118]/38"
       />
 
-      <div className="relative">
+      <div
+        className={cn(
+          "relative mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 lg:px-8",
+          innerClassName,
+        )}
+      >
         <div className="space-y-3 pb-3">
-          <AdminShellHeader title={title} actions={actions} />
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                {title}
+              </h1>
+            </div>
+
+            {actions ? (
+              <div className="flex shrink-0 items-center gap-2">{actions}</div>
+            ) : null}
+          </div>
 
           {meta ? (
             <div className="flex min-w-0 items-center gap-2 text-xs">

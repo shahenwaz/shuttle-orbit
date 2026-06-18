@@ -7,7 +7,7 @@ import {
 } from "@/components/admin/leagues/league-section-tabs";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
-import { AdminDetailHeader } from "@/components/admin/layout/admin-detail-header";
+import { HeaderSurface } from "@/components/shared/header-surface";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 
 type AdminLeagueDetailPageProps = {
@@ -306,10 +306,10 @@ export default async function AdminLeagueDetailPage({
   const entryStatLabel = isFixedDoubles ? "Teams" : "Pairs";
 
   return (
-    <PageContainer className="space-y-0 pt-0 pb-4 sm:pt-0 sm:pb-5">
-      <AdminDetailHeader
+    <>
+      <HeaderSurface
         title={league.title}
-        variant="club"
+        variant="league"
         meta={
           <>
             <span className="shrink-0 font-semibold text-primary">
@@ -336,9 +336,9 @@ export default async function AdminLeagueDetailPage({
           activeTab={activeTab}
           leagueFormat={league.format}
         />
-      </AdminDetailHeader>
+      </HeaderSurface>
 
-      <section className="pt-4 sm:pt-5">
+      <PageContainer className="pt-4 pb-4 sm:pt-5 sm:pb-5">
         <LeagueDetailSections
           leagueId={league.id}
           activeTab={activeTab}
@@ -347,7 +347,7 @@ export default async function AdminLeagueDetailPage({
           matches={matches}
           playerStats={league.playerStats}
         />
-      </section>
-    </PageContainer>
+      </PageContainer>
+    </>
   );
 }
