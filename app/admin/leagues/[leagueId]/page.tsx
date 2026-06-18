@@ -309,6 +309,7 @@ export default async function AdminLeagueDetailPage({
     <PageContainer className="space-y-0 pt-0 pb-4 sm:pt-0 sm:pb-5">
       <AdminDetailHeader
         title={league.title}
+        variant="club"
         meta={
           <>
             <span className="shrink-0 font-semibold text-primary">
