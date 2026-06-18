@@ -1,17 +1,14 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { LeagueDetailSections } from "@/components/admin/leagues/league-detail-sections";
 import {
   LeagueSectionTabs,
   type LeagueSectionTab,
 } from "@/components/admin/leagues/league-section-tabs";
-import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 import { PageContainer } from "@/components/layout/page-container";
-import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
-import { DeleteLeagueButton } from "@/components/admin/leagues/delete-league-button";
 import { prisma } from "@/lib/db/prisma";
+import { AdminDetailHeader } from "@/components/admin/layout/admin-detail-header";
+import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 
 type AdminLeagueDetailPageProps = {
   params: Promise<{
@@ -44,6 +41,21 @@ function getTeamPlayers(team: {
   };
 }
 
+function formatLeagueFormat(format: string) {
+  return format
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatLeagueDate(date: Date) {
+  return date.toLocaleDateString("en-IE", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default async function AdminLeagueDetailPage({
   params,
   searchParams,
@@ -52,7 +64,9 @@ export default async function AdminLeagueDetailPage({
   const { tab } = await searchParams;
 
   const activeTab: LeagueSectionTab =
-    tab === "sides" || tab === "fixtures" ? tab : "overview";
+    tab === "sides" || tab === "fixtures" || tab === "standings"
+      ? tab
+      : "fixtures";
 
   const league = await prisma.league.findUnique({
     where: {
@@ -281,39 +295,58 @@ export default async function AdminLeagueDetailPage({
     };
   });
 
+  const formatLabel = formatLeagueFormat(league.format);
+  const playedAtLabel = formatLeagueDate(league.playedAt);
+
+  const entryCount = sides.reduce(
+    (total, side) => total + side.entries.length,
+    0,
+  );
+
+  const entryStatLabel = isFixedDoubles ? "Teams" : "Pairs";
+
   return (
-    <PageContainer className="space-y-4 sm:space-y-6">
-      <AdminShellHeader
+    <PageContainer className="space-y-0 pt-0 pb-4 sm:pt-0 sm:pb-5">
+      <AdminDetailHeader
         title={league.title}
-        actions={
-          <div className="flex items-center gap-2">
-            <Link
-              href="/admin/leagues"
-              className={actionPillButtonClassName({ variant: "neutral" })}
-            >
-              <ArrowLeft className="size-4" />
-              Back
-            </Link>
-            <DeleteLeagueButton leagueId={league.id} />
-          </div>
+        meta={
+          <>
+            <span className="shrink-0 font-semibold text-primary">
+              {formatLabel}
+            </span>
+            <span className="shrink-0 text-white/25">•</span>
+            <span className="shrink-0 text-muted-foreground">
+              {playedAtLabel}
+            </span>
+          </>
         }
-      />
+        summary={
+          <>
+            {!isFixedDoubles ? (
+              <CompactStatPill label="Sides" value={sides.length} />
+            ) : null}
+            <CompactStatPill label={entryStatLabel} value={entryCount} />
+            <CompactStatPill label="Fixtures" value={matches.length} />
+          </>
+        }
+      >
+        <LeagueSectionTabs
+          leagueId={league.id}
+          activeTab={activeTab}
+          leagueFormat={league.format}
+        />
+      </AdminDetailHeader>
 
-      <LeagueSectionTabs
-        leagueId={league.id}
-        activeTab={activeTab}
-        leagueFormat={league.format}
-      />
-
-      <LeagueDetailSections
-        leagueId={league.id}
-        activeTab={activeTab}
-        leagueFormat={league.format}
-        rulesNote={league.rulesNote}
-        sides={sides}
-        matches={matches}
-        playerStats={league.playerStats}
-      />
+      <section className="pt-4 sm:pt-5">
+        <LeagueDetailSections
+          leagueId={league.id}
+          activeTab={activeTab}
+          leagueFormat={league.format}
+          sides={sides}
+          matches={matches}
+          playerStats={league.playerStats}
+        />
+      </section>
     </PageContainer>
   );
 }

@@ -1,8 +1,7 @@
 import { LeagueFixtureResults } from "@/components/admin/leagues/league-fixture-results";
 import type { LeagueSectionTab } from "@/components/admin/leagues/league-section-tabs";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
-import { formatLeagueDisplayName } from "@/lib/leagues/display";
 import { LeagueStandings } from "@/components/admin/leagues/league-standings";
+import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
 type LeagueDetailFormat =
   | "ROUND_ROBIN"
@@ -54,16 +53,6 @@ type Match = {
   }[];
 };
 
-type LeagueDetailSectionsProps = {
-  leagueId: string;
-  activeTab: LeagueSectionTab;
-  leagueFormat: LeagueDetailFormat;
-  rulesNote: string | null;
-  sides: Side[];
-  matches: Match[];
-  playerStats: PlayerStat[];
-};
-
 type PlayerStat = {
   id: string;
   matchesPlayed: number;
@@ -75,6 +64,15 @@ type PlayerStat = {
     fullName: string;
     nickname: string | null;
   };
+};
+
+type LeagueDetailSectionsProps = {
+  leagueId: string;
+  activeTab: LeagueSectionTab;
+  leagueFormat: LeagueDetailFormat;
+  sides: Side[];
+  matches: Match[];
+  playerStats: PlayerStat[];
 };
 
 function getPlayerName(player: Player) {
@@ -99,23 +97,12 @@ export function LeagueDetailSections({
   leagueId,
   activeTab,
   leagueFormat,
-  rulesNote,
   sides,
   matches,
   playerStats,
 }: LeagueDetailSectionsProps) {
-  const completedMatches = matches.filter(
-    (match) => match.winnerEntryId,
-  ).length;
-
-  const entryCount = sides.reduce(
-    (total, side) => total + side.entries.length,
-    0,
-  );
-
   const isFixedDoubles = leagueFormat === "FIXED_DOUBLES";
   const entryLabel = isFixedDoubles ? "teams" : "pairs";
-  const entryStatLabel = isFixedDoubles ? "Teams" : "Pairs";
 
   if (activeTab === "sides") {
     return (
@@ -124,11 +111,9 @@ export function LeagueDetailSections({
           <section key={side.id} className="surface-card overflow-hidden">
             <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    {side.name}
-                  </h3>
-                </div>
+                <h3 className="text-base font-semibold text-foreground">
+                  {side.name}
+                </h3>
 
                 <span className="text-xs text-muted-foreground">
                   {side.entries.length} {entryLabel}
@@ -167,24 +152,5 @@ export function LeagueDetailSections({
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        {isFixedDoubles ? null : (
-          <CompactStatPill label="Sides" value={sides.length} />
-        )}
-        <CompactStatPill label={entryStatLabel} value={entryCount} />
-        <CompactStatPill label="Fixtures" value={matches.length} />
-        <CompactStatPill label="Completed" value={completedMatches} />
-      </section>
-
-      {rulesNote ? (
-        <p className="rounded-md border border-white/10 bg-white/4 px-4 py-3 text-sm leading-6 text-muted-foreground">
-          {rulesNote}
-        </p>
-      ) : null}
-
-      <LeagueStandings playerStats={playerStats} />
-    </div>
-  );
+  return <LeagueStandings playerStats={playerStats} />;
 }

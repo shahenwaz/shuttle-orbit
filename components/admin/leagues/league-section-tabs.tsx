@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-export type LeagueSectionTab = "overview" | "sides" | "fixtures";
+export type LeagueSectionTab = "sides" | "fixtures" | "standings";
 
 type LeagueSectionTabsFormat =
   | "ROUND_ROBIN"
@@ -16,51 +16,41 @@ type LeagueSectionTabsProps = {
   leagueFormat: LeagueSectionTabsFormat;
 };
 
-const baseTabs: {
+const tabs: {
   value: LeagueSectionTab;
   label: string;
 }[] = [
-  { value: "overview", label: "Overview" },
-  { value: "sides", label: "Sides" },
+  { value: "sides", label: "Teams" },
   { value: "fixtures", label: "Fixtures" },
+  { value: "standings", label: "Standings" },
 ];
 
 export function LeagueSectionTabs({
   leagueId,
   activeTab,
-  leagueFormat,
 }: LeagueSectionTabsProps) {
-  const tabs = baseTabs.map((tab) => {
-    if (tab.value !== "sides") {
-      return tab;
-    }
-
-    return {
-      ...tab,
-      label: leagueFormat === "FIXED_DOUBLES" ? "Teams" : "Sides",
-    };
-  });
-
   return (
-    <div className="flex w-fit flex-wrap gap-1 rounded-md border border-white/10 bg-white/4 p-1">
-      {tabs.map((tab) => {
-        const isActive = tab.value === activeTab;
+    <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex min-w-max items-end gap-1">
+        {tabs.map((tab) => {
+          const isActive = tab.value === activeTab;
 
-        return (
-          <Link
-            key={tab.value}
-            href={`/admin/leagues/${leagueId}?tab=${tab.value}`}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-medium transition",
-              isActive
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:bg-white/6 hover:text-foreground",
-            )}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={tab.value}
+              href={`/admin/leagues/${leagueId}?tab=${tab.value}`}
+              className={cn(
+                "relative -mb-px rounded-t-md px-4 py-2 text-sm font-semibold transition",
+                isActive
+                  ? "bg-[#0b1118] text-foreground"
+                  : "bg-white/8 text-muted-foreground hover:bg-white/12 hover:text-foreground",
+              )}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
