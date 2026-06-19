@@ -5,8 +5,8 @@ import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateCategoryForm } from "@/components/admin/tournaments/create-category-form";
 import { TournamentCategoriesList } from "@/components/admin/tournaments/tournament-categories-list";
 import { PageContainer } from "@/components/layout/page-container";
-import { HeaderSurface } from "@/components/shared/header-surface";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
+import { HeaderSurface } from "@/components/shared/header-surface";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
@@ -123,13 +123,7 @@ export default async function AdminTournamentDetailPage({
         }
       />
 
-      <PageContainer className="space-y-4 pt-4 pb-4 sm:space-y-5 sm:pt-5 sm:pb-5">
-        {tournament.description ? (
-          <p className="max-w-3xl rounded-md border border-white/10 bg-white/4 px-4 py-3 text-sm leading-6 text-muted-foreground">
-            {tournament.description}
-          </p>
-        ) : null}
-
+      <PageContainer className="pt-4 pb-4 sm:pt-5 sm:pb-5">
         <TournamentCategoriesList
           tournamentId={tournament.id}
           categories={tournament.categories}
