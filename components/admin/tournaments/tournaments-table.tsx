@@ -58,12 +58,6 @@ export function TournamentsTable({ tournaments }: TournamentsTableProps) {
                     {tournament.location ?? "No location set"}
                   </div>
                 </div>
-
-                {tournament.description ? (
-                  <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-                    {tournament.description}
-                  </p>
-                ) : null}
               </div>
 
               <TournamentCardActions

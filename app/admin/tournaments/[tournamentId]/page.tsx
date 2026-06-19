@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
-import { FolderPlus, MapPin } from "lucide-react";
+import { FolderPlus } from "lucide-react";
 
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateCategoryForm } from "@/components/admin/tournaments/create-category-form";
 import { TournamentCategoriesList } from "@/components/admin/tournaments/tournament-categories-list";
 import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
-import { HeaderSurface } from "@/components/shared/header-surface";
 import { prisma } from "@/lib/db/prisma";
-import { formatDate } from "@/lib/utils/format";
+import { AdminShellHeader } from "@/components/admin/layout/admin-shell-header";
 
 type AdminTournamentDetailPageProps = {
   params: Promise<{
@@ -62,56 +61,29 @@ export default async function AdminTournamentDetailPage({
   }
 
   return (
-    <>
-      <HeaderSurface
-        title={tournament.name}
-        variant="tournament"
-        meta={
-          <>
-            <span className="shrink-0 font-semibold text-primary">
-              Tournament
-            </span>
-            <span className="shrink-0 text-white/25">•</span>
-            <span className="shrink-0 text-muted-foreground">
-              {formatDate(tournament.eventDate)}
-            </span>
+    <PageContainer className="space-y-4 sm:space-y-6">
+      <AdminShellHeader title={tournament.name} />
 
-            {tournament.location ? (
-              <>
-                <span className="hidden shrink-0 text-white/25 sm:inline">
-                  •
-                </span>
-                <span className="hidden min-w-0 items-center gap-1.5 truncate text-muted-foreground sm:inline-flex">
-                  <MapPin className="h-3.5 w-3.5 shrink-0" />
-                  {tournament.location}
-                </span>
-              </>
-            ) : null}
-          </>
-        }
-        actions={
-          <CreateDialog
-            triggerLabel="Add category"
-            title="Create category"
-            description="Add divisions like B, C, Mixed, or any custom format."
-            triggerClassName={actionPillButtonClassName({
-              variant: "create",
-              className:
-                "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-            })}
-            triggerIcon={<FolderPlus className="h-3.5 w-3.5" />}
-          >
-            <CreateCategoryForm tournamentId={tournament.id} />
-          </CreateDialog>
-        }
+      <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <CreateDialog
+          triggerLabel="Add category"
+          title="Create category"
+          description="Add divisions like B, C, Mixed, or any custom format."
+          triggerClassName={actionPillButtonClassName({
+            variant: "create",
+            className:
+              "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+          })}
+          triggerIcon={<FolderPlus className="h-3.5 w-3.5" />}
+        >
+          <CreateCategoryForm tournamentId={tournament.id} />
+        </CreateDialog>
+      </section>
+
+      <TournamentCategoriesList
+        tournamentId={tournament.id}
+        categories={tournament.categories}
       />
-
-      <PageContainer className="pt-4 pb-4 sm:pt-5 sm:pb-5">
-        <TournamentCategoriesList
-          tournamentId={tournament.id}
-          categories={tournament.categories}
-        />
-      </PageContainer>
-    </>
+    </PageContainer>
   );
 }
