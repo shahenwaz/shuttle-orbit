@@ -1,15 +1,22 @@
 import { ConnectedTabs } from "@/components/shared/connected-tabs";
 
+export type CategoryOpsTab =
+  | "teams"
+  | "groups"
+  | "fixtures"
+  | "results"
+  | "bracket";
+
 type CategoryOpsNavProps = {
   tournamentId: string;
   categoryId: string;
-  activeTab: "teams" | "groups" | "fixtures" | "results";
+  activeTab: CategoryOpsTab;
 };
 
 const categoryTabs: {
-  value: CategoryOpsNavProps["activeTab"];
+  value: CategoryOpsTab;
   label: string;
-  hrefSegment: string;
+  hrefSegment: string | null;
 }[] = [
   {
     value: "teams",
@@ -31,6 +38,11 @@ const categoryTabs: {
     label: "Results",
     hrefSegment: "results",
   },
+  {
+    value: "bracket",
+    label: "Bracket",
+    hrefSegment: null,
+  },
 ];
 
 export function CategoryOpsNav({
@@ -38,13 +50,15 @@ export function CategoryOpsNav({
   categoryId,
   activeTab,
 }: CategoryOpsNavProps) {
+  const baseHref = `/admin/tournaments/${tournamentId}/categories/${categoryId}`;
+
   return (
     <ConnectedTabs
       activeValue={activeTab}
       items={categoryTabs.map((tab) => ({
         value: tab.value,
         label: tab.label,
-        href: `/admin/tournaments/${tournamentId}/categories/${categoryId}/${tab.hrefSegment}`,
+        href: tab.hrefSegment ? `${baseHref}/${tab.hrefSegment}` : baseHref,
       }))}
     />
   );

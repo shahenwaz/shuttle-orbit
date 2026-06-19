@@ -39,7 +39,7 @@ export function ConnectedTabs<TValue extends string = string>({
               key={item.value}
               href={item.href}
               className={cn(
-                "relative -mb-px rounded-t-md px-4 py-2 text-sm font-semibold transition",
+                "relative -mb-px rounded-t-md px-2.5 py-1.5 text-[11px] font-semibold transition sm:px-4 sm:py-2 sm:text-sm",
                 isActive
                   ? cn("bg-[#0b1118] text-foreground", activeClassName)
                   : cn(

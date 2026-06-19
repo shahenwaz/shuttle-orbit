@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import { CategoryOpsNav } from "@/components/admin/categories/category-ops-nav";
+import {
+  CategoryOpsNav,
+  type CategoryOpsTab,
+} from "@/components/admin/categories/category-ops-nav";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { HeaderSurface } from "@/components/shared/header-surface";
 import { Button } from "@/components/ui/button";
@@ -12,7 +15,7 @@ type CategoryWorkspaceHeaderProps = {
   tournamentName: string;
   categoryName: string;
   description?: string;
-  activeTab: "teams" | "groups" | "fixtures" | "results";
+  activeTab: CategoryOpsTab;
   actions?: React.ReactNode;
 };
 
@@ -27,7 +30,7 @@ export function CategoryWorkspaceHeader({
   return (
     <HeaderSurface
       title={categoryName}
-      variant="tournament"
+      variant="club"
       meta={
         <>
           <span className="shrink-0 font-semibold text-primary">

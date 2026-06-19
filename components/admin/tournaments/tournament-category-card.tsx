@@ -71,7 +71,7 @@ export function TournamentCategoryCard({
 
         <div className="flex items-center justify-between gap-2 border-t border-white/8 pt-2 sm:border-t-0 sm:pt-0">
           <Link
-            href={`/admin/tournaments/${tournamentId}/categories/${category.id}`}
+            href={`/admin/tournaments/${tournamentId}/categories/${category.id}/fixtures`}
             className="inline-flex h-8 items-center justify-center rounded-md border border-emerald-300/20 bg-emerald-300/10 px-3 text-xs font-semibold text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-300/15"
           >
             Manage
