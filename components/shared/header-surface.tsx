@@ -82,7 +82,7 @@ function BadmintonCourtMarking({ variant }: { variant: HeaderSurfaceVariant }) {
     <div
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute -right-52 top-1 h-36 w-96 rotate-[-9deg] rounded-sm border opacity-55 sm:-right-52 sm:top-0 sm:h-44 sm:w-96 sm:opacity-72",
+        "pointer-events-none absolute -right-52 top-1 h-36 w-96 rotate-[-9deg] opacity-40 sm:-right-52 sm:top-0 sm:h-44 sm:w-96 sm:opacity-60",
         courtMarkingClassNames[variant],
       )}
     >

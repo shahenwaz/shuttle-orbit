@@ -30,7 +30,7 @@ export function CategoryWorkspaceHeader({
   return (
     <HeaderSurface
       title={categoryName}
-      variant="club"
+      variant="tournament"
       meta={
         <>
           <span className="shrink-0 font-semibold text-primary">
