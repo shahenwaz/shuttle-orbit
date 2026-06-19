@@ -1,4 +1,4 @@
-import { SectionTabs } from "@/components/shared/section-tabs";
+import { ConnectedTabs } from "@/components/shared/connected-tabs";
 
 type CategoryOpsNavProps = {
   tournamentId: string;
@@ -6,12 +6,32 @@ type CategoryOpsNavProps = {
   activeTab: "teams" | "groups" | "fixtures" | "results";
 };
 
-const navItems = [
-  { key: "teams", label: "Teams" },
-  { key: "groups", label: "Groups" },
-  { key: "fixtures", label: "Fixtures" },
-  { key: "results", label: "Results" },
-] as const;
+const categoryTabs: {
+  value: CategoryOpsNavProps["activeTab"];
+  label: string;
+  hrefSegment: string;
+}[] = [
+  {
+    value: "teams",
+    label: "Teams",
+    hrefSegment: "teams",
+  },
+  {
+    value: "groups",
+    label: "Groups",
+    hrefSegment: "groups",
+  },
+  {
+    value: "fixtures",
+    label: "Fixtures",
+    hrefSegment: "fixtures",
+  },
+  {
+    value: "results",
+    label: "Results",
+    hrefSegment: "results",
+  },
+];
 
 export function CategoryOpsNav({
   tournamentId,
@@ -19,12 +39,12 @@ export function CategoryOpsNav({
   activeTab,
 }: CategoryOpsNavProps) {
   return (
-    <SectionTabs
-      activeKey={activeTab}
-      items={navItems.map((item) => ({
-        key: item.key,
-        label: item.label,
-        href: `/admin/tournaments/${tournamentId}/categories/${categoryId}/${item.key}`,
+    <ConnectedTabs
+      activeValue={activeTab}
+      items={categoryTabs.map((tab) => ({
+        value: tab.value,
+        label: tab.label,
+        href: `/admin/tournaments/${tournamentId}/categories/${categoryId}/${tab.hrefSegment}`,
       }))}
     />
   );

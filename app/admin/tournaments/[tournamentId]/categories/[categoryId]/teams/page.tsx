@@ -6,7 +6,6 @@ import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-work
 import { CreateTeamEntryForm } from "@/components/admin/teams/create-team-entry-form";
 import { TeamEntriesList } from "@/components/admin/teams/team-entries-list";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 
@@ -92,15 +91,8 @@ export default async function AdminCategoryTeamsPage({
     notFound();
   }
 
-  type CategoryStage = (typeof category.stages)[number];
-
-  const totalGroups = category.stages.reduce(
-    (sum: number, stage: CategoryStage) => sum + stage.groups.length,
-    0,
-  );
-
   return (
-    <PageContainer className="space-y-6">
+    <>
       <CategoryWorkspaceHeader
         tournamentId={tournament.id}
         categoryId={category.id}
@@ -108,16 +100,6 @@ export default async function AdminCategoryTeamsPage({
         categoryName={`${category.name} teams`}
         description={`Manage doubles teams for this category inside ${tournament.name}.`}
         activeTab="teams"
-        stats={
-          <>
-            <CompactStatPill
-              label="Teams"
-              value={category._count.teamEntries}
-            />
-            <CompactStatPill label="Groups" value={totalGroups} />
-            <CompactStatPill label="Matches" value={category._count.matches} />
-          </>
-        }
         actions={
           <CreateSheet
             triggerLabel="Add team"
@@ -139,11 +121,13 @@ export default async function AdminCategoryTeamsPage({
         }
       />
 
-      <TeamEntriesList
-        tournamentId={tournament.id}
-        categoryId={category.id}
-        teams={category.teamEntries}
-      />
-    </PageContainer>
+      <PageContainer className="pt-4 pb-4 sm:pt-5 sm:pb-5">
+        <TeamEntriesList
+          tournamentId={tournament.id}
+          categoryId={category.id}
+          teams={category.teamEntries}
+        />
+      </PageContainer>
+    </>
   );
 }

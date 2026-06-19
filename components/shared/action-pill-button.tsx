@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 export const actionPillButtonVariants = cva(
-  "inline-flex h-auto items-center rounded-full border px-3 py-1.5 text-[11px] font-medium shadow-none transition",
+  "inline-flex h-auto items-center rounded-sm border px-3 py-1.5 text-[11px] font-medium shadow-none transition",
   {
     variants: {
       variant: {

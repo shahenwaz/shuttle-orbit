@@ -7,7 +7,6 @@ import { TournamentCategoriesList } from "@/components/admin/tournaments/tournam
 import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { HeaderSurface } from "@/components/shared/header-surface";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils/format";
 
@@ -88,22 +87,6 @@ export default async function AdminTournamentDetailPage({
                 </span>
               </>
             ) : null}
-          </>
-        }
-        summary={
-          <>
-            <CompactStatPill
-              label="Categories"
-              value={tournament._count.categories}
-            />
-            <CompactStatPill
-              label="Teams"
-              value={tournament._count.teamEntries}
-            />
-            <CompactStatPill
-              label="Matches"
-              value={tournament._count.matches}
-            />
           </>
         }
         actions={

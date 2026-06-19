@@ -11,7 +11,6 @@ import { GroupsOverview } from "@/components/admin/groups/groups-overview";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
-import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { PageContainer } from "@/components/layout/page-container";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { prisma } from "@/lib/db/prisma";
@@ -163,7 +162,7 @@ export default async function AdminCategoryGroupsPage({
     Boolean(firstGroupStage) && firstGroupStageUnassignedCount > 0;
 
   return (
-    <PageContainer className="space-y-6">
+    <>
       <CategoryWorkspaceHeader
         tournamentId={tournament.id}
         categoryId={category.id}
@@ -171,16 +170,6 @@ export default async function AdminCategoryGroupsPage({
         categoryName={`${category.name} groups`}
         description="Create multiple group stages, assign teams, and manage qualification pathways for this category."
         activeTab="groups"
-        stats={
-          <>
-            <CompactStatPill label="Stages" value={groupStages.length} />
-            <CompactStatPill
-              label="Teams"
-              value={category.teamEntries.length}
-            />
-            <CompactStatPill label="Groups" value={groupOptions.length} />
-          </>
-        }
         actions={
           <>
             <CreateDialog
@@ -250,126 +239,130 @@ export default async function AdminCategoryGroupsPage({
         }
       />
 
-      {groupStages.length === 0 ? (
-        <EmptyState message="No group stages created yet." />
-      ) : (
-        <div className="grid gap-6">
-          {groupStages.map((stage: GroupStage) => {
-            const assignedTeamIds = new Set<string>(
-              stage.groups.flatMap((group: StageGroup) =>
-                group.memberships.map(
-                  (membership: StageMembership) => membership.teamEntry.id,
+      <PageContainer className="pt-4 pb-4 sm:pt-5 sm:pb-5">
+        {groupStages.length === 0 ? (
+          <EmptyState message="No group stages created yet." />
+        ) : (
+          <div className="grid gap-6">
+            {groupStages.map((stage: GroupStage) => {
+              const assignedTeamIds = new Set<string>(
+                stage.groups.flatMap((group: StageGroup) =>
+                  group.memberships.map(
+                    (membership: StageMembership) => membership.teamEntry.id,
+                  ),
                 ),
-              ),
-            );
+              );
 
-            const unassignedTeams = category.teamEntries.filter(
-              (team: CategoryTeamEntry) => !assignedTeamIds.has(team.id),
-            );
+              const unassignedTeams = category.teamEntries.filter(
+                (team: CategoryTeamEntry) => !assignedTeamIds.has(team.id),
+              );
 
-            const firstStageOrder = Math.min(
-              ...groupStages.map((item: GroupStage) => item.stageOrder),
-            );
+              const firstStageOrder = Math.min(
+                ...groupStages.map((item: GroupStage) => item.stageOrder),
+              );
 
-            const shouldShowUnassignedTeams =
-              stage.stageOrder === firstStageOrder &&
-              unassignedTeams.length > 0;
+              const shouldShowUnassignedTeams =
+                stage.stageOrder === firstStageOrder &&
+                unassignedTeams.length > 0;
 
-            return (
-              <section key={stage.id} className="space-y-4">
-                <div className="surface-card overflow-hidden">
-                  <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                        <h3 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                          {stage.name}
-                        </h3>
-
-                        <span className="text-xs text-muted-foreground sm:text-sm">
-                          ⁜
-                        </span>
-
-                        <span className="text-xs text-muted-foreground sm:text-sm">
-                          {stage.groups.length} groups
-                        </span>
-                      </div>
-
-                      <StageCardActions
-                        tournamentId={tournament.id}
-                        categoryId={category.id}
-                        stageId={stage.id}
-                        stageName={stage.name}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <section
-                  className={cn(
-                    "grid gap-4",
-                    shouldShowUnassignedTeams
-                      ? "xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]"
-                      : "grid-cols-1",
-                  )}
-                >
-                  <GroupsOverview
-                    tournamentId={tournament.id}
-                    categoryId={category.id}
-                    groups={stage.groups}
-                  />
-
-                  {shouldShowUnassignedTeams ? (
-                    <div className="surface-card overflow-hidden xl:self-start">
-                      <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+              return (
+                <section key={stage.id} className="space-y-4">
+                  <div className="surface-card overflow-hidden">
+                    <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+                      <div className="flex items-start justify-between gap-3">
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                          <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                            Unassigned teams
-                          </h4>
+                          <h3 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                            {stage.name}
+                          </h3>
 
                           <span className="text-xs text-muted-foreground sm:text-sm">
                             ⁜
                           </span>
 
                           <span className="text-xs text-muted-foreground sm:text-sm">
-                            {unassignedTeams.length} teams
+                            {stage.groups.length} groups
                           </span>
                         </div>
-                      </div>
 
-                      <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
-                        {unassignedTeams.length === 0 ? (
-                          <EmptyState message="All category teams are assigned in this stage." />
-                        ) : (
-                          <div className="grid gap-2">
-                            {unassignedTeams.map((team: CategoryTeamEntry) => (
-                              <TeamCard
-                                key={team.id}
-                                team={{
-                                  id: team.id,
-                                  teamName: team.teamName,
-                                  player1: {
-                                    fullName: team.player1.fullName,
-                                    nickname: team.player1.nickname,
-                                  },
-                                  player2: {
-                                    fullName: team.player2.fullName,
-                                    nickname: team.player2.nickname,
-                                  },
-                                }}
-                                badgeLabel="team"
-                              />
-                            ))}
-                          </div>
-                        )}
+                        <StageCardActions
+                          tournamentId={tournament.id}
+                          categoryId={category.id}
+                          stageId={stage.id}
+                          stageName={stage.name}
+                        />
                       </div>
                     </div>
-                  ) : null}
+                  </div>
+
+                  <section
+                    className={cn(
+                      "grid gap-4",
+                      shouldShowUnassignedTeams
+                        ? "xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]"
+                        : "grid-cols-1",
+                    )}
+                  >
+                    <GroupsOverview
+                      tournamentId={tournament.id}
+                      categoryId={category.id}
+                      groups={stage.groups}
+                    />
+
+                    {shouldShowUnassignedTeams ? (
+                      <div className="surface-card overflow-hidden xl:self-start">
+                        <div className="border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <h4 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                              Unassigned teams
+                            </h4>
+
+                            <span className="text-xs text-muted-foreground sm:text-sm">
+                              ⁜
+                            </span>
+
+                            <span className="text-xs text-muted-foreground sm:text-sm">
+                              {unassignedTeams.length} teams
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
+                          {unassignedTeams.length === 0 ? (
+                            <EmptyState message="All category teams are assigned in this stage." />
+                          ) : (
+                            <div className="grid gap-2">
+                              {unassignedTeams.map(
+                                (team: CategoryTeamEntry) => (
+                                  <TeamCard
+                                    key={team.id}
+                                    team={{
+                                      id: team.id,
+                                      teamName: team.teamName,
+                                      player1: {
+                                        fullName: team.player1.fullName,
+                                        nickname: team.player1.nickname,
+                                      },
+                                      player2: {
+                                        fullName: team.player2.fullName,
+                                        nickname: team.player2.nickname,
+                                      },
+                                    }}
+                                    badgeLabel="team"
+                                  />
+                                ),
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </section>
                 </section>
-              </section>
-            );
-          })}
-        </div>
-      )}
-    </PageContainer>
+              );
+            })}
+          </div>
+        )}
+      </PageContainer>
+    </>
   );
 }
