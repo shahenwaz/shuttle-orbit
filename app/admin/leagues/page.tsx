@@ -76,10 +76,6 @@ export default async function AdminLeaguesPage() {
 
       <section className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
         <CompactStatPill label="Host club" value={clubDisplayName} />
-        <CompactStatPill
-          label="Available players"
-          value={leaguePlayers.length}
-        />
         <CompactStatPill label="Leagues" value={leagueCount} />
 
         {managedClub ? (
