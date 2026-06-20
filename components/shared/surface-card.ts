@@ -3,27 +3,31 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 export const surfaceCardVariants = cva(
-  "rounded-md border border-white/10 bg-white/4",
+  "rounded-md border border-white/12 bg-card text-card-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_10px_24px_rgba(0,0,0,0.16)]",
   {
     variants: {
       variant: {
         default: "",
-        elevated: "shadow-[0_12px_34px_rgba(0,0,0,0.14)]",
-        muted: "bg-background/50",
+        elevated:
+          "border-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_16px_36px_rgba(0,0,0,0.22)]",
+        subtle:
+          "border-white/10 bg-secondary shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]",
+        panel:
+          "border-white/10 bg-card shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]",
       },
       interactive: {
-        true: "transition duration-200 hover:border-primary/50 hover:bg-white/5",
+        true: "transition duration-200 hover:border-white/20 hover:bg-accent",
         false: "",
       },
-      blur: {
-        true: "backdrop-blur-sm",
+      compact: {
+        true: "px-3 py-2.5",
         false: "",
       },
     },
     defaultVariants: {
       variant: "default",
       interactive: false,
-      blur: false,
+      compact: false,
     },
   },
 );
@@ -35,8 +39,8 @@ type SurfaceCardClassNameProps = {
 export function surfaceCardClassName({
   variant,
   interactive,
-  blur,
+  compact,
   className,
 }: SurfaceCardClassNameProps = {}) {
-  return cn(surfaceCardVariants({ variant, interactive, blur }), className);
+  return cn(surfaceCardVariants({ variant, interactive, compact }), className);
 }
