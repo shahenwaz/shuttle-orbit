@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { tournamentStatusValues } from "@/lib/validations/tournament";
 
 const initialState: CreateTournamentActionState = {
   success: false,
@@ -58,22 +57,6 @@ export function CreateTournamentForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <select
-            id="status"
-            name="status"
-            defaultValue="upcoming"
-            className="flex h-11 w-full rounded-xl border border-white/10 bg-background/70 px-4 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/25"
-          >
-            {tournamentStatusValues.map((status) => (
-              <option key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2 md:col-span-2">
           <Label htmlFor="eventDate">Tournament date</Label>
           <input
             id="eventDate"
