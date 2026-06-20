@@ -84,8 +84,8 @@ function ClubMemberCard({ member, players }: ClubMemberCardProps) {
   return (
     <div
       className={surfaceCardClassName({
+        variant: "panel",
         interactive: true,
-        blur: true,
         className: "px-3 py-2.5 sm:px-3.5",
       })}
     >

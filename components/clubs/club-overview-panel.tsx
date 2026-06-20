@@ -1,12 +1,14 @@
 import { MapPin, Users } from "lucide-react";
 
+import { surfaceCardClassName } from "@/components/shared/surface-card";
+
 type ClubOverviewPanelProps = {
   description: string | null;
   homeVenue: string | null;
   memberCount: number;
 };
 
-const detailAccentClassName = "text-purple-400";
+const detailAccentClassName = "text-purple-300";
 
 export function ClubOverviewPanel({
   description,
@@ -14,9 +16,14 @@ export function ClubOverviewPanel({
   memberCount,
 }: ClubOverviewPanelProps) {
   return (
-    <section className="space-y-5">
+    <section
+      className={surfaceCardClassName({
+        variant: "elevated",
+        className: "space-y-5 p-4 sm:p-5",
+      })}
+    >
       <div className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-purple-400">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-purple-300">
           About
         </p>
 

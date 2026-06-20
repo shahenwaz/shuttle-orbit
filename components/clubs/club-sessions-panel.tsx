@@ -18,8 +18,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { ClubProfileSession } from "@/lib/clubs/club-profile-mappers";
-import { cn } from "@/lib/utils";
 import { SessionNote } from "@/components/clubs/session-note";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type ClubSessionsPanelProps = {
   upcomingSessions: ClubProfileSession[];
@@ -81,10 +81,11 @@ function SessionCard({
     <button
       type="button"
       onClick={onOpen}
-      className={cn(
-        "group block rounded-md border border-white/10 bg-white/4 px-3 py-2.5 text-left transition",
-        "hover:border-purple-400/25 hover:bg-white/6",
-      )}
+      className={surfaceCardClassName({
+        interactive: true,
+        compact: true,
+        className: "group block w-full text-left hover:border-purple-300/30",
+      })}
     >
       <div className="flex min-w-0 items-center justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1">
@@ -150,7 +151,12 @@ function SessionSection({
       </div>
 
       {sessions.length === 0 ? (
-        <p className="rounded-md border border-white/10 bg-white/4 px-3 py-3 text-sm text-muted-foreground">
+        <p
+          className={surfaceCardClassName({
+            variant: "subtle",
+            className: "px-3 py-3 text-sm text-muted-foreground",
+          })}
+        >
           {emptyMessage}
         </p>
       ) : (
@@ -221,7 +227,13 @@ export function ClubSessionsPanel({
           if (!open) setSelectedSessionState(null);
         }}
       >
-        <DialogContent className="max-h-[86vh] overflow-y-auto rounded-md border-white/10 bg-background/95 p-4 shadow-2xl sm:max-w-lg sm:p-5">
+        <DialogContent
+          className={surfaceCardClassName({
+            variant: "elevated",
+            className:
+              "max-h-[86vh] overflow-y-auto p-4 shadow-2xl sm:max-w-lg sm:p-5",
+          })}
+        >
           {selectedSession ? (
             <div className="space-y-5">
               <DialogHeader className="space-y-1.5">

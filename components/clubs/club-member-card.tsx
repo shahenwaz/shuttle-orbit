@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Link2, Shield, UserRound } from "lucide-react";
 
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 import type { ClubProfileMember } from "@/lib/clubs/club-profile-mappers";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ export function ClubMemberCard({ member }: ClubMemberCardProps) {
 
   const cardContent = (
     <div className="flex min-w-0 items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/4 text-purple-300/80 transition group-hover:border-purple-400/25 group-hover:text-purple-200">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-secondary text-purple-200 transition group-hover:border-purple-300/30 group-hover:text-purple-100">
         <UserRound className="h-4 w-4" />
       </div>
 
@@ -31,7 +32,7 @@ export function ClubMemberCard({ member }: ClubMemberCardProps) {
           <span
             className={cn(
               "inline-flex shrink-0 items-center gap-1 font-medium",
-              isTourPlayer ? "text-blue-500" : "text-muted-foreground",
+              isTourPlayer ? "text-blue-300" : "text-muted-foreground",
             )}
           >
             {isTourPlayer ? (
@@ -46,12 +47,16 @@ export function ClubMemberCard({ member }: ClubMemberCardProps) {
     </div>
   );
 
-  const className = cn(
-    "group block rounded-md border border-white/10 bg-white/4 px-3 py-2 transition",
-    isTourPlayer
-      ? "cursor-pointer hover:border-blue-500/25 hover:bg-white/6"
-      : "cursor-default hover:border-purple-400/20 hover:bg-white/6",
-  );
+  const className = surfaceCardClassName({
+    interactive: Boolean(playerHref),
+    compact: true,
+    className: cn(
+      "group block",
+      playerHref ? "cursor-pointer" : "cursor-default",
+      isTourPlayer && playerHref ? "hover:border-blue-300/35" : "",
+      !isTourPlayer && playerHref ? "hover:border-purple-300/30" : "",
+    ),
+  });
 
   if (playerHref) {
     return (

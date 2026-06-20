@@ -15,7 +15,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
     <div
       className={surfaceCardClassName({
         interactive: true,
-        blur: true,
+        variant: "elevated",
         className: "px-3 py-2 sm:px-4 sm:py-3",
       })}
     >
