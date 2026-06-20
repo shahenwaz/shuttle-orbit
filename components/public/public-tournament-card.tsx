@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
+
 import { surfaceCardClassName } from "@/components/shared/surface-card";
+import { getTournamentDisplayStatus } from "@/lib/tournament/status";
 import { formatDate } from "@/lib/utils/format";
 
 export type PublicTournamentCardData = {
   id: string;
   slug: string;
   name: string;
-  status?: string | null;
   eventDate: Date | string;
   location: string | null;
   _count: {
@@ -24,19 +25,22 @@ type PublicTournamentCardProps = {
   tournament: PublicTournamentCardData;
 };
 
+const statusTextClassName = {
+  upcoming: "text-sky-400",
+  live: "text-amber-400",
+  completed: "text-emerald-400",
+};
+
+const titleTextClassName = {
+  upcoming: "text-sky-400 group-hover:text-sky-100",
+  live: "text-amber-400 group-hover:text-amber-100",
+  completed: "text-emerald-400 group-hover:text-emerald-100",
+};
+
 export function PublicTournamentCard({
   tournament,
 }: PublicTournamentCardProps) {
-  const normalizedStatus = tournament.status?.toLowerCase();
-  const isCompleted = normalizedStatus === "completed";
-
-  const statusLabel = isCompleted ? "Completed" : "Upcoming";
-  const accent = isCompleted ? "success" : "info";
-  const statusClassName = isCompleted ? "text-emerald-500" : "text-sky-500";
-
-  const titleClassName = isCompleted
-    ? "text-emerald-300 group-hover:text-emerald-200"
-    : "text-sky-300 group-hover:text-sky-200";
+  const displayStatus = getTournamentDisplayStatus(tournament.eventDate);
 
   type CategoryRow = (typeof tournament.categories)[number];
 
@@ -50,7 +54,7 @@ export function PublicTournamentCard({
       className={surfaceCardClassName({
         variant: "elevated",
         interactive: true,
-        accent,
+        accent: displayStatus.accent,
         className:
           "group block overflow-hidden p-4 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/35 sm:p-5",
       })}
@@ -58,15 +62,19 @@ export function PublicTournamentCard({
       <div className="min-w-0 space-y-3">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.18em]">
-            <span className={statusClassName}>{statusLabel}</span>
-            <span className="text-white/20">/</span>
             <span className="text-muted-foreground">
               {formatDate(tournament.eventDate)}
+            </span>
+            <span className="text-white/20">/</span>
+            <span className={statusTextClassName[displayStatus.key]}>
+              {displayStatus.label}
             </span>
           </div>
 
           <h2
-            className={`truncate text-base font-semibold tracking-tight transition sm:text-lg ${titleClassName}`}
+            className={`truncate text-base font-semibold tracking-tight transition sm:text-lg ${
+              titleTextClassName[displayStatus.key]
+            }`}
           >
             {tournament.name}
           </h2>
@@ -100,10 +108,8 @@ export function PublicTournamentCard({
             <>
               <span className="h-1 w-1 rounded-full bg-white/20" />
 
-              <span className="min-w-0 truncate">
-                <span className="font-medium text-foreground/80">
-                  {categoryLabels}
-                </span>
+              <span className="font-medium text-foreground/80">
+                {categoryLabels}
               </span>
             </>
           ) : null}
