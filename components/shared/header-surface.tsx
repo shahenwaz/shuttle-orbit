@@ -11,6 +11,7 @@ export type HeaderSurfaceVariant =
 
 type HeaderSurfaceProps = {
   title: string;
+  titleLeading?: ReactNode;
   actions?: ReactNode;
   meta?: ReactNode;
   summary?: ReactNode;
@@ -118,6 +119,7 @@ function BadmintonCourtMarking({ variant }: { variant: HeaderSurfaceVariant }) {
 
 export function HeaderSurface({
   title,
+  titleLeading,
   actions,
   meta,
   summary,
@@ -188,23 +190,29 @@ export function HeaderSurface({
       >
         <div className="space-y-3 pb-3">
           <div className="min-w-0 space-y-2">
-            <div className="min-w-0">
-              <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                {title}
-              </h1>
+            <div className="flex min-w-0 items-start gap-3">
+              {titleLeading ? (
+                <div className="shrink-0 pt-1">{titleLeading}</div>
+              ) : null}
+
+              <div className="min-w-0 space-y-1">
+                <h1 className="truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                  {title}
+                </h1>
+
+                {meta ? (
+                  <div className="min-w-0 text-sm text-muted-foreground pb-1">
+                    {meta}
+                  </div>
+                ) : null}
+
+                {summary ? (
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    {summary}
+                  </div>
+                ) : null}
+              </div>
             </div>
-
-            {meta ? (
-              <div className="flex min-w-0 items-center gap-2 text-xs">
-                {meta}
-              </div>
-            ) : null}
-
-            {summary ? (
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                {summary}
-              </div>
-            ) : null}
 
             {actions ? (
               <div className="flex flex-wrap items-center gap-1.5 pt-0.5 sm:gap-2">

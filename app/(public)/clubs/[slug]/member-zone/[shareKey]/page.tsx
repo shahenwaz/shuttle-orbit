@@ -1,17 +1,24 @@
 import { notFound } from "next/navigation";
 
+import {
+  PublicClubProfileHeader,
+  type PublicClubProfileTab,
+} from "@/components/clubs/public-club-profile-header";
 import { ClubProfileShell } from "@/components/clubs/club-profile-shell";
 import { PageContainer } from "@/components/layout/page-container";
-import { prisma } from "@/lib/db/prisma";
 import {
   mapClubProfileMember,
   mapClubProfileSession,
 } from "@/lib/clubs/club-profile-mappers";
+import { prisma } from "@/lib/db/prisma";
 
 type MemberZonePageProps = {
   params: Promise<{
     slug: string;
     shareKey: string;
+  }>;
+  searchParams?: Promise<{
+    tab?: string;
   }>;
 };
 
@@ -44,10 +51,19 @@ const sessionSelect = {
   },
 };
 
+function getActiveTab(tab: string | undefined): PublicClubProfileTab {
+  if (tab === "members") return "members";
+  if (tab === "sessions") return "sessions";
+
+  return "overview";
+}
+
 export default async function ClubMemberZonePage({
   params,
+  searchParams,
 }: MemberZonePageProps) {
   const { slug, shareKey } = await params;
+  const resolvedSearchParams = await searchParams;
   const now = new Date();
 
   const club = await prisma.club.findFirst({
@@ -65,7 +81,6 @@ export default async function ClubMemberZonePage({
       description: true,
       homeVenue: true,
       logoUrl: true,
-      isManagedClub: true,
       players: {
         where: {
           isActive: true,
@@ -88,7 +103,7 @@ export default async function ClubMemberZonePage({
     notFound();
   }
 
-  const [upcomingSessions, previousSessions] = await Promise.all([
+  const [upcomingSessionRows, previousSessionRows] = await Promise.all([
     prisma.clubSession.findMany({
       where: {
         clubId: club.id,
@@ -118,29 +133,51 @@ export default async function ClubMemberZonePage({
   ]);
 
   type PlayerRow = (typeof club.players)[number];
-  type SessionRow = (typeof upcomingSessions)[number];
+  type UpcomingSessionRow = (typeof upcomingSessionRows)[number];
+  type PreviousSessionRow = (typeof previousSessionRows)[number];
+
+  const members = club.players.map((player: PlayerRow) =>
+    mapClubProfileMember(player),
+  );
+
+  const upcomingSessions = upcomingSessionRows.map(
+    (session: UpcomingSessionRow) => mapClubProfileSession(session),
+  );
+
+  const previousSessions = previousSessionRows.map(
+    (session: PreviousSessionRow) => mapClubProfileSession(session),
+  );
+
+  const activeTab = getActiveTab(resolvedSearchParams?.tab);
+  const baseHref = `/clubs/${slug}/member-zone/${shareKey}`;
 
   return (
-    <PageContainer className="py-7 sm:py-10">
-      <ClubProfileShell
+    <>
+      <PublicClubProfileHeader
         club={{
           name: club.name,
           shortName: club.shortName,
-          description: club.description,
           homeVenue: club.homeVenue,
           logoUrl: club.logoUrl,
         }}
-        members={club.players.map((player: PlayerRow) =>
-          mapClubProfileMember(player),
-        )}
+        activeTab={activeTab}
+        baseHref={baseHref}
         hasSessionAccess={true}
-        upcomingSessions={upcomingSessions.map((session: SessionRow) =>
-          mapClubProfileSession(session),
-        )}
-        previousSessions={previousSessions.map((session: SessionRow) =>
-          mapClubProfileSession(session),
-        )}
       />
-    </PageContainer>
+
+      <PageContainer className="py-5 sm:py-7">
+        <ClubProfileShell
+          club={{
+            description: club.description,
+            homeVenue: club.homeVenue,
+          }}
+          members={members}
+          activeTab={activeTab}
+          hasSessionAccess={true}
+          upcomingSessions={upcomingSessions}
+          previousSessions={previousSessions}
+        />
+      </PageContainer>
+    </>
   );
 }

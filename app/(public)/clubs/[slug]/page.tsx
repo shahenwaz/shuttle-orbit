@@ -1,18 +1,35 @@
 import { notFound } from "next/navigation";
 
+import {
+  PublicClubProfileHeader,
+  type PublicClubProfileTab,
+} from "@/components/clubs/public-club-profile-header";
 import { ClubProfileShell } from "@/components/clubs/club-profile-shell";
 import { PageContainer } from "@/components/layout/page-container";
-import { prisma } from "@/lib/db/prisma";
 import { mapClubProfileMember } from "@/lib/clubs/club-profile-mappers";
+import { prisma } from "@/lib/db/prisma";
 
 type PublicClubPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    tab?: string;
+  }>;
 };
 
-export default async function PublicClubPage({ params }: PublicClubPageProps) {
+function getActiveTab(tab: string | undefined): PublicClubProfileTab {
+  if (tab === "members") return "members";
+
+  return "overview";
+}
+
+export default async function PublicClubPage({
+  params,
+  searchParams,
+}: PublicClubPageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
 
   const club = await prisma.club.findUnique({
     where: {
@@ -49,21 +66,37 @@ export default async function PublicClubPage({ params }: PublicClubPageProps) {
 
   type PlayerRow = (typeof club.players)[number];
 
+  const members = club.players.map((player: PlayerRow) =>
+    mapClubProfileMember(player),
+  );
+
+  const activeTab = getActiveTab(resolvedSearchParams?.tab);
+
   return (
-    <PageContainer className="py-7 sm:py-10">
-      <ClubProfileShell
+    <>
+      <PublicClubProfileHeader
         club={{
           name: club.name,
           shortName: club.shortName,
-          description: club.description,
           homeVenue: club.homeVenue,
           logoUrl: club.logoUrl,
         }}
-        members={club.players.map((player: PlayerRow) =>
-          mapClubProfileMember(player),
-        )}
+        activeTab={activeTab}
+        baseHref={`/clubs/${slug}`}
         hasSessionAccess={false}
       />
-    </PageContainer>
+
+      <PageContainer className="py-5 sm:py-7">
+        <ClubProfileShell
+          club={{
+            description: club.description,
+            homeVenue: club.homeVenue,
+          }}
+          members={members}
+          activeTab={activeTab}
+          hasSessionAccess={false}
+        />
+      </PageContainer>
+    </>
   );
 }
