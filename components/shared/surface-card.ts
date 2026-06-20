@@ -15,6 +15,14 @@ export const surfaceCardVariants = cva(
         panel:
           "border-white/10 bg-card shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]",
       },
+      accent: {
+        none: "",
+        brand: "border-l-[5px] border-l-primary",
+        info: "border-l-[5px] border-l-sky-300",
+        success: "border-l-[5px] border-l-emerald-300",
+        warning: "border-l-[5px] border-l-amber-300",
+        danger: "border-l-[5px] border-l-red-400",
+      },
       interactive: {
         true: "transition duration-200 hover:border-white/20 hover:bg-accent",
         false: "",
@@ -28,6 +36,7 @@ export const surfaceCardVariants = cva(
       variant: "default",
       interactive: false,
       compact: false,
+      accent: "none",
     },
   },
 );
@@ -40,7 +49,11 @@ export function surfaceCardClassName({
   variant,
   interactive,
   compact,
+  accent,
   className,
 }: SurfaceCardClassNameProps = {}) {
-  return cn(surfaceCardVariants({ variant, interactive, compact }), className);
+  return cn(
+    surfaceCardVariants({ variant, interactive, compact, accent }),
+    className,
+  );
 }
