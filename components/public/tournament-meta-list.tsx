@@ -14,28 +14,28 @@ export function TournamentMetaList({
   matchCount,
 }: TournamentMetaListProps) {
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-3 text-sm text-muted-foreground">
-      <div className="flex items-center gap-2">
-        <CalendarDays className="h-4 w-4 text-primary" />
-        <span>{eventDate}</span>
-      </div>
+    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-white/10 bg-secondary px-2.5 py-1">
+        <CalendarDays className="h-3.5 w-3.5 text-primary/85" />
+        {eventDate}
+      </span>
 
       {location ? (
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-primary" />
-          <span>{location}</span>
-        </div>
+        <span className="inline-flex max-w-full items-center gap-1.5 rounded-sm border border-white/10 bg-secondary px-2.5 py-1">
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/85" />
+          <span className="truncate">{location}</span>
+        </span>
       ) : null}
 
-      <div className="flex items-center gap-2">
-        <Users className="h-4 w-4 text-primary" />
-        <span>{teamCount} teams</span>
-      </div>
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-white/10 bg-secondary px-2.5 py-1">
+        <Users className="h-3.5 w-3.5 text-primary/85" />
+        {teamCount} teams
+      </span>
 
-      <div className="flex items-center gap-2">
-        <Swords className="h-4 w-4 text-primary" />
-        <span>{matchCount} matches</span>
-      </div>
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-white/10 bg-secondary px-2.5 py-1">
+        <Swords className="h-3.5 w-3.5 text-primary/85" />
+        {matchCount} matches
+      </span>
     </div>
   );
 }

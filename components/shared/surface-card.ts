@@ -18,9 +18,9 @@ export const surfaceCardVariants = cva(
       accent: {
         none: "",
         brand: "border-l-[5px] border-l-primary",
-        info: "border-l-[5px] border-l-sky-300",
-        success: "border-l-[5px] border-l-emerald-300",
-        warning: "border-l-[5px] border-l-amber-300",
+        info: "border-l-[5px] border-l-sky-400",
+        success: "border-l-[5px] border-l-emerald-400",
+        warning: "border-l-[5px] border-l-amber-400",
         danger: "border-l-[5px] border-l-red-400",
       },
       interactive: {

@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/layout/page-container";
 import { PublicPageHeader } from "@/components/public/public-page-header";
-import { TournamentListCard } from "@/components/public/tournament-list-card";
-import { Card, CardContent } from "@/components/ui/card";
+import { PublicTournamentCard } from "@/components/public/public-tournament-card";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 import { getAllTournaments } from "@/lib/tournament/queries";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -21,20 +21,22 @@ export default async function TournamentsPage() {
     <PageContainer className="space-y-5 sm:space-y-6">
       <PublicPageHeader
         eyebrow="Tournaments"
-        title="Upcoming and completed badminton tournaments"
-        description="View tournament details, categories, fixtures, standings, and results from recent community events."
+        title="Upcoming and previous badminton tournaments"
       />
 
       {tournaments.length === 0 ? (
-        <Card className="rounded-md border-white/10 bg-white/4">
-          <CardContent className="py-8 text-sm text-muted-foreground sm:text-base">
-            No tournaments are available right now.
-          </CardContent>
-        </Card>
+        <div
+          className={surfaceCardClassName({
+            variant: "elevated",
+            className: "px-4 py-8 text-sm text-muted-foreground sm:text-base",
+          })}
+        >
+          No tournaments are available right now.
+        </div>
       ) : (
-        <div className="grid gap-3 sm:gap-4">
+        <div className="grid gap-2 sm:gap-2.5 sm:grid-cols-2">
           {tournaments.map((tournament: TournamentListItem) => (
-            <TournamentListCard key={tournament.id} tournament={tournament} />
+            <PublicTournamentCard key={tournament.id} tournament={tournament} />
           ))}
         </div>
       )}
