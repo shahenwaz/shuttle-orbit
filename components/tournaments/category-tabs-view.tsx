@@ -78,7 +78,7 @@ type CategoryTabsViewProps = {
   };
 };
 
-type TabKey = "overview" | "players" | "teams" | "matches" | "standings";
+type TabKey = "info" | "players" | "teams" | "matches" | "standings";
 
 function getUniquePlayers(
   teamEntries: CategoryTabsViewProps["category"]["teamEntries"],
@@ -191,7 +191,7 @@ export function CategoryTabsView({
 
   return (
     <section className="min-w-0 space-y-4 sm:space-y-5">
-      {activeTab === "overview" ? (
+      {activeTab === "info" ? (
         <section className="max-w-3xl space-y-3 py-1">
           <h2 className="text-base font-semibold tracking-tight text-purple-400 sm:text-lg">
             Format and category details

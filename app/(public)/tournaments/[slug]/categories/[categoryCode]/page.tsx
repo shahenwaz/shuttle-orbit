@@ -26,7 +26,7 @@ function getActiveTab(tab: string | undefined): PublicCategoryTab {
   if (tab === "matches") return "matches";
   if (tab === "standings") return "standings";
 
-  return "overview";
+  return "info";
 }
 
 export async function generateMetadata({

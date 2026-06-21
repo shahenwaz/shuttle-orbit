@@ -2,7 +2,7 @@ import { ConnectedTabs } from "@/components/shared/connected-tabs";
 import { HeaderSurface } from "@/components/shared/header-surface";
 
 export type PublicCategoryTab =
-  | "overview"
+  | "info"
   | "players"
   | "teams"
   | "matches"
@@ -29,8 +29,8 @@ export function PublicCategoryDetailHeader({
 }: PublicCategoryDetailHeaderProps) {
   const tabs = [
     {
-      value: "overview",
-      label: "Overview",
+      value: "info",
+      label: "Info",
       href: baseHref,
     },
     {
@@ -59,11 +59,7 @@ export function PublicCategoryDetailHeader({
     <HeaderSurface
       title={category.name}
       variant="tournament"
-      meta={
-        <span className="truncate text-muted-foreground">
-          {tournament.name}
-        </span>
-      }
+      meta={<span className="truncate text-primary">{tournament.name}</span>}
       className="border-b-0"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
