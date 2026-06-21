@@ -60,7 +60,7 @@ export default async function TournamentDetailPage({
             <PublicTournamentCategoryCard
               key={category.id}
               category={category}
-              href={`/tournaments/${tournament.slug}/categories/${category.id}`}
+              href={`/tournaments/${tournament.slug}/categories/${category.code}`}
             />
           ))}
         </div>

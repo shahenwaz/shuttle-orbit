@@ -1,20 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Layers3, Swords, User, Users } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
-import { SectionTabs } from "@/components/shared/section-tabs";
 import { GroupStandingsTable } from "@/components/tournaments/group-standings-table";
 import { MatchCard } from "@/components/tournaments/match-card";
 import { PlayerCard } from "@/components/players/player-card";
 import { TeamCard } from "@/components/tournaments/team-card";
 import { computeGroupStandings } from "@/lib/tournament/standings";
 import { sortStagesForDisplay } from "@/lib/tournament/stage-display-order";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type CategoryTabsViewProps = {
+  activeTab: TabKey;
   category: {
+    rulesSummary: string | null;
     teamEntries: Array<{
       id: string;
       teamName: string | null;
@@ -76,7 +78,7 @@ type CategoryTabsViewProps = {
   };
 };
 
-type TabKey = "players" | "teams" | "matches" | "standings";
+type TabKey = "overview" | "players" | "teams" | "matches" | "standings";
 
 function getUniquePlayers(
   teamEntries: CategoryTabsViewProps["category"]["teamEntries"],
@@ -150,9 +152,10 @@ function getStageMetaLabel(stage: {
   return stage.stageType.replaceAll("_", " ").toUpperCase();
 }
 
-export function CategoryTabsView({ category }: CategoryTabsViewProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>("players");
-
+export function CategoryTabsView({
+  category,
+  activeTab,
+}: CategoryTabsViewProps) {
   const players = useMemo(
     () => getUniquePlayers(category.teamEntries),
     [category.teamEntries],
@@ -186,20 +189,19 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
     [category.stages],
   );
 
-  const tabs: Array<{ key: TabKey; label: string }> = [
-    { key: "players", label: "Players" },
-    { key: "teams", label: "Teams" },
-    { key: "matches", label: "Matches" },
-    { key: "standings", label: "Standings" },
-  ];
-
   return (
     <section className="min-w-0 space-y-4 sm:space-y-5">
-      <SectionTabs
-        activeKey={activeTab}
-        items={tabs}
-        onChange={(key) => setActiveTab(key as TabKey)}
-      />
+      {activeTab === "overview" ? (
+        <section className="max-w-3xl space-y-3 py-1">
+          <h2 className="text-base font-semibold tracking-tight text-purple-400 sm:text-lg">
+            Format and category details
+          </h2>
+
+          <p className="text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+            {category.rulesSummary || "Category details will be updated soon."}
+          </p>
+        </section>
+      ) : null}
 
       {activeTab === "players" ? (
         <div className="space-y-3 sm:space-y-4">
@@ -261,7 +263,14 @@ export function CategoryTabsView({ category }: CategoryTabsViewProps) {
             <EmptyState message="No matches available yet." />
           ) : (
             orderedMatchStages.map((stage) => (
-              <div key={stage.id} className="surface-card p-3 sm:p-4">
+              <div
+                key={stage.id}
+                className={surfaceCardClassName({
+                  variant: "elevated",
+                  accent: "purple",
+                  className: "p-3 sm:p-4",
+                })}
+              >
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-sm font-semibold text-foreground sm:text-base">
                     {stage.name}

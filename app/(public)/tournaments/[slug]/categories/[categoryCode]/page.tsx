@@ -1,10 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
+import {
+  PublicCategoryDetailHeader,
+  type PublicCategoryTab,
+} from "@/components/public/public-category-detail-header";
 import { CategoryTabsView } from "@/components/tournaments/category-tabs-view";
-import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
@@ -14,7 +15,19 @@ type CategoryDetailPageProps = {
     slug: string;
     categoryCode: string;
   }>;
+  searchParams?: Promise<{
+    tab?: string;
+  }>;
 };
+
+function getActiveTab(tab: string | undefined): PublicCategoryTab {
+  if (tab === "players") return "players";
+  if (tab === "teams") return "teams";
+  if (tab === "matches") return "matches";
+  if (tab === "standings") return "standings";
+
+  return "overview";
+}
 
 export async function generateMetadata({
   params,
@@ -43,8 +56,11 @@ export async function generateMetadata({
 
 export default async function CategoryDetailPage({
   params,
+  searchParams,
 }: CategoryDetailPageProps) {
   const { slug, categoryCode } = await params;
+  const resolvedSearchParams = await searchParams;
+
   const { tournament, category } = await getCategoryByTournamentAndCode(
     slug,
     categoryCode,
@@ -54,38 +70,27 @@ export default async function CategoryDetailPage({
     notFound();
   }
 
+  const activeTab = getActiveTab(resolvedSearchParams?.tab);
+  const baseHref = `/tournaments/${tournament.slug}/categories/${category.code}`;
+
   return (
-    <PageContainer className="space-y-5 sm:space-y-6">
-      <section className="space-y-3 sm:space-y-4">
-        <Link
-          href={`/tournaments/${tournament.slug}`}
-          className={actionPillButtonClassName({
-            variant: "neutral",
-            className: "gap-1.5 px-3 py-1.5 text-xs sm:text-sm",
-          })}
-        >
-          <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span>Back to tournament</span>
-        </Link>
+    <>
+      <PublicCategoryDetailHeader
+        tournament={{
+          name: tournament.name,
+          slug: tournament.slug,
+        }}
+        category={{
+          name: category.name,
+          rulesSummary: category.rulesSummary,
+        }}
+        activeTab={activeTab}
+        baseHref={baseHref}
+      />
 
-        <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary sm:text-xs">
-            {tournament.name}
-          </p>
-
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {category.name}
-          </h1>
-
-          {category.rulesSummary ? (
-            <p className="max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
-              {category.rulesSummary}
-            </p>
-          ) : null}
-        </div>
-      </section>
-
-      <CategoryTabsView category={category} />
-    </PageContainer>
+      <PageContainer className="py-4 sm:py-6">
+        <CategoryTabsView category={category} activeTab={activeTab} />
+      </PageContainer>
+    </>
   );
 }
