@@ -22,6 +22,7 @@ export const surfaceCardVariants = cva(
         success: "border-l-[5px] border-l-emerald-400",
         warning: "border-l-[5px] border-l-amber-400",
         danger: "border-l-[5px] border-l-red-400",
+        purple: "border-l-[5px] border-l-purple-400",
       },
       interactive: {
         true: "transition duration-200 hover:border-white/20 hover:bg-accent",
