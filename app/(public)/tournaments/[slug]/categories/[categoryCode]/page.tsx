@@ -9,6 +9,7 @@ import { CategoryTabsView } from "@/components/tournaments/category-tabs-view";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
+import { getLeaderboard } from "@/lib/rankings/queries";
 
 type CategoryDetailPageProps = {
   params: Promise<{
@@ -54,6 +55,23 @@ export async function generateMetadata({
   });
 }
 
+function getRankingScopeForCategory(categoryCode: string) {
+  const normalizedCode = categoryCode.trim().toUpperCase();
+
+  if (normalizedCode === "MIXED") {
+    return {
+      scope: "UNIVERSAL" as const,
+      label: "Universal",
+    };
+  }
+
+  return {
+    scope: "CATEGORY" as const,
+    categoryCode: normalizedCode,
+    label: `${normalizedCode}`,
+  };
+}
+
 export default async function CategoryDetailPage({
   params,
   searchParams,
@@ -64,6 +82,28 @@ export default async function CategoryDetailPage({
   const { tournament, category } = await getCategoryByTournamentAndCode(
     slug,
     categoryCode,
+  );
+
+  if (!tournament || !category) {
+    notFound();
+  }
+
+  const rankingScope = getRankingScopeForCategory(category.code);
+
+  const categoryLeaderboard = await getLeaderboard({
+    scope: rankingScope.scope,
+    categoryCode:
+      rankingScope.scope === "CATEGORY" ? rankingScope.categoryCode : undefined,
+  });
+
+  type LeaderboardRow = (typeof categoryLeaderboard)[number];
+
+  const playerRanks = categoryLeaderboard.reduce<Record<string, number>>(
+    (rankMap, row: LeaderboardRow) => {
+      rankMap[row.playerId] = row.rank;
+      return rankMap;
+    },
+    {},
   );
 
   if (!tournament || !category) {
@@ -89,7 +129,11 @@ export default async function CategoryDetailPage({
       />
 
       <PageContainer className="py-4 sm:py-6">
-        <CategoryTabsView category={category} activeTab={activeTab} />
+        <CategoryTabsView
+          category={category}
+          activeTab={activeTab}
+          playerRanks={playerRanks}
+        />
       </PageContainer>
     </>
   );

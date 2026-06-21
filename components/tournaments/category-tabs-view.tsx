@@ -15,6 +15,7 @@ import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type CategoryTabsViewProps = {
   activeTab: TabKey;
+  playerRanks: Record<string, number>;
   category: {
     rulesSummary: string | null;
     teamEntries: Array<{
@@ -155,6 +156,7 @@ function getStageMetaLabel(stage: {
 export function CategoryTabsView({
   category,
   activeTab,
+  playerRanks,
 }: CategoryTabsViewProps) {
   const players = useMemo(
     () => getUniquePlayers(category.teamEntries),
@@ -244,7 +246,20 @@ export function CategoryTabsView({
           ) : (
             <div className="grid min-w-0 gap-1.5 sm:gap-2 md:grid-cols-2">
               {category.teamEntries.map((team) => (
-                <TeamCard key={team.id} team={team} />
+                <TeamCard
+                  key={team.id}
+                  team={{
+                    ...team,
+                    player1: {
+                      ...team.player1,
+                      rankingPosition: playerRanks[team.player1.id] ?? null,
+                    },
+                    player2: {
+                      ...team.player2,
+                      rankingPosition: playerRanks[team.player2.id] ?? null,
+                    },
+                  }}
+                />
               ))}
             </div>
           )}

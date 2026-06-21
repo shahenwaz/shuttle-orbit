@@ -6,11 +6,13 @@ type TeamCardProps = {
     id: string;
     teamName: string | null;
     player1: {
+      id: string;
       fullName: string;
       nickname: string | null;
       rankingPosition?: number | null;
     };
     player2: {
+      id: string;
       fullName: string;
       nickname: string | null;
       rankingPosition?: number | null;
@@ -74,7 +76,9 @@ function PlayerLine({
   nickname: string | null;
   rankingPosition?: number | null;
 }) {
-  const rankLabel = rankingPosition ? `#${rankingPosition}` : "UR";
+  const rankLabel = rankingPosition
+    ? `#${String(rankingPosition).padStart(2, "0")}`
+    : "UR";
 
   return (
     <div className="flex min-w-0 items-baseline gap-2">
