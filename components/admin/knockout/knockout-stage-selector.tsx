@@ -9,14 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { KnockoutStageType } from "@/lib/knockout/types";
 
+type KnockoutSetupValue = KnockoutStageType | "final_with_third_place";
+
 type KnockoutStageSelectorProps = {
   tournamentId: string;
   categoryId: string;
   currentStartStageType: KnockoutStageType | null;
+  currentIncludeThirdPlace?: boolean;
 };
 
 const stageOptions: Array<{
-  value: KnockoutStageType;
+  value: KnockoutSetupValue;
   label: string;
   summary: string;
   meta: string;
@@ -25,13 +28,13 @@ const stageOptions: Array<{
     value: "quarter_final",
     label: "Quarter final",
     summary: "Start with 8 teams",
-    meta: "Creates quarter finals, semi finals, and final.",
+    meta: "Creates quarter finals, semi finals, final, and third place.",
   },
   {
     value: "semi_final",
     label: "Semi final",
     summary: "Start with 4 teams",
-    meta: "Creates semi finals and final.",
+    meta: "Creates semi finals, final, and third place.",
   },
   {
     value: "final",
@@ -39,16 +42,26 @@ const stageOptions: Array<{
     summary: "Start with 2 teams",
     meta: "Creates a direct final match only.",
   },
+  {
+    value: "final_with_third_place",
+    label: "Final + Third Place",
+    summary: "Start with top 4 teams",
+    meta: "Creates one final match and one third place match.",
+  },
 ];
 
 export function KnockoutStageSelector({
   tournamentId,
   categoryId,
   currentStartStageType,
+  currentIncludeThirdPlace = false,
 }: KnockoutStageSelectorProps) {
-  const [selectedStage, setSelectedStage] = useState<KnockoutStageType>(
-    currentStartStageType ?? "semi_final",
+  const [selectedStage, setSelectedStage] = useState<KnockoutSetupValue>(
+    currentStartStageType === "final" && currentIncludeThirdPlace
+      ? "final_with_third_place"
+      : (currentStartStageType ?? "semi_final"),
   );
+
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -85,7 +98,7 @@ export function KnockoutStageSelector({
               id="knockoutStartStage"
               value={selectedStage}
               onChange={(event) => {
-                setSelectedStage(event.target.value as KnockoutStageType);
+                setSelectedStage(event.target.value as KnockoutSetupValue);
                 setMessage("");
                 setIsError(false);
               }}
@@ -120,12 +133,22 @@ export function KnockoutStageSelector({
                 setMessage("");
                 setIsError(false);
 
+                const startStageType: KnockoutStageType =
+                  selectedStage === "final_with_third_place"
+                    ? "final"
+                    : selectedStage;
+
+                const includeThirdPlace =
+                  selectedStage === "final_with_third_place" ||
+                  startStageType !== "final";
+
                 startTransition(async () => {
                   try {
                     await saveKnockoutStageSelection({
                       tournamentId,
                       categoryId,
-                      startStageType: selectedStage,
+                      startStageType,
+                      includeThirdPlace,
                     });
 
                     setIsError(false);

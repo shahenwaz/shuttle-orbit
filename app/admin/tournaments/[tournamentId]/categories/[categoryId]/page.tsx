@@ -15,6 +15,14 @@ type AdminCategoryPageProps = {
   }>;
 };
 
+function getIncludeThirdPlace(config: unknown) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return false;
+  }
+
+  return (config as { includeThirdPlace?: unknown }).includeThirdPlace === true;
+}
+
 export default async function AdminCategoryPage({
   params,
 }: AdminCategoryPageProps) {
@@ -38,6 +46,10 @@ export default async function AdminCategoryPage({
   const currentStartStage =
     (category.knockoutStartStage as KnockoutStageType | null) ?? null;
 
+  const currentIncludeThirdPlace = getIncludeThirdPlace(
+    category.knockoutConfig,
+  );
+
   return (
     <>
       <CategoryWorkspaceHeader
@@ -60,6 +72,7 @@ export default async function AdminCategoryPage({
           tournamentId={tournamentId}
           categoryId={categoryId}
           currentStartStageType={currentStartStage}
+          currentIncludeThirdPlace={currentIncludeThirdPlace}
         />
       </PageContainer>
     </>

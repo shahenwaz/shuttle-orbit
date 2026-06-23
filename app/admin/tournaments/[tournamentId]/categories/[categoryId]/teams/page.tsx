@@ -52,12 +52,14 @@ export default async function AdminCategoryTeamsPage({
           include: {
             player1: {
               select: {
+                id: true,
                 fullName: true,
                 nickname: true,
               },
             },
             player2: {
               select: {
+                id: true,
                 fullName: true,
                 nickname: true,
               },

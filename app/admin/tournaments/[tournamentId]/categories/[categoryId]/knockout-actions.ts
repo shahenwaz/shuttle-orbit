@@ -14,19 +14,33 @@ export async function saveKnockoutStageSelection(args: {
   tournamentId: string;
   categoryId: string;
   startStageType: KnockoutStageType;
+  includeThirdPlace?: boolean;
 }) {
-  const { tournamentId, categoryId, startStageType } = args;
+  const {
+    tournamentId,
+    categoryId,
+    startStageType,
+    includeThirdPlace = true,
+  } = args;
 
   await saveCategoryKnockoutConfig({
     categoryId,
     startStageType,
-    includeThirdPlace: true,
+    includeThirdPlace,
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/categories/${categoryId}`);
   revalidatePath(
     `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
   );
+}
+
+function shouldIncludeThirdPlace(config: unknown) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return false;
+  }
+
+  return (config as { includeThirdPlace?: unknown }).includeThirdPlace === true;
 }
 
 export async function generateKnockoutBracketAction(args: {
@@ -59,7 +73,9 @@ export async function generateKnockoutBracketAction(args: {
   }
 
   const startStageType = category.knockoutStartStage as KnockoutStageType;
-  const seeds = buildKnockoutStageSeeds(startStageType);
+  const seeds = buildKnockoutStageSeeds(startStageType, {
+    includeThirdPlace: shouldIncludeThirdPlace(category.knockoutConfig),
+  });
 
   type CategoryStage = (typeof category.stages)[number];
   type KnockoutSeed = (typeof seeds)[number];

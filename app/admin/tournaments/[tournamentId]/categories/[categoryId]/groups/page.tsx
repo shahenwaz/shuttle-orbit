@@ -63,12 +63,14 @@ export default async function AdminCategoryGroupsPage({
                       include: {
                         player1: {
                           select: {
+                            id: true,
                             fullName: true,
                             nickname: true,
                           },
                         },
                         player2: {
                           select: {
+                            id: true,
                             fullName: true,
                             nickname: true,
                           },
@@ -88,12 +90,14 @@ export default async function AdminCategoryGroupsPage({
           include: {
             player1: {
               select: {
+                id: true,
                 fullName: true,
                 nickname: true,
               },
             },
             player2: {
               select: {
+                id: true,
                 fullName: true,
                 nickname: true,
               },
@@ -339,10 +343,12 @@ export default async function AdminCategoryGroupsPage({
                                       id: team.id,
                                       teamName: team.teamName,
                                       player1: {
+                                        id: team.player1.id,
                                         fullName: team.player1.fullName,
                                         nickname: team.player1.nickname,
                                       },
                                       player2: {
+                                        id: team.player2.id,
                                         fullName: team.player2.fullName,
                                         nickname: team.player2.nickname,
                                       },

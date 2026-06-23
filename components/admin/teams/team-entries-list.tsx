@@ -26,10 +26,12 @@ type TeamEntryRow = {
   teamName: string | null;
   status: string;
   player1: {
+    id: string;
     fullName: string;
     nickname: string | null;
   };
   player2: {
+    id: string;
     fullName: string;
     nickname: string | null;
   };
@@ -143,10 +145,12 @@ function AdminTeamEntryCard({
           id: team.id,
           teamName: team.teamName,
           player1: {
+            id: team.player1.id,
             fullName: team.player1.fullName,
             nickname: team.player1.nickname,
           },
           player2: {
+            id: team.player2.id,
             fullName: team.player2.fullName,
             nickname: team.player2.nickname,
           },

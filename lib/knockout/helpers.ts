@@ -26,6 +26,7 @@ export function getKnockoutStageChain(
 
 export function buildKnockoutStageSeeds(
   startingStageType: KnockoutStageType,
+  options: { includeThirdPlace?: boolean } = {},
 ): KnockoutStageSeed[] {
   const mainStages = getKnockoutStageChain(startingStageType).map(
     (stageType) => {
@@ -43,7 +44,7 @@ export function buildKnockoutStageSeeds(
     (stage) => stage.stageType === "semi_final",
   );
 
-  if (includesSemiFinal) {
+  if (includesSemiFinal || options.includeThirdPlace) {
     mainStages.push({
       stageType: "third_place",
       stageName: getKnockoutStageDefinition("third_place").label,

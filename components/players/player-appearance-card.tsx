@@ -9,10 +9,12 @@ type PlayerAppearanceCardProps = {
     id: string;
     teamName: string | null;
     player1: {
+      id: string;
       fullName: string;
       nickname: string | null;
     };
     player2: {
+      id: string;
       fullName: string;
       nickname: string | null;
     };
@@ -82,10 +84,12 @@ export function PlayerAppearanceCard({ entry }: PlayerAppearanceCardProps) {
           id: entry.id,
           teamName: entry.teamName,
           player1: {
+            id: entry.player1.id,
             fullName: entry.player1.fullName,
             nickname: entry.player1.nickname,
           },
           player2: {
+            id: entry.player2.id,
             fullName: entry.player2.fullName,
             nickname: entry.player2.nickname,
           },

@@ -255,12 +255,14 @@ export async function getPlayerProfile(playerId: string) {
       player2Id: true,
       player1: {
         select: {
+          id: true,
           fullName: true,
           nickname: true,
         },
       },
       player2: {
         select: {
+          id: true,
           fullName: true,
           nickname: true,
         },

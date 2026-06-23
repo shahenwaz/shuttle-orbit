@@ -96,7 +96,9 @@ export function KnockoutStageList({
         const canManageTeams =
           mode === "fixtures" &&
           knockoutStartStageType !== null &&
-          stage.stageType === knockoutStartStageType;
+          (stage.stageType === knockoutStartStageType ||
+            (knockoutStartStageType === "final" &&
+              stage.stageType === "third_place"));
 
         return (
           <div key={stage.id} className="surface-card overflow-hidden">
