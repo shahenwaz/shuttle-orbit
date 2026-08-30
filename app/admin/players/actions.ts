@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { createPlayerSchema } from "@/lib/validations/player";
 
@@ -51,6 +52,8 @@ export async function createPlayerAction(
   _prevState: CreatePlayerActionState,
   formData: FormData,
 ): Promise<CreatePlayerActionState> {
+  await requireAdmin();
+
   const rawValues = {
     fullName: formData.get("fullName"),
     nickname: formData.get("nickname"),
@@ -120,6 +123,8 @@ export async function updatePlayerAction(
   _prevState: UpdatePlayerActionState,
   formData: FormData,
 ): Promise<UpdatePlayerActionState> {
+  await requireAdmin();
+
   const playerId = formData.get("playerId");
 
   if (typeof playerId !== "string" || !playerId) {
@@ -228,6 +233,8 @@ export async function updatePlayerAction(
 export async function deletePlayerAction(
   formData: FormData,
 ): Promise<DeletePlayerActionState> {
+  await requireAdmin();
+
   const playerId = formData.get("playerId");
 
   if (typeof playerId !== "string" || !playerId) {

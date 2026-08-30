@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { clubSessionFormSchema } from "@/lib/validations/club-session";
 
@@ -39,6 +40,8 @@ export async function createClubSessionAction(
   _prevState: ClubSessionActionState,
   formData: FormData,
 ): Promise<ClubSessionActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
 
   if (typeof clubId !== "string" || !clubId) {
@@ -119,6 +122,8 @@ export async function updateClubSessionAction(
   _prevState: ClubSessionActionState,
   formData: FormData,
 ): Promise<ClubSessionActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
   const sessionId = formData.get("sessionId");
 
@@ -199,6 +204,8 @@ export async function updateClubSessionAction(
 export async function deleteClubSessionAction(
   formData: FormData,
 ): Promise<DeleteClubSessionActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
   const sessionId = formData.get("sessionId");
 

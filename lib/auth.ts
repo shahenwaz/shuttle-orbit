@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import type { NextAuthOptions } from "next-auth";
+import { getServerSession, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { prisma } from "@/lib/db/prisma";
@@ -76,3 +76,11 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export async function requireAdmin(): Promise<void> {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized.");
+  }
+}

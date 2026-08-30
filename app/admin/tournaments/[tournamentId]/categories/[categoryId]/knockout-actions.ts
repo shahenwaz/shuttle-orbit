@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import {
   buildKnockoutStageSeeds,
@@ -16,6 +17,8 @@ export async function saveKnockoutStageSelection(args: {
   startStageType: KnockoutStageType;
   includeThirdPlace?: boolean;
 }) {
+  await requireAdmin();
+
   const {
     tournamentId,
     categoryId,
@@ -47,6 +50,8 @@ export async function generateKnockoutBracketAction(args: {
   tournamentId: string;
   categoryId: string;
 }) {
+  await requireAdmin();
+
   const { tournamentId, categoryId } = args;
 
   const category = await prisma.tournamentCategory.findFirst({
@@ -162,6 +167,8 @@ export async function assignKnockoutMatchTeamsAction(args: {
   teamAId: string | null;
   teamBId: string | null;
 }) {
+  await requireAdmin();
+
   const { tournamentId, categoryId, matchId, teamAId, teamBId } = args;
 
   if (teamAId && teamBId && teamAId === teamBId) {
@@ -216,6 +223,8 @@ export async function resetKnockoutMatchTeamsAction(args: {
   categoryId: string;
   matchId: string;
 }) {
+  await requireAdmin();
+
   const { tournamentId, categoryId, matchId } = args;
 
   const match = await prisma.match.findFirst({

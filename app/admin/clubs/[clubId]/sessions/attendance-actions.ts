@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 export type ClubAttendanceActionState = {
@@ -18,6 +19,8 @@ function revalidateClubPaths(clubId: string) {
 export async function setClubSessionAttendanceAction(
   formData: FormData,
 ): Promise<ClubAttendanceActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
   const sessionId = formData.get("sessionId");
   const memberId = formData.get("memberId");

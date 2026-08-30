@@ -3,6 +3,7 @@
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 export type ClubMemberAccessActionState = {
@@ -22,6 +23,8 @@ function revalidateClubPaths(clubId: string) {
 export async function enableClubMemberAccessAction(
   formData: FormData,
 ): Promise<ClubMemberAccessActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
 
   if (typeof clubId !== "string" || !clubId) {
@@ -77,6 +80,8 @@ export async function enableClubMemberAccessAction(
 export async function refreshClubMemberShareKeyAction(
   formData: FormData,
 ): Promise<ClubMemberAccessActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
 
   if (typeof clubId !== "string" || !clubId) {
@@ -131,6 +136,8 @@ export async function refreshClubMemberShareKeyAction(
 export async function disableClubMemberAccessAction(
   formData: FormData,
 ): Promise<ClubMemberAccessActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
 
   if (typeof clubId !== "string" || !clubId) {

@@ -3,6 +3,7 @@
 import { ClubMemberRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 export type ClubMemberActionState = {
@@ -61,6 +62,8 @@ export async function createClubMemberAction(
   _prevState: ClubMemberActionState,
   formData: FormData,
 ): Promise<ClubMemberActionState> {
+  await requireAdmin();
+
   const clubId = getStringValue(formData, "clubId");
   const playerId = getStringValue(formData, "playerId");
   const role = getClubRole(getStringValue(formData, "role"));
@@ -174,6 +177,8 @@ export async function updateClubMemberAction(
   _prevState: ClubMemberActionState,
   formData: FormData,
 ): Promise<ClubMemberActionState> {
+  await requireAdmin();
+
   const clubId = getStringValue(formData, "clubId");
   const memberId = getStringValue(formData, "memberId");
   const role = getClubRole(getStringValue(formData, "role"));
@@ -239,6 +244,8 @@ export async function updateClubMemberAction(
 export async function deleteClubMemberAction(
   formData: FormData,
 ): Promise<DeleteClubMemberActionState> {
+  await requireAdmin();
+
   const clubId = getStringValue(formData, "clubId");
   const memberId = getStringValue(formData, "memberId");
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { createTeamEntrySchema } from "@/lib/validations/team-entry";
 
@@ -49,6 +50,8 @@ export async function createTeamEntryAction(
   _prevState: CreateTeamEntryActionState,
   formData: FormData,
 ): Promise<CreateTeamEntryActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -159,6 +162,8 @@ export async function createTeamEntryAction(
 export async function removeTeamEntryAction(
   formData: FormData,
 ): Promise<RemoveTeamEntryActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -252,6 +257,8 @@ export type UpdateTeamEntryNameActionState = {
 export async function updateTeamEntryNameAction(
   formData: FormData,
 ): Promise<UpdateTeamEntryNameActionState> {
+  await requireAdmin();
+
   const tournamentId = String(formData.get("tournamentId") ?? "");
   const categoryId = String(formData.get("categoryId") ?? "");
   const teamEntryId = String(formData.get("teamEntryId") ?? "");

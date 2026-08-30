@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { clubFormSchema } from "@/lib/validations/club";
 
@@ -26,6 +27,8 @@ export async function createClubAction(
   _prevState: ClubActionState,
   formData: FormData,
 ): Promise<ClubActionState> {
+  await requireAdmin();
+
   const parsed = clubFormSchema.safeParse({
     name: formData.get("name"),
     slug: formData.get("slug"),
@@ -81,6 +84,8 @@ export async function updateClubAction(
   _prevState: ClubActionState,
   formData: FormData,
 ): Promise<ClubActionState> {
+  await requireAdmin();
+
   const clubId = formData.get("clubId");
 
   if (typeof clubId !== "string" || !clubId) {

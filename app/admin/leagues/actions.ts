@@ -4,6 +4,7 @@ import { LeagueFormat, type Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdmin } from "@/lib/auth";
 import {
   createDoublesEntries,
   createTeamPairMatrixMatches,
@@ -81,6 +82,8 @@ export async function createTeamPairMatrixLeagueAction(
   _state: LeagueActionState,
   formData: FormData,
 ): Promise<LeagueActionState> {
+  await requireAdmin();
+
   const clubId = getStringValue(formData, "clubId");
   const title = getStringValue(formData, "title");
   const playedAtValue = getStringValue(formData, "playedAt");
@@ -317,6 +320,8 @@ export async function createFixedDoublesLeagueAction(
   _state: FixedDoublesLeagueActionState,
   formData: FormData,
 ): Promise<FixedDoublesLeagueActionState> {
+  await requireAdmin();
+
   const clubId = getStringValue(formData, "clubId");
   const title = getStringValue(formData, "title");
   const playedAtValue = getStringValue(formData, "playedAt");

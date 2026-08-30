@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { generateRoundRobinPairings } from "@/lib/tournament/fixtures";
 import { generateGroupFixturesSchema } from "@/lib/validations/fixture";
@@ -61,6 +62,8 @@ export async function generateGroupFixturesAction(
   _prevState: GenerateGroupFixturesActionState,
   formData: FormData,
 ): Promise<GenerateGroupFixturesActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -205,6 +208,8 @@ export async function createGroupMatchAction(
   _prevState: CreateGroupMatchActionState,
   formData: FormData,
 ): Promise<CreateGroupMatchActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -314,6 +319,8 @@ const deleteMatchSchema = z.object({
 export async function deleteMatchAction(
   formData: FormData,
 ): Promise<DeleteMatchActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),

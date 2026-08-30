@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import {
   createTournamentCategorySchema,
@@ -45,6 +46,8 @@ export async function createTournamentCategoryAction(
   _prevState: CreateTournamentCategoryActionState,
   formData: FormData,
 ): Promise<CreateTournamentCategoryActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     name: formData.get("name"),
@@ -122,6 +125,8 @@ export async function updateTournamentAction(
   _prevState: UpdateTournamentActionState,
   formData: FormData,
 ): Promise<UpdateTournamentActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     name: formData.get("name"),
@@ -184,6 +189,8 @@ export async function updateTournamentCategoryAction(
   _prevState: UpdateTournamentCategoryActionState,
   formData: FormData,
 ): Promise<UpdateTournamentCategoryActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -292,6 +299,8 @@ export type RecalculateTournamentRankingsActionState = {
 export async function recalculateTournamentRankingsAction(
   formData: FormData,
 ): Promise<RecalculateTournamentRankingsActionState> {
+  await requireAdmin();
+
   const tournamentId = String(formData.get("tournamentId") ?? "").trim();
 
   if (!tournamentId) {

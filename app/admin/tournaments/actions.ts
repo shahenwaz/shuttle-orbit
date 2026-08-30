@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils/slug";
 import {
@@ -44,6 +45,8 @@ export async function createTournamentAction(
   _prevState: CreateTournamentActionState,
   formData: FormData,
 ): Promise<CreateTournamentActionState> {
+  await requireAdmin();
+
   const rawValues = {
     name: formData.get("name"),
     location: formData.get("location"),
@@ -100,6 +103,8 @@ const deleteCategorySchema = z.object({
 export async function deleteCategoryAction(
   formData: FormData,
 ): Promise<DeleteCategoryActionState> {
+  await requireAdmin();
+
   const parsed = deleteCategorySchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -161,6 +166,8 @@ const deleteTournamentSchema = z.object({
 export async function deleteTournamentAction(
   formData: FormData,
 ): Promise<DeleteTournamentActionState> {
+  await requireAdmin();
+
   const parsed = deleteTournamentSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
   });

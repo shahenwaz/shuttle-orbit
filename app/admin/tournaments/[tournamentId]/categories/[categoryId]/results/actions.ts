@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { getAdvanceTarget, getConsolationTarget } from "@/lib/knockout/helpers";
 
@@ -25,10 +26,7 @@ export type ResetMatchResultActionState = {
 };
 
 type KnockoutStageType =
-  | "quarter_final"
-  | "semi_final"
-  | "final"
-  | "third_place";
+  "quarter_final" | "semi_final" | "final" | "third_place";
 
 type RecordedSetInput = {
   setNumber: number;
@@ -101,6 +99,8 @@ export async function recordMatchResultAction(
   _prevState: RecordMatchResultActionState,
   formData: FormData,
 ): Promise<RecordMatchResultActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -402,6 +402,8 @@ export async function recordMatchResultAction(
 export async function resetMatchResultAction(
   formData: FormData,
 ): Promise<ResetMatchResultActionState> {
+  await requireAdmin();
+
   const parsed = resetMatchResultSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),

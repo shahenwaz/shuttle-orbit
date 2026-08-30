@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
 export type LeagueResultActionState = {
@@ -153,6 +154,8 @@ export async function recordLeagueResultAction(
   _prevState: LeagueResultActionState,
   formData: FormData,
 ): Promise<LeagueResultActionState> {
+  await requireAdmin();
+
   const leagueId = getStringValue(formData, "leagueId");
   const matchId = getStringValue(formData, "matchId");
 
@@ -238,6 +241,8 @@ export async function recordLeagueResultAction(
 }
 
 export async function resetLeagueResultAction(formData: FormData) {
+  await requireAdmin();
+
   const leagueId = getStringValue(formData, "leagueId");
   const matchId = getStringValue(formData, "matchId");
 
@@ -286,6 +291,8 @@ export async function resetLeagueResultAction(formData: FormData) {
 }
 
 export async function deleteLeagueAction(formData: FormData) {
+  await requireAdmin();
+
   const leagueId = getStringValue(formData, "leagueId");
 
   const league = await prisma.league.findUnique({

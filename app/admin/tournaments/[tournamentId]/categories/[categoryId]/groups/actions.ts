@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import {
   assignTeamToGroupSchema,
@@ -99,6 +100,8 @@ export async function createGroupAction(
   _prevState: CreateGroupActionState,
   formData: FormData,
 ): Promise<CreateGroupActionState> {
+  await requireAdmin();
+
   const parsed = createGroupSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -182,6 +185,8 @@ export async function createGroupAction(
 export async function shuffleFirstGroupStageTeamsAction(
   formData: FormData,
 ): Promise<SimpleGroupActionState> {
+  await requireAdmin();
+
   const parsed = shuffleFirstStageTeamsSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -332,6 +337,8 @@ export async function assignTeamToGroupAction(
   _prevState: AssignTeamToGroupActionState,
   formData: FormData,
 ): Promise<AssignTeamToGroupActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -439,6 +446,8 @@ export async function removeGroupMembershipAction(
   _prevState: SimpleGroupActionState,
   formData: FormData,
 ): Promise<SimpleGroupActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -495,6 +504,8 @@ export async function resetGroupFixturesAction(
   _prevState: SimpleGroupActionState,
   formData: FormData,
 ): Promise<SimpleGroupActionState> {
+  await requireAdmin();
+
   const rawValues = {
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -586,6 +597,8 @@ export async function updateGroupAction(
   _prevState: UpdateGroupActionState,
   formData: FormData,
 ): Promise<UpdateGroupActionState> {
+  await requireAdmin();
+
   const tournamentId = formData.get("tournamentId");
   const categoryId = formData.get("categoryId");
   const groupId = formData.get("groupId");
@@ -699,6 +712,8 @@ export type DeleteGroupActionState = {
 export async function deleteGroupAction(
   formData: FormData,
 ): Promise<DeleteGroupActionState> {
+  await requireAdmin();
+
   const tournamentId = formData.get("tournamentId");
   const categoryId = formData.get("categoryId");
   const groupId = formData.get("groupId");
@@ -791,6 +806,8 @@ export async function createCategoryGroupStageAction(
   _prevState: CreateCategoryGroupStageActionState,
   formData: FormData,
 ): Promise<CreateCategoryGroupStageActionState> {
+  await requireAdmin();
+
   const parsed = createCategoryGroupStageSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -906,6 +923,8 @@ export async function updateCategoryStageAction(
   _prevState: UpdateCategoryStageActionState,
   formData: FormData,
 ): Promise<UpdateCategoryStageActionState> {
+  await requireAdmin();
+
   const parsed = updateCategoryStageSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
@@ -1009,6 +1028,8 @@ const deleteCategoryStageSchema = z.object({
 export async function deleteCategoryStageAction(
   formData: FormData,
 ): Promise<DeleteCategoryStageActionState> {
+  await requireAdmin();
+
   const parsed = deleteCategoryStageSchema.safeParse({
     tournamentId: formData.get("tournamentId"),
     categoryId: formData.get("categoryId"),
