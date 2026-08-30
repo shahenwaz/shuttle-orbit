@@ -88,29 +88,32 @@ export default async function CategoryDetailPage({
     notFound();
   }
 
-  const rankingScope = getRankingScopeForCategory(category.code);
+  const activeTab = getActiveTab(resolvedSearchParams?.tab);
+  let playerRanks: Record<string, number> = {};
 
-  const categoryLeaderboard = await getLeaderboard({
-    scope: rankingScope.scope,
-    categoryCode:
-      rankingScope.scope === "CATEGORY" ? rankingScope.categoryCode : undefined,
-  });
+  if (activeTab === "teams") {
+    const rankingScope = getRankingScopeForCategory(category.code);
+    const categoryLeaderboard = await getLeaderboard({
+      scope: rankingScope.scope,
+      categoryCode:
+        rankingScope.scope === "CATEGORY"
+          ? rankingScope.categoryCode
+          : undefined,
+    });
 
-  type LeaderboardRow = (typeof categoryLeaderboard)[number];
-
-  const playerRanks = categoryLeaderboard.reduce<Record<string, number>>(
-    (rankMap, row: LeaderboardRow) => {
-      rankMap[row.playerId] = row.rank;
-      return rankMap;
-    },
-    {},
-  );
+    playerRanks = categoryLeaderboard.reduce<Record<string, number>>(
+      (rankMap, row) => {
+        rankMap[row.playerId] = row.rank;
+        return rankMap;
+      },
+      {},
+    );
+  }
 
   if (!tournament || !category) {
     notFound();
   }
 
-  const activeTab = getActiveTab(resolvedSearchParams?.tab);
   const baseHref = `/tournaments/${tournament.slug}/categories/${category.code}`;
 
   return (

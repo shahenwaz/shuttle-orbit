@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
 import { Layers3, Swords, User, Users } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
@@ -158,37 +155,21 @@ export function CategoryTabsView({
   activeTab,
   playerRanks,
 }: CategoryTabsViewProps) {
-  const players = useMemo(
-    () => getUniquePlayers(category.teamEntries),
-    [category.teamEntries],
+  const players = getUniquePlayers(category.teamEntries);
+  const orderedStages = sortStagesForDisplay(category.stages);
+  const orderedMatchStages = orderedStages.filter(
+    (stage) => stage.matches.length > 0,
   );
-
-  const orderedStages = useMemo(
-    () => sortStagesForDisplay(category.stages),
-    [category.stages],
+  const stagesWithGroups = orderedStages.filter(
+    (stage) => stage.groups.length > 0 && stage.matches.length > 0,
   );
-
-  const orderedMatchStages = useMemo(
-    () => orderedStages.filter((stage) => stage.matches.length > 0),
-    [orderedStages],
+  const totalMatches = category.stages.reduce(
+    (sum, stage) => sum + stage.matches.length,
+    0,
   );
-
-  const stagesWithGroups = useMemo(
-    () =>
-      orderedStages.filter(
-        (stage) => stage.groups.length > 0 && stage.matches.length > 0,
-      ),
-    [orderedStages],
-  );
-
-  const totalMatches = useMemo(
-    () => category.stages.reduce((sum, stage) => sum + stage.matches.length, 0),
-    [category.stages],
-  );
-
-  const totalGroups = useMemo(
-    () => category.stages.reduce((sum, stage) => sum + stage.groups.length, 0),
-    [category.stages],
+  const totalGroups = category.stages.reduce(
+    (sum, stage) => sum + stage.groups.length,
+    0,
   );
 
   return (
