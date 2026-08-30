@@ -20,7 +20,6 @@ export type ClubProfileSessionInput = {
   startAt: Date;
   endAt: Date;
   courtNumbers: string | null;
-  privateNotes: string | null;
   attendance: {
     player: ClubProfileMemberInput;
   }[];
@@ -32,7 +31,6 @@ export type ClubProfileSession = {
   startAt: string;
   endAt: string;
   courtNumbers: string | null;
-  privateNotes: string | null;
   attendance: {
     member: ClubProfileMember;
   }[];
@@ -67,7 +65,6 @@ export function mapClubProfileSession(
     startAt: session.startAt.toISOString(),
     endAt: session.endAt.toISOString(),
     courtNumbers: session.courtNumbers,
-    privateNotes: session.privateNotes,
     attendance: session.attendance.map((attendance) => ({
       member: mapClubProfileMember(attendance.player),
     })),

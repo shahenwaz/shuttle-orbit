@@ -28,7 +28,6 @@ const sessionSelect = {
   startAt: true,
   endAt: true,
   courtNumbers: true,
-  privateNotes: true,
   attendance: {
     where: {
       status: "GOING" as const,
@@ -107,6 +106,9 @@ export default async function ClubMemberZonePage({
     prisma.clubSession.findMany({
       where: {
         clubId: club.id,
+        visibility: {
+          in: ["PUBLIC", "MEMBER_ONLY"],
+        },
         endAt: {
           gte: now,
         },
@@ -120,6 +122,9 @@ export default async function ClubMemberZonePage({
     prisma.clubSession.findMany({
       where: {
         clubId: club.id,
+        visibility: {
+          in: ["PUBLIC", "MEMBER_ONLY"],
+        },
         endAt: {
           lt: now,
         },

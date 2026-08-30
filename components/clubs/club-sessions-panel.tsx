@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Clock,
   Grid3X3,
-  StickyNote,
   Users,
 } from "lucide-react";
 
@@ -18,7 +17,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { ClubProfileSession } from "@/lib/clubs/club-profile-mappers";
-import { SessionNote } from "@/components/clubs/session-note";
 import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type ClubSessionsPanelProps = {
@@ -286,17 +284,6 @@ export function ClubSessionsPanel({
                   </p>
                 )}
               </div>
-
-              {selectedSession.privateNotes ? (
-                <div className="space-y-2">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
-                    <StickyNote className="h-3.5 w-3.5" />
-                    Session note
-                  </div>
-
-                  <SessionNote note={selectedSession.privateNotes} />
-                </div>
-              ) : null}
             </div>
           ) : null}
         </DialogContent>
