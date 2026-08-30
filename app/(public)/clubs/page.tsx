@@ -31,7 +31,6 @@ export default async function PublicClubsPage() {
       shortName: true,
       homeVenue: true,
       logoUrl: true,
-      isManagedClub: true,
       _count: {
         select: {
           players: true,

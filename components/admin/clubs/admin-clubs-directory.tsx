@@ -15,7 +15,6 @@ type AdminClubRow = {
   homeVenue: string | null;
   _count: {
     players: number;
-    sessions: number;
   };
 };
 
@@ -26,7 +25,7 @@ type AdminClubsDirectoryProps = {
 export function AdminClubsDirectory({ clubs }: AdminClubsDirectoryProps) {
   if (clubs.length === 0) {
     return (
-      <EmptyState message="No clubs created yet. Add your first club profile to start managing members and sessions." />
+      <EmptyState message="No clubs created yet. Add your first club profile to start managing members." />
     );
   }
 
@@ -60,10 +59,6 @@ export function AdminClubsDirectory({ clubs }: AdminClubsDirectoryProps) {
 
               <CompactStatRow className="justify-start">
                 <CompactStatPill label="Players" value={club._count.players} />
-                <CompactStatPill
-                  label="Sessions"
-                  value={club._count.sessions}
-                />
               </CompactStatRow>
 
               <div className="grid grid-cols-1 gap-1.5 sm:flex sm:flex-wrap sm:items-center sm:gap-2">

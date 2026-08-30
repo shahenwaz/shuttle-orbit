@@ -188,7 +188,7 @@ function ClubMemberCard({ member, players }: ClubMemberCardProps) {
         triggerLabel=""
         hideTrigger
         title="Remove club member"
-        description="This will only work if the member has no session attendance history."
+        description="Remove this player from the club while preserving their global player record."
       >
         <form
           className="space-y-4"

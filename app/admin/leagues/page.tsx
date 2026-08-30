@@ -11,10 +11,10 @@ import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function AdminLeaguesPage() {
-  const [managedClub, leaguePlayers] = await Promise.all([
-    prisma.club.findFirst({
-      where: {
-        OR: [{ slug: "bdbc" }, { isManagedClub: true }],
+  const [clubs, leaguePlayers, leagues, leagueCount] = await Promise.all([
+    prisma.club.findMany({
+      orderBy: {
+        name: "asc",
       },
       select: {
         id: true,
@@ -35,11 +35,7 @@ export default async function AdminLeaguesPage() {
         nickname: true,
       },
     }),
-  ]);
-
-  const [leagues, leagueCount] = await Promise.all([
     prisma.league.findMany({
-      where: managedClub ? { hostClubId: managedClub.id } : undefined,
       orderBy: {
         playedAt: "desc",
       },
@@ -62,27 +58,21 @@ export default async function AdminLeaguesPage() {
         },
       },
     }),
-    prisma.league.count({
-      where: managedClub ? { hostClubId: managedClub.id } : undefined,
-    }),
+    prisma.league.count(),
   ]);
-
-  const clubDisplayName =
-    managedClub?.shortName || managedClub?.name || "Managed club";
 
   return (
     <PageContainer className="space-y-4 sm:space-y-5">
       <AdminShellHeader title="Community leagues" />
 
       <section className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Host club" value={clubDisplayName} />
         <CompactStatPill label="Leagues" value={leagueCount} />
 
-        {managedClub ? (
+        {clubs.length > 0 ? (
           <CreateSheet
             triggerLabel="New league"
             title="Create community league"
-            description="Create a friendly league and generate fixtures from selected players."
+            description="Choose a host club, select players, and generate fixtures."
             triggerClassName={actionPillButtonClassName({
               variant: "create",
               className:
@@ -90,16 +80,13 @@ export default async function AdminLeaguesPage() {
             })}
             triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
           >
-            <CreateLeagueForm clubId={managedClub.id} players={leaguePlayers} />
+            <CreateLeagueForm clubs={clubs} players={leaguePlayers} />
           </CreateSheet>
-        ) : null}
-
-        {!managedClub ? (
+        ) : (
           <p className="mt-3 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-            No managed club found. Create or mark a managed club before creating
-            community leagues.
+            Create a club before creating community leagues.
           </p>
-        ) : null}
+        )}
       </section>
 
       <div className="space-y-3">

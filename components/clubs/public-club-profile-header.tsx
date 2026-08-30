@@ -4,7 +4,7 @@ import { MapPin } from "lucide-react";
 import { ConnectedTabs } from "@/components/shared/connected-tabs";
 import { HeaderSurface } from "@/components/shared/header-surface";
 
-export type PublicClubProfileTab = "overview" | "members" | "sessions";
+export type PublicClubProfileTab = "overview" | "members";
 
 type PublicClubProfileHeaderProps = {
   club: {
@@ -15,14 +15,12 @@ type PublicClubProfileHeaderProps = {
   };
   activeTab: PublicClubProfileTab;
   baseHref: string;
-  hasSessionAccess: boolean;
 };
 
 export function PublicClubProfileHeader({
   club,
   activeTab,
   baseHref,
-  hasSessionAccess,
 }: PublicClubProfileHeaderProps) {
   const tabs = [
     {
@@ -35,15 +33,6 @@ export function PublicClubProfileHeader({
       label: "Members",
       href: `${baseHref}?tab=members`,
     },
-    ...(hasSessionAccess
-      ? [
-          {
-            value: "sessions",
-            label: "Sessions",
-            href: `${baseHref}?tab=sessions`,
-          },
-        ]
-      : []),
   ];
 
   return (

@@ -1,7 +1,6 @@
 import { Settings2 } from "lucide-react";
 
 import { ClubForm } from "@/components/admin/clubs/club-form";
-import { ClubMemberAccessPanel } from "@/components/admin/clubs/club-member-access-panel";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 
@@ -15,10 +14,7 @@ type ClubOverviewPanelProps = {
     homeVenue: string | null;
     logoUrl: string | null;
     bannerUrl: string | null;
-    isManagedClub: boolean;
     isPublic: boolean;
-    memberAccessEnabled: boolean;
-    memberShareKey: string | null;
   };
 };
 
@@ -49,15 +45,6 @@ export function ClubOverviewPanel({ club }: ClubOverviewPanelProps) {
           <ClubForm mode="edit" club={club} />
         </CreateSheet>
       </div>
-
-      {club.isManagedClub ? (
-        <ClubMemberAccessPanel
-          clubId={club.id}
-          slug={club.slug}
-          memberAccessEnabled={club.memberAccessEnabled}
-          memberShareKey={club.memberShareKey}
-        />
-      ) : null}
     </section>
   );
 }

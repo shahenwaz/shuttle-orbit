@@ -19,7 +19,6 @@ export type ClubActionState = {
     logoUrl?: string[];
     bannerUrl?: string[];
     isPublic?: string[];
-    isManagedClub?: string[];
   };
 };
 
@@ -38,7 +37,6 @@ export async function createClubAction(
     logoUrl: formData.get("logoUrl"),
     bannerUrl: formData.get("bannerUrl"),
     isPublic: formData.get("isPublic"),
-    isManagedClub: formData.get("isManagedClub"),
   });
 
   if (!parsed.success) {
@@ -104,7 +102,6 @@ export async function updateClubAction(
     logoUrl: formData.get("logoUrl"),
     bannerUrl: formData.get("bannerUrl"),
     isPublic: formData.get("isPublic"),
-    isManagedClub: formData.get("isManagedClub"),
   });
 
   if (!parsed.success) {

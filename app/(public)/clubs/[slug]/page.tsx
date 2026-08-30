@@ -83,7 +83,6 @@ export default async function PublicClubPage({
         }}
         activeTab={activeTab}
         baseHref={`/clubs/${slug}`}
-        hasSessionAccess={false}
       />
 
       <PageContainer className="py-5 sm:py-7">
@@ -94,7 +93,6 @@ export default async function PublicClubPage({
           }}
           members={members}
           activeTab={activeTab}
-          hasSessionAccess={false}
         />
       </PageContainer>
     </>

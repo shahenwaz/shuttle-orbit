@@ -139,11 +139,10 @@ export async function createTeamPairMatrixLeagueAction(
     };
   }
 
-  const [managedClub, selectedPlayers] = await Promise.all([
-    prisma.club.findFirst({
+  const [hostClub, selectedPlayers] = await Promise.all([
+    prisma.club.findUnique({
       where: {
         id: clubId,
-        isManagedClub: true,
       },
       select: {
         id: true,
@@ -166,10 +165,10 @@ export async function createTeamPairMatrixLeagueAction(
     }),
   ]);
 
-  if (!managedClub) {
+  if (!hostClub) {
     return {
       success: false,
-      message: "Managed club could not be found.",
+      message: "Host club could not be found.",
     };
   }
 
@@ -229,10 +228,10 @@ export async function createTeamPairMatrixLeagueAction(
           title,
           slug: createLeagueSlug(title, playedAt),
           playedAt,
-          location: managedClub.shortName || managedClub.name,
+          location: hostClub.shortName || hostClub.name,
           format: LeagueFormat.TEAM_PAIR_MATRIX,
           rulesNote: rulesNote || null,
-          hostClubId: managedClub.id,
+          hostClubId: hostClub.id,
         },
       });
 
@@ -403,11 +402,10 @@ export async function createFixedDoublesLeagueAction(
     };
   }
 
-  const [managedClub, selectedPlayers] = await Promise.all([
-    prisma.club.findFirst({
+  const [hostClub, selectedPlayers] = await Promise.all([
+    prisma.club.findUnique({
       where: {
         id: clubId,
-        isManagedClub: true,
       },
       select: {
         id: true,
@@ -430,10 +428,10 @@ export async function createFixedDoublesLeagueAction(
     }),
   ]);
 
-  if (!managedClub) {
+  if (!hostClub) {
     return {
       success: false,
-      message: "Managed club could not be found.",
+      message: "Host club could not be found.",
     };
   }
 
@@ -463,10 +461,10 @@ export async function createFixedDoublesLeagueAction(
           title,
           slug: createLeagueSlug(title, playedAt),
           playedAt,
-          location: managedClub.shortName || managedClub.name,
+          location: hostClub.shortName || hostClub.name,
           format: LeagueFormat.FIXED_DOUBLES,
           rulesNote: rulesNote || null,
-          hostClubId: managedClub.id,
+          hostClubId: hostClub.id,
         },
       });
 

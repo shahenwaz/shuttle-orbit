@@ -4,15 +4,13 @@ import { ConnectedTabs } from "@/components/shared/connected-tabs";
 import { HeaderSurface } from "@/components/shared/header-surface";
 import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 
-export type ClubWorkspaceTab = "overview" | "members" | "sessions";
+export type ClubWorkspaceTab = "overview" | "members";
 
 type ClubWorkspaceHeaderProps = {
   clubId: string;
   clubName: string;
   homeVenue: string | null;
-  isManagedClub: boolean;
   memberCount: number;
-  sessionCount: number;
   activeTab: ClubWorkspaceTab;
 };
 
@@ -20,9 +18,7 @@ export function ClubWorkspaceHeader({
   clubId,
   clubName,
   homeVenue,
-  isManagedClub,
   memberCount,
-  sessionCount,
   activeTab,
 }: ClubWorkspaceHeaderProps) {
   const tabs = [
@@ -36,15 +32,6 @@ export function ClubWorkspaceHeader({
       label: "Members",
       href: `/admin/clubs/${clubId}?tab=members`,
     },
-    ...(isManagedClub
-      ? [
-          {
-            value: "sessions",
-            label: "Sessions",
-            href: `/admin/clubs/${clubId}?tab=sessions`,
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -59,12 +46,7 @@ export function ClubWorkspaceHeader({
           </span>
         </span>
       }
-      summary={
-        <>
-          <CompactStatPill label="Members" value={memberCount} />
-          <CompactStatPill label="Sessions" value={sessionCount} />
-        </>
-      }
+      summary={<CompactStatPill label="Members" value={memberCount} />}
     >
       <ConnectedTabs activeValue={activeTab} items={tabs} />
     </HeaderSurface>

@@ -19,7 +19,6 @@ type ClubFormClub = {
   logoUrl: string | null;
   bannerUrl: string | null;
   isPublic: boolean;
-  isManagedClub: boolean;
 };
 
 type ClubFormProps = {
@@ -129,30 +128,10 @@ export function ClubForm({ mode, club }: ClubFormProps) {
             id="description"
             name="description"
             defaultValue={club?.description ?? ""}
-            placeholder="A small organised badminton club for regular community sessions, friendly matchdays, and future tournaments."
+            placeholder="A community badminton club for players, friendly matchdays, and future tournaments."
             className={textareaClassName}
           />
           <FieldError errors={state.fieldErrors?.description} />
-        </div>
-
-        <div className="space-y-2 sm:col-span-2">
-          <label className="flex items-start gap-3 rounded-md border border-white/10 bg-white/4 p-3">
-            <input
-              type="checkbox"
-              name="isManagedClub"
-              defaultChecked={club?.isManagedClub ?? false}
-              className="mt-1 h-4 w-4 rounded border-white/20 bg-background"
-            />
-            <span className="space-y-1">
-              <span className="block text-sm font-medium text-foreground">
-                Enable internal club management
-              </span>
-              <span className="block text-xs leading-5 text-muted-foreground">
-                Turn this on only for Bengal Dragons BC to manage sessions,
-                courts, and attendance privately.
-              </span>
-            </span>
-          </label>
         </div>
 
         <div className="space-y-2">

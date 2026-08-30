@@ -23,11 +23,9 @@ export default async function AdminClubsPage() {
         description: true,
         homeVenue: true,
         isPublic: true,
-        isManagedClub: true,
         _count: {
           select: {
             players: true,
-            sessions: true,
           },
         },
       },
@@ -45,7 +43,7 @@ export default async function AdminClubsPage() {
         <CreateSheet
           triggerLabel="Add club"
           title="Create club"
-          description="Add a lightweight club profile. Members, sessions, and private matchday tools will connect to this club."
+          description="Add a club profile and connect players from the community database."
           triggerClassName={actionPillButtonClassName({
             variant: "create",
             className:
