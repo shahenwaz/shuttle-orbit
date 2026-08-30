@@ -1,8 +1,5 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/page-container";
 
@@ -29,12 +26,6 @@ const footerGroups = [
 ];
 
 export function SiteFooter() {
-  const pathname = usePathname();
-
-  if (pathname.startsWith("/admin")) {
-    return null;
-  }
-
   return (
     <footer className="border-t border-white/10 bg-background/70">
       <PageContainer className="py-8 sm:py-10">
