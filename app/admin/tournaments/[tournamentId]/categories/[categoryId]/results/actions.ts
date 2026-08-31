@@ -1,5 +1,6 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -38,6 +39,10 @@ type DownstreamTarget = {
   nextStageType: "semi_final" | "final" | "third_place";
   nextMatchNumber: number;
   nextSlot: "teamAId" | "teamBId";
+};
+
+type DownstreamParticipantTarget = DownstreamTarget & {
+  participantId: string;
 };
 
 const optionalScoreSchema = z.preprocess((value) => {
@@ -93,6 +98,110 @@ function isKnockoutStageType(
   return ["quarter_final", "semi_final", "final", "third_place"].includes(
     stageType,
   );
+}
+
+function hasRecordedResult(match: {
+  status: string;
+  winnerId: string | null;
+  scoreSummary: string | null;
+  sets: Array<{ id: string }>;
+}) {
+  return (
+    match.status === "completed" ||
+    match.winnerId !== null ||
+    match.scoreSummary !== null ||
+    match.sets.length > 0
+  );
+}
+
+function getMatchNumber(roundLabel: string | null) {
+  return Number(roundLabel?.match(/\d+/)?.[0] ?? "1");
+}
+
+function getDownstreamRoundLabel(target: DownstreamTarget) {
+  if (target.nextStageType === "final") {
+    return "Final";
+  }
+
+  if (target.nextStageType === "third_place") {
+    return "Third Place";
+  }
+
+  return `Semi Final ${target.nextMatchNumber}`;
+}
+
+function getDownstreamTargets(
+  stageType: KnockoutStageType,
+  roundLabel: string | null,
+  winnerId: string,
+  loserId: string,
+): DownstreamParticipantTarget[] {
+  const matchNumber = getMatchNumber(roundLabel);
+  const targets: DownstreamParticipantTarget[] = [];
+  const winnerTarget = getAdvanceTarget(stageType, matchNumber);
+
+  if (winnerTarget) {
+    targets.push({
+      ...winnerTarget,
+      participantId: winnerId,
+    });
+  }
+
+  const consolationTarget = getConsolationTarget(stageType, matchNumber);
+
+  if (consolationTarget) {
+    targets.push({
+      ...consolationTarget,
+      participantId: loserId,
+    });
+  }
+
+  return targets;
+}
+
+async function resolveDownstreamMatches<T extends DownstreamTarget>(
+  tx: Prisma.TransactionClient,
+  categoryId: string,
+  targets: T[],
+) {
+  const resolvedMatches = [];
+
+  for (const target of targets) {
+    const stage = await tx.stage.findFirst({
+      where: {
+        categoryId,
+        stageType: target.nextStageType,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!stage) {
+      continue;
+    }
+
+    const match = await tx.match.findFirst({
+      where: {
+        categoryId,
+        stageId: stage.id,
+        roundLabel: getDownstreamRoundLabel(target),
+      },
+      include: {
+        sets: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (match) {
+      resolvedMatches.push({ target, match });
+    }
+  }
+
+  return resolvedMatches;
 }
 
 export async function recordMatchResultAction(
@@ -191,36 +300,6 @@ export async function recordMatchResultAction(
     };
   }
 
-  const match = await prisma.match.findFirst({
-    where: {
-      id: matchId,
-      tournamentId,
-      categoryId,
-    },
-    include: {
-      stage: {
-        select: {
-          id: true,
-          stageType: true,
-        },
-      },
-    },
-  });
-
-  if (!match) {
-    return {
-      success: false,
-      message: "Match not found.",
-    };
-  }
-
-  if (!match.teamAId || !match.teamBId) {
-    return {
-      success: false,
-      message: "Both teams must be assigned before recording a result.",
-    };
-  }
-
   const sets: RecordedSetInput[] = [
     {
       setNumber: 1,
@@ -266,128 +345,128 @@ export async function recordMatchResultAction(
     };
   }
 
-  const winnerId = teamASetWins > teamBSetWins ? match.teamAId : match.teamBId;
-  const loserId = winnerId === match.teamAId ? match.teamBId : match.teamAId;
-
   const scoreSummary =
     sets.length === 1
       ? `${sets[0].teamAScore} - ${sets[0].teamBScore}`
       : `${teamASetWins} - ${teamBSetWins}`;
 
-  await prisma.$transaction([
-    prisma.match.update({
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    const match = await tx.match.findFirst({
       where: {
         id: matchId,
+        tournamentId,
+        categoryId,
+      },
+      include: {
+        stage: {
+          select: {
+            stageType: true,
+          },
+        },
+        sets: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!match) {
+      return { status: "not_found" as const };
+    }
+
+    if (!match.teamAId || !match.teamBId) {
+      return { status: "teams_missing" as const };
+    }
+
+    const winnerId =
+      teamASetWins > teamBSetWins ? match.teamAId : match.teamBId;
+    const loserId = winnerId === match.teamAId ? match.teamBId : match.teamAId;
+    const downstreamTargets = isKnockoutStageType(match.stage.stageType)
+      ? getDownstreamTargets(
+          match.stage.stageType,
+          match.roundLabel,
+          winnerId,
+          loserId,
+        )
+      : [];
+    const downstreamMatches = await resolveDownstreamMatches(
+      tx,
+      categoryId,
+      downstreamTargets,
+    );
+    const isChangingExistingWinner =
+      hasRecordedResult(match) && match.winnerId !== winnerId;
+
+    if (
+      isChangingExistingWinner &&
+      downstreamMatches.some(({ match: downstreamMatch }) =>
+        hasRecordedResult(downstreamMatch),
+      )
+    ) {
+      return { status: "downstream_completed" as const };
+    }
+
+    await tx.match.update({
+      where: {
+        id: match.id,
       },
       data: {
         scoreSummary,
         winnerId,
         status: "completed",
       },
-    }),
-    prisma.matchSet.deleteMany({
+    });
+
+    await tx.matchSet.deleteMany({
       where: {
-        matchId,
+        matchId: match.id,
       },
-    }),
-    ...sets.map((set: RecordedSetInput) =>
-      prisma.matchSet.create({
+    });
+
+    await tx.matchSet.createMany({
+      data: sets.map((set) => ({
+        matchId: match.id,
+        setNumber: set.setNumber,
+        teamAScore: set.teamAScore,
+        teamBScore: set.teamBScore,
+      })),
+    });
+
+    for (const { target, match: downstreamMatch } of downstreamMatches) {
+      await tx.match.update({
+        where: {
+          id: downstreamMatch.id,
+        },
         data: {
-          matchId,
-          setNumber: set.setNumber,
-          teamAScore: set.teamAScore,
-          teamBScore: set.teamBScore,
-        },
-      }),
-    ),
-  ]);
-
-  if (isKnockoutStageType(match.stage.stageType)) {
-    const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
-
-    const winnerTarget = getAdvanceTarget(match.stage.stageType, matchNumber);
-
-    if (winnerTarget) {
-      const nextStage = await prisma.stage.findFirst({
-        where: {
-          categoryId,
-          stageType: winnerTarget.nextStageType,
-        },
-        select: {
-          id: true,
+          [target.nextSlot]: target.participantId,
         },
       });
-
-      if (nextStage) {
-        const nextRoundLabel =
-          winnerTarget.nextStageType === "final"
-            ? "Final"
-            : `Semi Final ${winnerTarget.nextMatchNumber}`;
-
-        const nextMatch = await prisma.match.findFirst({
-          where: {
-            categoryId,
-            stageId: nextStage.id,
-            roundLabel: nextRoundLabel,
-          },
-          select: {
-            id: true,
-          },
-        });
-
-        if (nextMatch) {
-          await prisma.match.update({
-            where: {
-              id: nextMatch.id,
-            },
-            data: {
-              [winnerTarget.nextSlot]: winnerId,
-            },
-          });
-        }
-      }
     }
 
-    const consolationTarget = getConsolationTarget(
-      match.stage.stageType,
-      matchNumber,
-    );
+    return { status: "saved" as const };
+  });
 
-    if (consolationTarget && loserId) {
-      const thirdPlaceStage = await prisma.stage.findFirst({
-        where: {
-          categoryId,
-          stageType: consolationTarget.nextStageType,
-        },
-        select: {
-          id: true,
-        },
-      });
+  if (transactionResult.status === "not_found") {
+    return {
+      success: false,
+      message: "Match not found.",
+    };
+  }
 
-      if (thirdPlaceStage) {
-        const thirdPlaceMatch = await prisma.match.findFirst({
-          where: {
-            categoryId,
-            stageId: thirdPlaceStage.id,
-            roundLabel: "Third Place",
-          },
-          select: {
-            id: true,
-          },
-        });
+  if (transactionResult.status === "teams_missing") {
+    return {
+      success: false,
+      message: "Both teams must be assigned before recording a result.",
+    };
+  }
 
-        if (thirdPlaceMatch) {
-          await prisma.match.update({
-            where: {
-              id: thirdPlaceMatch.id,
-            },
-            data: {
-              [consolationTarget.nextSlot]: loserId,
-            },
-          });
-        }
-      }
-    }
+  if (transactionResult.status === "downstream_completed") {
+    return {
+      success: false,
+      message:
+        "Reset the affected downstream knockout result before changing this winner.",
+    };
   }
 
   revalidateResultPaths(tournamentId, categoryId);
@@ -419,136 +498,77 @@ export async function resetMatchResultAction(
 
   const { tournamentId, categoryId, matchId } = parsed.data;
 
-  const match = await prisma.match.findFirst({
-    where: {
-      id: matchId,
-      tournamentId,
-      categoryId,
-    },
-    include: {
-      stage: {
-        select: {
-          stageType: true,
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    const match = await tx.match.findFirst({
+      where: {
+        id: matchId,
+        tournamentId,
+        categoryId,
+      },
+      include: {
+        stage: {
+          select: {
+            stageType: true,
+          },
+        },
+        sets: {
+          select: {
+            id: true,
+          },
         },
       },
-      sets: {
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
+    });
 
-  if (!match) {
-    return {
-      success: false,
-      message: "Match not found.",
-    };
-  }
+    if (!match) {
+      return { status: "not_found" as const };
+    }
 
-  const hasRecordedResult =
-    match.status === "completed" ||
-    match.winnerId !== null ||
-    match.scoreSummary !== null ||
-    match.sets.length > 0;
-
-  if (!hasRecordedResult) {
-    return {
-      success: false,
-      message: "This match does not have a recorded result yet.",
-    };
-  }
-
-  if (isKnockoutStageType(match.stage.stageType) && match.winnerId) {
-    const matchNumber = Number(match.roundLabel?.match(/\d+/)?.[0] ?? "1");
-
-    const winnerTarget = getAdvanceTarget(match.stage.stageType, matchNumber);
-    const consolationTarget = getConsolationTarget(
-      match.stage.stageType,
-      matchNumber,
-    );
+    if (!hasRecordedResult(match)) {
+      return { status: "no_result" as const };
+    }
 
     const downstreamTargets: DownstreamTarget[] = [];
 
-    if (winnerTarget) {
-      downstreamTargets.push({
-        nextStageType: winnerTarget.nextStageType,
-        nextMatchNumber: winnerTarget.nextMatchNumber,
-        nextSlot: winnerTarget.nextSlot,
-      });
+    if (isKnockoutStageType(match.stage.stageType) && match.winnerId) {
+      const matchNumber = getMatchNumber(match.roundLabel);
+      const winnerTarget = getAdvanceTarget(match.stage.stageType, matchNumber);
+      const consolationTarget = getConsolationTarget(
+        match.stage.stageType,
+        matchNumber,
+      );
+
+      if (winnerTarget) {
+        downstreamTargets.push(winnerTarget);
+      }
+
+      if (consolationTarget) {
+        downstreamTargets.push(consolationTarget);
+      }
     }
 
-    if (consolationTarget) {
-      downstreamTargets.push({
-        nextStageType: consolationTarget.nextStageType,
-        nextMatchNumber: consolationTarget.nextMatchNumber,
-        nextSlot: consolationTarget.nextSlot,
-      });
+    const downstreamMatches = await resolveDownstreamMatches(
+      tx,
+      categoryId,
+      downstreamTargets,
+    );
+
+    if (
+      downstreamMatches.some(({ match: downstreamMatch }) =>
+        hasRecordedResult(downstreamMatch),
+      )
+    ) {
+      return { status: "downstream_completed" as const };
     }
 
-    for (const target of downstreamTargets) {
-      const nextStage = await prisma.stage.findFirst({
-        where: {
-          categoryId,
-          stageType: target.nextStageType,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      if (!nextStage) {
-        continue;
-      }
-
-      const nextRoundLabel =
-        target.nextStageType === "final"
-          ? "Final"
-          : target.nextStageType === "third_place"
-            ? "Third Place"
-            : `Semi Final ${target.nextMatchNumber}`;
-
-      const nextMatch = await prisma.match.findFirst({
-        where: {
-          categoryId,
-          stageId: nextStage.id,
-          roundLabel: nextRoundLabel,
-        },
-        include: {
-          sets: {
-            select: {
-              id: true,
-            },
-          },
-        },
-      });
-
-      if (!nextMatch) {
-        continue;
-      }
-
-      const nextMatchHasRecordedResult =
-        nextMatch.status === "completed" ||
-        nextMatch.winnerId !== null ||
-        nextMatch.scoreSummary !== null ||
-        nextMatch.sets.length > 0;
-
-      if (nextMatchHasRecordedResult) {
-        return {
-          success: false,
-          message:
-            "You cannot reset this result because a downstream knockout match already has a recorded result.",
-        };
-      }
-
+    for (const { target, match: downstreamMatch } of downstreamMatches) {
       const shouldClearAdvancedTeam =
-        (target.nextSlot === "teamAId" && nextMatch.teamAId !== null) ||
-        (target.nextSlot === "teamBId" && nextMatch.teamBId !== null);
+        (target.nextSlot === "teamAId" && downstreamMatch.teamAId !== null) ||
+        (target.nextSlot === "teamBId" && downstreamMatch.teamBId !== null);
 
       if (shouldClearAdvancedTeam) {
-        await prisma.match.update({
+        await tx.match.update({
           where: {
-            id: nextMatch.id,
+            id: downstreamMatch.id,
           },
           data: {
             [target.nextSlot]: null,
@@ -556,10 +576,8 @@ export async function resetMatchResultAction(
         });
       }
     }
-  }
 
-  await prisma.$transaction([
-    prisma.match.update({
+    await tx.match.update({
       where: {
         id: match.id,
       },
@@ -568,13 +586,38 @@ export async function resetMatchResultAction(
         scoreSummary: null,
         status: "scheduled",
       },
-    }),
-    prisma.matchSet.deleteMany({
+    });
+
+    await tx.matchSet.deleteMany({
       where: {
         matchId: match.id,
       },
-    }),
-  ]);
+    });
+
+    return { status: "reset" as const };
+  });
+
+  if (transactionResult.status === "not_found") {
+    return {
+      success: false,
+      message: "Match not found.",
+    };
+  }
+
+  if (transactionResult.status === "no_result") {
+    return {
+      success: false,
+      message: "This match does not have a recorded result yet.",
+    };
+  }
+
+  if (transactionResult.status === "downstream_completed") {
+    return {
+      success: false,
+      message:
+        "You cannot reset this result because a downstream knockout match already has a recorded result. Reset the downstream result first.",
+    };
+  }
 
   revalidateResultPaths(tournamentId, categoryId);
 

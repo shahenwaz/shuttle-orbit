@@ -175,39 +175,79 @@ export async function assignKnockoutMatchTeamsAction(args: {
     throw new Error("Choose two different teams.");
   }
 
-  const match = await prisma.match.findFirst({
-    where: {
-      id: matchId,
-      tournamentId,
-      categoryId,
-      groupId: null,
-    },
-    select: {
-      id: true,
-    },
-  });
+  await prisma.$transaction(async (tx) => {
+    const match = await tx.match.findFirst({
+      where: {
+        id: matchId,
+        tournamentId,
+        categoryId,
+        groupId: null,
+      },
+      include: {
+        sets: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
 
-  if (!match) {
-    throw new Error("Knockout match not found.");
-  }
+    if (!match) {
+      throw new Error("Knockout match not found.");
+    }
 
-  await prisma.match.update({
-    where: {
-      id: matchId,
-    },
-    data: {
-      teamAId,
-      teamBId,
-      winnerId: null,
-      scoreSummary: null,
-      status: "scheduled",
-    },
-  });
+    const hasRecordedResult =
+      match.status === "completed" ||
+      match.winnerId !== null ||
+      match.scoreSummary !== null ||
+      match.sets.length > 0;
 
-  await prisma.matchSet.deleteMany({
-    where: {
-      matchId,
-    },
+    if (hasRecordedResult) {
+      throw new Error(
+        "Reset this knockout match result before assigning teams.",
+      );
+    }
+
+    const selectedTeamIds = [teamAId, teamBId].filter(
+      (teamId): teamId is string => teamId !== null,
+    );
+
+    if (selectedTeamIds.length > 0) {
+      const validTeamCount = await tx.teamEntry.count({
+        where: {
+          id: {
+            in: selectedTeamIds,
+          },
+          tournamentId,
+          categoryId,
+        },
+      });
+
+      if (validTeamCount !== selectedTeamIds.length) {
+        throw new Error(
+          "Selected teams must belong to this tournament category.",
+        );
+      }
+    }
+
+    await tx.match.update({
+      where: {
+        id: match.id,
+      },
+      data: {
+        teamAId,
+        teamBId,
+        winnerId: null,
+        scoreSummary: null,
+        status: "scheduled",
+      },
+    });
+
+    await tx.matchSet.deleteMany({
+      where: {
+        matchId: match.id,
+      },
+    });
   });
 
   revalidatePath(
