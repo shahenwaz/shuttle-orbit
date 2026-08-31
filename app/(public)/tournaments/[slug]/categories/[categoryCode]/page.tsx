@@ -8,7 +8,10 @@ import {
 import { CategoryTabsView } from "@/components/tournaments/category-tabs-view";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { getCategoryByTournamentAndCode } from "@/lib/tournament/queries";
+import {
+  getCategoryByTournamentAndCode,
+  getCategoryMetadataByTournamentAndCode,
+} from "@/lib/tournament/queries";
 import { getLeaderboard } from "@/lib/rankings/queries";
 
 type CategoryDetailPageProps = {
@@ -34,7 +37,7 @@ export async function generateMetadata({
   params,
 }: CategoryDetailPageProps): Promise<Metadata> {
   const { slug, categoryCode } = await params;
-  const { tournament, category } = await getCategoryByTournamentAndCode(
+  const { tournament, category } = await getCategoryMetadataByTournamentAndCode(
     slug,
     categoryCode,
   );

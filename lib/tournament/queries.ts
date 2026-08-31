@@ -131,34 +131,83 @@ export async function getTournamentBySlug(slug: string) {
   });
 }
 
+export async function getCategoryMetadataByTournamentAndCode(
+  tournamentSlug: string,
+  categoryCode: string,
+) {
+  const tournament = await prisma.tournament.findUnique({
+    where: {
+      slug: tournamentSlug,
+    },
+    select: {
+      name: true,
+      categories: {
+        where: {
+          code: categoryCode,
+        },
+        select: {
+          name: true,
+          rulesSummary: true,
+        },
+      },
+    },
+  });
+
+  return {
+    tournament,
+    category: tournament?.categories[0] ?? null,
+  };
+}
+
 export async function getCategoryByTournamentAndCode(
   tournamentSlug: string,
   categoryCode: string,
 ) {
   const tournament = await prisma.tournament.findUnique({
     where: { slug: tournamentSlug },
-    include: {
+    select: {
+      name: true,
+      slug: true,
       categories: {
         where: {
           code: categoryCode,
         },
-        include: {
+        select: {
+          name: true,
+          code: true,
+          rulesSummary: true,
           stages: {
             orderBy: {
               stageOrder: "asc",
             },
-            include: {
+            select: {
+              id: true,
+              name: true,
+              stageType: true,
+              stageOrder: true,
               groups: {
                 orderBy: {
                   groupOrder: "asc",
                 },
-                include: {
+                select: {
+                  id: true,
+                  name: true,
                   memberships: {
-                    include: {
+                    select: {
                       teamEntry: {
-                        include: {
-                          player1: true,
-                          player2: true,
+                        select: {
+                          id: true,
+                          teamName: true,
+                          player1: {
+                            select: {
+                              fullName: true,
+                            },
+                          },
+                          player2: {
+                            select: {
+                              fullName: true,
+                            },
+                          },
                         },
                       },
                     },
@@ -174,28 +223,53 @@ export async function getCategoryByTournamentAndCode(
                     createdAt: "asc",
                   },
                 ],
-                include: {
+                select: {
+                  id: true,
+                  groupId: true,
+                  status: true,
+                  roundLabel: true,
+                  scoreSummary: true,
+                  winnerId: true,
+                  teamAId: true,
+                  teamBId: true,
                   teamA: {
-                    include: {
-                      player1: true,
-                      player2: true,
+                    select: {
+                      teamName: true,
+                      player1: {
+                        select: {
+                          fullName: true,
+                        },
+                      },
+                      player2: {
+                        select: {
+                          fullName: true,
+                        },
+                      },
                     },
                   },
                   teamB: {
-                    include: {
-                      player1: true,
-                      player2: true,
-                    },
-                  },
-                  winner: {
-                    include: {
-                      player1: true,
-                      player2: true,
+                    select: {
+                      teamName: true,
+                      player1: {
+                        select: {
+                          fullName: true,
+                        },
+                      },
+                      player2: {
+                        select: {
+                          fullName: true,
+                        },
+                      },
                     },
                   },
                   sets: {
                     orderBy: {
                       setNumber: "asc",
+                    },
+                    select: {
+                      setNumber: true,
+                      teamAScore: true,
+                      teamBScore: true,
                     },
                   },
                 },
@@ -203,12 +277,26 @@ export async function getCategoryByTournamentAndCode(
             },
           },
           teamEntries: {
-            include: {
-              player1: true,
-              player2: true,
-            },
             orderBy: {
               createdAt: "asc",
+            },
+            select: {
+              id: true,
+              teamName: true,
+              player1: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  nickname: true,
+                },
+              },
+              player2: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  nickname: true,
+                },
+              },
             },
           },
         },

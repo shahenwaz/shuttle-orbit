@@ -10,7 +10,6 @@ type TeamIdentity = {
 };
 
 type GroupMembership = {
-  id: string;
   teamEntry: TeamIdentity;
 };
 

@@ -38,7 +38,6 @@ type CategoryTabsViewProps = {
         id: string;
         name: string;
         memberships: Array<{
-          id: string;
           teamEntry: {
             id: string;
             teamName: string | null;
@@ -336,7 +335,6 @@ export function CategoryTabsView({
 
                     const standings = computeGroupStandings(
                       group.memberships.map((membership) => ({
-                        id: membership.id,
                         teamEntry: membership.teamEntry,
                       })),
                       validGroupMatches.map((match) => ({
