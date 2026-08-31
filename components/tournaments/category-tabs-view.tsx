@@ -10,79 +10,100 @@ import { computeGroupStandings } from "@/lib/tournament/standings";
 import { sortStagesForDisplay } from "@/lib/tournament/stage-display-order";
 import { surfaceCardClassName } from "@/components/shared/surface-card";
 
-type CategoryTabsViewProps = {
-  activeTab: TabKey;
-  playerRanks: Record<string, number>;
-  category: {
-    rulesSummary: string | null;
-    teamEntries: Array<{
-      id: string;
-      teamName: string | null;
-      player1: {
-        id: string;
-        fullName: string;
-        nickname: string | null;
-      };
-      player2: {
-        id: string;
-        fullName: string;
-        nickname: string | null;
-      };
-    }>;
-    stages: Array<{
-      id: string;
-      name: string;
-      stageType: string;
-      stageOrder: number;
-      groups: Array<{
-        id: string;
-        name: string;
-        memberships: Array<{
-          teamEntry: {
-            id: string;
-            teamName: string | null;
-            player1: { fullName: string };
-            player2: { fullName: string };
-          };
-        }>;
-      }>;
-      matches: Array<{
-        id: string;
-        groupId: string | null;
-        status: string;
-        roundLabel: string | null;
-        scoreSummary: string | null;
-        winnerId: string | null;
-        teamAId: string | null;
-        teamBId: string | null;
-        teamA: {
-          teamName: string | null;
-          player1: { fullName: string };
-          player2: { fullName: string };
-        } | null;
-        teamB: {
-          teamName: string | null;
-          player1: { fullName: string };
-          player2: { fullName: string };
-        } | null;
-        sets: Array<{
-          setNumber: number;
-          teamAScore: number;
-          teamBScore: number;
-        }>;
-      }>;
-    }>;
-  };
+type CategoryOverview = {
+  rulesSummary: string | null;
 };
 
-type TabKey = "info" | "players" | "teams" | "matches" | "standings";
+type CategoryTeamEntries = CategoryOverview & {
+  teamEntries: Array<{
+    id: string;
+    teamName: string | null;
+    player1: {
+      id: string;
+      fullName: string;
+      nickname: string | null;
+    };
+    player2: {
+      id: string;
+      fullName: string;
+      nickname: string | null;
+    };
+  }>;
+};
 
-function getUniquePlayers(
-  teamEntries: CategoryTabsViewProps["category"]["teamEntries"],
-) {
+type CategoryCompetition = CategoryOverview & {
+  stages: Array<{
+    id: string;
+    name: string;
+    stageType: string;
+    stageOrder: number;
+    groups: Array<{
+      id: string;
+      name: string;
+      memberships: Array<{
+        teamEntry: {
+          id: string;
+          teamName: string | null;
+          player1: { fullName: string };
+          player2: { fullName: string };
+        };
+      }>;
+    }>;
+    matches: Array<{
+      id: string;
+      groupId: string | null;
+      status: string;
+      roundLabel: string | null;
+      scoreSummary: string | null;
+      winnerId: string | null;
+      teamAId: string | null;
+      teamBId: string | null;
+      teamA: {
+        teamName: string | null;
+        player1: { fullName: string };
+        player2: { fullName: string };
+      } | null;
+      teamB: {
+        teamName: string | null;
+        player1: { fullName: string };
+        player2: { fullName: string };
+      } | null;
+      sets: Array<{
+        setNumber: number;
+        teamAScore: number;
+        teamBScore: number;
+      }>;
+    }>;
+  }>;
+};
+
+type CategoryTabData =
+  | {
+      activeTab: "info";
+      category: CategoryOverview;
+    }
+  | {
+      activeTab: "players";
+      category: CategoryTeamEntries;
+    }
+  | {
+      activeTab: "teams";
+      category: CategoryTeamEntries;
+      playerRanks: Record<string, number>;
+    }
+  | {
+      activeTab: "matches" | "standings";
+      category: CategoryCompetition;
+    };
+
+type CategoryTabsViewProps = {
+  data: CategoryTabData;
+};
+
+function getUniquePlayers(teamEntries: CategoryTeamEntries["teamEntries"]) {
   const map = new Map<
     string,
-    CategoryTabsViewProps["category"]["teamEntries"][number]["player1"]
+    CategoryTeamEntries["teamEntries"][number]["player1"]
   >();
 
   for (const team of teamEntries) {
@@ -149,43 +170,52 @@ function getStageMetaLabel(stage: {
   return stage.stageType.replaceAll("_", " ").toUpperCase();
 }
 
-export function CategoryTabsView({
-  category,
-  activeTab,
-  playerRanks,
-}: CategoryTabsViewProps) {
-  const players = getUniquePlayers(category.teamEntries);
-  const orderedStages = sortStagesForDisplay(category.stages);
+export function CategoryTabsView({ data }: CategoryTabsViewProps) {
+  const players =
+    data.activeTab === "players"
+      ? getUniquePlayers(data.category.teamEntries)
+      : [];
+  const orderedStages =
+    data.activeTab === "matches" || data.activeTab === "standings"
+      ? sortStagesForDisplay(data.category.stages)
+      : [];
   const orderedMatchStages = orderedStages.filter(
     (stage) => stage.matches.length > 0,
   );
   const stagesWithGroups = orderedStages.filter(
     (stage) => stage.groups.length > 0 && stage.matches.length > 0,
   );
-  const totalMatches = category.stages.reduce(
-    (sum, stage) => sum + stage.matches.length,
-    0,
-  );
-  const totalGroups = category.stages.reduce(
-    (sum, stage) => sum + stage.groups.length,
-    0,
-  );
+  const totalMatches =
+    data.activeTab === "matches"
+      ? data.category.stages.reduce(
+          (sum, stage) => sum + stage.matches.length,
+          0,
+        )
+      : 0;
+  const totalGroups =
+    data.activeTab === "standings"
+      ? data.category.stages.reduce(
+          (sum, stage) => sum + stage.groups.length,
+          0,
+        )
+      : 0;
 
   return (
     <section className="min-w-0 space-y-4 sm:space-y-5">
-      {activeTab === "info" ? (
+      {data.activeTab === "info" ? (
         <section className="max-w-3xl space-y-3 py-1">
           <h2 className="text-base font-semibold tracking-tight text-purple-400 sm:text-lg">
             Format and category details
           </h2>
 
           <p className="text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
-            {category.rulesSummary || "Category details will be updated soon."}
+            {data.category.rulesSummary ||
+              "Category details will be updated soon."}
           </p>
         </section>
       ) : null}
 
-      {activeTab === "players" ? (
+      {data.activeTab === "players" ? (
         <div className="space-y-3 sm:space-y-4">
           <SectionMetaLine icon={<User className="h-3.5 w-3.5" />}>
             Total{" "}
@@ -211,32 +241,35 @@ export function CategoryTabsView({
         </div>
       ) : null}
 
-      {activeTab === "teams" ? (
+      {data.activeTab === "teams" ? (
         <div className="space-y-3 sm:space-y-4">
           <SectionMetaLine icon={<Users className="h-3.5 w-3.5" />}>
             Total{" "}
             <span className="font-semibold text-primary">
-              {category.teamEntries.length}
+              {data.category.teamEntries.length}
             </span>{" "}
-            team{category.teamEntries.length === 1 ? "" : "s"} in this category
+            team{data.category.teamEntries.length === 1 ? "" : "s"} in this
+            category
           </SectionMetaLine>
 
-          {category.teamEntries.length === 0 ? (
+          {data.category.teamEntries.length === 0 ? (
             <EmptyState message="No teams available yet." />
           ) : (
             <div className="grid min-w-0 gap-1.5 sm:gap-2 md:grid-cols-2">
-              {category.teamEntries.map((team) => (
+              {data.category.teamEntries.map((team) => (
                 <TeamCard
                   key={team.id}
                   team={{
                     ...team,
                     player1: {
                       ...team.player1,
-                      rankingPosition: playerRanks[team.player1.id] ?? null,
+                      rankingPosition:
+                        data.playerRanks[team.player1.id] ?? null,
                     },
                     player2: {
                       ...team.player2,
-                      rankingPosition: playerRanks[team.player2.id] ?? null,
+                      rankingPosition:
+                        data.playerRanks[team.player2.id] ?? null,
                     },
                   }}
                 />
@@ -246,7 +279,7 @@ export function CategoryTabsView({
         </div>
       ) : null}
 
-      {activeTab === "matches" ? (
+      {data.activeTab === "matches" ? (
         <div className="space-y-3 sm:space-y-4">
           <SectionMetaLine icon={<Swords className="h-3.5 w-3.5" />}>
             Total{" "}
@@ -287,7 +320,7 @@ export function CategoryTabsView({
         </div>
       ) : null}
 
-      {activeTab === "standings" ? (
+      {data.activeTab === "standings" ? (
         <div className="space-y-2.5 sm:space-y-3">
           <SectionMetaLine icon={<Layers3 className="h-3.5 w-3.5" />}>
             Showing{" "}

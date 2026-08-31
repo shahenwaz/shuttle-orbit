@@ -11,6 +11,8 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import {
   getCategoryByTournamentAndCode,
   getCategoryMetadataByTournamentAndCode,
+  getCategoryOverviewByTournamentAndCode,
+  getCategoryTeamsByTournamentAndCode,
 } from "@/lib/tournament/queries";
 import { getLeaderboard } from "@/lib/rankings/queries";
 
@@ -75,12 +77,77 @@ function getRankingScopeForCategory(categoryCode: string) {
   };
 }
 
-export default async function CategoryDetailPage({
-  params,
-  searchParams,
-}: CategoryDetailPageProps) {
-  const { slug, categoryCode } = await params;
-  const resolvedSearchParams = await searchParams;
+async function getCategoryPageData(
+  slug: string,
+  categoryCode: string,
+  activeTab: PublicCategoryTab,
+) {
+  if (activeTab === "info") {
+    const { tournament, category } =
+      await getCategoryOverviewByTournamentAndCode(slug, categoryCode);
+
+    if (!tournament || !category) {
+      notFound();
+    }
+
+    return {
+      tournament,
+      category,
+      tabData: {
+        activeTab,
+        category,
+      } as const,
+    };
+  }
+
+  if (activeTab === "teams" || activeTab === "players") {
+    const { tournament, category } = await getCategoryTeamsByTournamentAndCode(
+      slug,
+      categoryCode,
+    );
+
+    if (!tournament || !category) {
+      notFound();
+    }
+
+    if (activeTab === "players") {
+      return {
+        tournament,
+        category,
+        tabData: {
+          activeTab,
+          category,
+        } as const,
+      };
+    }
+
+    const rankingScope = getRankingScopeForCategory(category.code);
+    const categoryLeaderboard = await getLeaderboard({
+      scope: rankingScope.scope,
+      categoryCode:
+        rankingScope.scope === "CATEGORY"
+          ? rankingScope.categoryCode
+          : undefined,
+    });
+
+    const playerRanks = categoryLeaderboard.reduce<Record<string, number>>(
+      (rankMap, row) => {
+        rankMap[row.playerId] = row.rank;
+        return rankMap;
+      },
+      {},
+    );
+
+    return {
+      tournament,
+      category,
+      tabData: {
+        activeTab,
+        category,
+        playerRanks,
+      } as const,
+    };
+  }
 
   const { tournament, category } = await getCategoryByTournamentAndCode(
     slug,
@@ -91,31 +158,28 @@ export default async function CategoryDetailPage({
     notFound();
   }
 
+  return {
+    tournament,
+    category,
+    tabData: {
+      activeTab,
+      category,
+    } as const,
+  };
+}
+
+export default async function CategoryDetailPage({
+  params,
+  searchParams,
+}: CategoryDetailPageProps) {
+  const { slug, categoryCode } = await params;
+  const resolvedSearchParams = await searchParams;
   const activeTab = getActiveTab(resolvedSearchParams?.tab);
-  let playerRanks: Record<string, number> = {};
-
-  if (activeTab === "teams") {
-    const rankingScope = getRankingScopeForCategory(category.code);
-    const categoryLeaderboard = await getLeaderboard({
-      scope: rankingScope.scope,
-      categoryCode:
-        rankingScope.scope === "CATEGORY"
-          ? rankingScope.categoryCode
-          : undefined,
-    });
-
-    playerRanks = categoryLeaderboard.reduce<Record<string, number>>(
-      (rankMap, row) => {
-        rankMap[row.playerId] = row.rank;
-        return rankMap;
-      },
-      {},
-    );
-  }
-
-  if (!tournament || !category) {
-    notFound();
-  }
+  const { tournament, category, tabData } = await getCategoryPageData(
+    slug,
+    categoryCode,
+    activeTab,
+  );
 
   const baseHref = `/tournaments/${tournament.slug}/categories/${category.code}`;
 
@@ -135,11 +199,7 @@ export default async function CategoryDetailPage({
       />
 
       <PageContainer className="py-4 sm:py-6">
-        <CategoryTabsView
-          category={category}
-          activeTab={activeTab}
-          playerRanks={playerRanks}
-        />
+        <CategoryTabsView data={tabData} />
       </PageContainer>
     </>
   );

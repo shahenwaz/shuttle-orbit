@@ -159,6 +159,89 @@ export async function getCategoryMetadataByTournamentAndCode(
   };
 }
 
+export async function getCategoryOverviewByTournamentAndCode(
+  tournamentSlug: string,
+  categoryCode: string,
+) {
+  const tournament = await prisma.tournament.findUnique({
+    where: {
+      slug: tournamentSlug,
+    },
+    select: {
+      name: true,
+      slug: true,
+      categories: {
+        where: {
+          code: categoryCode,
+        },
+        select: {
+          name: true,
+          code: true,
+          rulesSummary: true,
+        },
+      },
+    },
+  });
+
+  return {
+    tournament,
+    category: tournament?.categories[0] ?? null,
+  };
+}
+
+export async function getCategoryTeamsByTournamentAndCode(
+  tournamentSlug: string,
+  categoryCode: string,
+) {
+  const tournament = await prisma.tournament.findUnique({
+    where: {
+      slug: tournamentSlug,
+    },
+    select: {
+      name: true,
+      slug: true,
+      categories: {
+        where: {
+          code: categoryCode,
+        },
+        select: {
+          name: true,
+          code: true,
+          rulesSummary: true,
+          teamEntries: {
+            orderBy: {
+              createdAt: "asc",
+            },
+            select: {
+              id: true,
+              teamName: true,
+              player1: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  nickname: true,
+                },
+              },
+              player2: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  nickname: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return {
+    tournament,
+    category: tournament?.categories[0] ?? null,
+  };
+}
+
 export async function getCategoryByTournamentAndCode(
   tournamentSlug: string,
   categoryCode: string,
