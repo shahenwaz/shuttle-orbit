@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
 
 import { getPlayersDirectory } from "@/lib/player/queries";
-import { getAllTournaments } from "@/lib/tournament/queries";
+import { getTournamentSitemapEntries } from "@/lib/tournament/queries";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [tournaments, players] = await Promise.all([
-    getAllTournaments(),
+    getTournamentSitemapEntries(),
     getPlayersDirectory(),
   ]);
 

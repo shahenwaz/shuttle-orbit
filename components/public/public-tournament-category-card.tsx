@@ -7,7 +7,6 @@ export type PublicTournamentCategoryCardData = {
   id: string;
   name: string;
   code: string;
-  rulesSummary: string | null;
   _count: {
     teamEntries: number;
     matches: number;

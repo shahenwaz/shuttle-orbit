@@ -5,7 +5,10 @@ import { PublicTournamentCategoryCard } from "@/components/public/public-tournam
 import { TournamentHero } from "@/components/tournaments/tournament-hero";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { getTournamentBySlug } from "@/lib/tournament/queries";
+import {
+  getTournamentBySlug,
+  getTournamentMetadataBySlug,
+} from "@/lib/tournament/queries";
 
 type TournamentDetailPageProps = {
   params: Promise<{
@@ -17,7 +20,7 @@ export async function generateMetadata({
   params,
 }: TournamentDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tournament = await getTournamentBySlug(slug);
+  const tournament = await getTournamentMetadataBySlug(slug);
 
   if (!tournament) {
     return buildPageMetadata({

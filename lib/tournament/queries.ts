@@ -5,10 +5,19 @@ export async function getFeaturedTournament() {
     orderBy: {
       eventDate: "desc",
     },
-    include: {
+    select: {
+      name: true,
+      slug: true,
+      location: true,
+      eventDate: true,
+      description: true,
       categories: {
         orderBy: {
           code: "asc",
+        },
+        select: {
+          id: true,
+          code: true,
         },
       },
     },
@@ -20,10 +29,19 @@ export async function getAllTournaments() {
     orderBy: {
       eventDate: "desc",
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      location: true,
+      eventDate: true,
       categories: {
         orderBy: {
           code: "asc",
+        },
+        select: {
+          id: true,
+          code: true,
         },
       },
       _count: {
@@ -36,81 +54,52 @@ export async function getAllTournaments() {
   });
 }
 
+export async function getTournamentSitemapEntries() {
+  return prisma.tournament.findMany({
+    orderBy: {
+      eventDate: "desc",
+    },
+    select: {
+      slug: true,
+      updatedAt: true,
+    },
+  });
+}
+
+export async function getTournamentMetadataBySlug(slug: string) {
+  return prisma.tournament.findUnique({
+    where: { slug },
+    select: {
+      name: true,
+      description: true,
+    },
+  });
+}
+
 export async function getTournamentBySlug(slug: string) {
   return prisma.tournament.findUnique({
     where: { slug },
-    include: {
+    select: {
+      name: true,
+      slug: true,
+      location: true,
+      eventDate: true,
+      description: true,
       categories: {
         orderBy: {
           code: "asc",
         },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
           stages: {
-            orderBy: {
-              stageOrder: "asc",
-            },
-            include: {
+            select: {
               groups: {
-                orderBy: {
-                  groupOrder: "asc",
-                },
-                include: {
-                  memberships: {
-                    include: {
-                      teamEntry: {
-                        include: {
-                          player1: true,
-                          player2: true,
-                        },
-                      },
-                    },
-                  },
+                select: {
+                  id: true,
                 },
               },
-              matches: {
-                orderBy: [
-                  {
-                    scheduledAt: "asc",
-                  },
-                  {
-                    createdAt: "asc",
-                  },
-                ],
-                include: {
-                  teamA: {
-                    include: {
-                      player1: true,
-                      player2: true,
-                    },
-                  },
-                  teamB: {
-                    include: {
-                      player1: true,
-                      player2: true,
-                    },
-                  },
-                  winner: {
-                    include: {
-                      player1: true,
-                      player2: true,
-                    },
-                  },
-                  sets: {
-                    orderBy: {
-                      setNumber: "asc",
-                    },
-                  },
-                },
-              },
-            },
-          },
-          teamEntries: {
-            include: {
-              player1: true,
-              player2: true,
-            },
-            orderBy: {
-              createdAt: "asc",
             },
           },
           _count: {
