@@ -2,7 +2,7 @@
 
 ## Project purpose
 
-Shuttle Orbit is a modern badminton community platform built around tournaments, player rankings, club profiles, club sessions/attendance, and community league management.
+Shuttle Orbit is a modern badminton community platform built around tournaments, player rankings, club profiles, player-based club membership, and community league management.
 
 The application should remain:
 
@@ -49,8 +49,8 @@ Shuttle Orbit currently contains several related but distinct domains.
 
 - Clubs are persistent community entities.
 - A player may belong to a club and has club-specific metadata.
-- Club public profiles, managed-club administration, member access, sessions, attendance, and visibility rules are existing concepts.
-- Preserve public/member/admin visibility boundaries.
+- Club public profiles, player-based membership, club roles, and public member visibility are existing concepts.
+- Preserve public/admin visibility boundaries.
 - Club membership features must not accidentally change global player identity semantics.
 
 ### Community leagues
@@ -153,7 +153,7 @@ Avoid:
 - premature abstraction that increases indirection without measurable benefit
 
 Do not make caching or rendering-mode changes blindly.
-Tournament results, attendance state, member access, and other changing data may require fresh reads. If a performance change could make user-visible data stale, explain the trade-off and ask before changing caching behavior.
+Tournament results and other changing data may require fresh reads. If a performance change could make user-visible data stale, explain the trade-off and ask before changing caching behavior.
 
 ## Code quality and readability
 
@@ -211,26 +211,25 @@ Never:
 - reset the database without explicit permission
 - delete real data to make development easier
 - run destructive migration commands casually
-- change relationship semantics without considering existing tournament, club, league, attendance, ranking, and player history
+- change relationship semantics without considering existing tournament, club, league, ranking, and player history
 
 Prefer transactions for multi-step mutations that must succeed or fail together.
 
 Be especially careful with:
 
-- Player relations shared across tournaments, clubs, sessions, and leagues
+- Player relations shared across tournaments, clubs, and leagues
 - Club deletion/member reassignment semantics
-- public/member/admin visibility
+- public/admin visibility
 - historical ranking/stat records
 - league team/player relations
 
-## Authentication, member access, and security
+## Authentication and security
 
 - Treat admin routes and mutations as privileged.
 - Preserve existing authentication checks when refactoring.
-- Preserve club member-access boundaries and share-key semantics.
 - Never expose credentials or secrets.
 - Never commit `.env` values.
-- Do not log passwords, hashes, tokens, connection strings, share keys, or private session data.
+- Do not log passwords, hashes, tokens, or connection strings.
 - Do not weaken authorization for convenience.
 
 ## Public data and SEO
@@ -247,7 +246,7 @@ Preserve existing:
 
 Do not add heavy client-side rendering to public pages without a clear need.
 
-Private/member-only surfaces must not accidentally become indexable or publicly discoverable through convenience refactors.
+Private/admin surfaces must not accidentally become indexable or publicly discoverable through convenience refactors.
 
 ## Working with existing features
 
@@ -262,7 +261,7 @@ Before modifying a feature:
 
 For tournament logic, inspect fixture/group/result/knockout/ranking code before introducing new behavior.
 
-For club work, inspect club profile mappers, validation, member/session actions, public profile components, and member-zone access flow.
+For club work, inspect club profile mappers, validation, membership actions, and public profile components.
 
 For league work, inspect the existing league format helpers and the specific format implementation before generalizing behavior.
 

@@ -66,14 +66,12 @@ function getRankingScopeForCategory(categoryCode: string) {
   if (normalizedCode === "MIXED") {
     return {
       scope: "UNIVERSAL" as const,
-      label: "Universal",
     };
   }
 
   return {
     scope: "CATEGORY" as const,
     categoryCode: normalizedCode,
-    label: `${normalizedCode}`,
   };
 }
 

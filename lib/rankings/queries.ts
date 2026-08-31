@@ -76,7 +76,6 @@ export async function getLeaderboard({
     select: {
       id: true,
       fullName: true,
-      nickname: true,
       tournamentStats: {
         select: {
           tournamentId: true,
@@ -107,7 +106,6 @@ export async function getLeaderboard({
       rank: index + 1,
       playerId: row.playerId,
       fullName: player?.fullName ?? "Unknown Player",
-      nickname: player?.nickname ?? "unknown",
       totalPoints,
       tournamentsCount: tournamentIds.size,
       bestCategory: getStrongestCategoryPlayed(categoryCodes),
