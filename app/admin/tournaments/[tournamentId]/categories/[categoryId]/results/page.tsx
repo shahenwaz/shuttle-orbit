@@ -7,7 +7,6 @@ import { ResultsGroupList } from "@/components/admin/results/results-group-list"
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
-import { formatTeamName } from "@/lib/utils/format";
 
 type AdminCategoryResultsPageProps = {
   params: Promise<{
@@ -29,30 +28,10 @@ export default async function AdminCategoryResultsPage({
     select: {
       id: true,
       name: true,
-      knockoutStartStage: true,
       tournament: {
         select: {
           id: true,
           name: true,
-        },
-      },
-      teamEntries: {
-        orderBy: {
-          createdAt: "asc",
-        },
-        select: {
-          id: true,
-          teamName: true,
-          player1: {
-            select: {
-              fullName: true,
-            },
-          },
-          player2: {
-            select: {
-              fullName: true,
-            },
-          },
         },
       },
       stages: {
@@ -195,7 +174,6 @@ export default async function AdminCategoryResultsPage({
   const tournament = category.tournament;
 
   type CategoryStage = (typeof category.stages)[number];
-  type CategoryTeamEntry = (typeof category.teamEntries)[number];
 
   const groupStages = category.stages.filter(
     (stage: CategoryStage) =>
@@ -211,15 +189,6 @@ export default async function AdminCategoryResultsPage({
   );
 
   type GroupStage = (typeof groupStages)[number];
-
-  const teamOptions = category.teamEntries.map((team: CategoryTeamEntry) => ({
-    id: team.id,
-    label: formatTeamName(
-      team.player1.fullName,
-      team.player2.fullName,
-      team.teamName,
-    ),
-  }));
 
   return (
     <>
@@ -276,13 +245,8 @@ export default async function AdminCategoryResultsPage({
         <KnockoutStageList
           tournamentId={tournament.id}
           categoryId={category.id}
-          teams={teamOptions}
           stages={knockoutStages}
           mode="results"
-          knockoutStartStageType={
-            (category.knockoutStartStage as
-              "quarter_final" | "semi_final" | "final" | null) ?? null
-          }
         />
       </PageContainer>
     </>

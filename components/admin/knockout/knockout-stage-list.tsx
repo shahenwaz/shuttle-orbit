@@ -26,62 +26,69 @@ import { formatTeamName } from "@/lib/utils/format";
 import type { KnockoutStageType } from "@/lib/knockout/types";
 import { resetMatchResultAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/results/actions";
 
+type TeamOption = {
+  id: string;
+  label: string;
+};
+
+type KnockoutStage = {
+  id: string;
+  name: string;
+  stageType: string;
+  matches: Array<{
+    id: string;
+    roundLabel: string | null;
+    status: string;
+    scoreSummary: string | null;
+    winnerId: string | null;
+    teamAId: string | null;
+    teamBId: string | null;
+    sets: Array<{
+      setNumber: number;
+      teamAScore: number;
+      teamBScore: number;
+    }>;
+    teamA: {
+      teamName: string | null;
+      player1: {
+        fullName: string;
+      };
+      player2: {
+        fullName: string;
+      };
+    } | null;
+    teamB: {
+      teamName: string | null;
+      player1: {
+        fullName: string;
+      };
+      player2: {
+        fullName: string;
+      };
+    } | null;
+  }>;
+};
+
 type KnockoutStageListProps = {
   tournamentId: string;
   categoryId: string;
-  teams: Array<{
-    id: string;
-    label: string;
-  }>;
-  stages: Array<{
-    id: string;
-    name: string;
-    stageType: string;
-    matches: Array<{
-      id: string;
-      roundLabel: string | null;
-      status: string;
-      scoreSummary: string | null;
-      winnerId: string | null;
-      teamAId: string | null;
-      teamBId: string | null;
-      sets: Array<{
-        setNumber: number;
-        teamAScore: number;
-        teamBScore: number;
-      }>;
-      teamA: {
-        teamName: string | null;
-        player1: {
-          fullName: string;
-        };
-        player2: {
-          fullName: string;
-        };
-      } | null;
-      teamB: {
-        teamName: string | null;
-        player1: {
-          fullName: string;
-        };
-        player2: {
-          fullName: string;
-        };
-      } | null;
-    }>;
-  }>;
-  mode: "fixtures" | "results";
-  knockoutStartStageType: KnockoutStageType | null;
-};
+  stages: KnockoutStage[];
+} & (
+  | {
+      mode: "fixtures";
+      teams: TeamOption[];
+      knockoutStartStageType: KnockoutStageType | null;
+    }
+  | {
+      mode: "results";
+      teams?: never;
+      knockoutStartStageType?: never;
+    }
+);
 
-export function KnockoutStageList({
-  tournamentId,
-  categoryId,
-  teams,
-  stages,
-  mode,
-  knockoutStartStageType,
-}: KnockoutStageListProps) {
+export function KnockoutStageList(props: KnockoutStageListProps) {
+  const { tournamentId, categoryId, stages, mode } = props;
+
   if (stages.length === 0) {
     return null;
   }
@@ -91,9 +98,9 @@ export function KnockoutStageList({
       {stages.map((stage) => {
         const canManageTeams =
           mode === "fixtures" &&
-          knockoutStartStageType !== null &&
-          (stage.stageType === knockoutStartStageType ||
-            (knockoutStartStageType === "final" &&
+          props.knockoutStartStageType !== null &&
+          (stage.stageType === props.knockoutStartStageType ||
+            (props.knockoutStartStageType === "final" &&
               stage.stageType === "third_place"));
 
         return (
@@ -136,17 +143,27 @@ export function KnockoutStageList({
                         )
                       : "TBD";
 
-                    return (
+                    const commonProps = {
+                      tournamentId,
+                      categoryId,
+                      match,
+                      teamALabel,
+                      teamBLabel,
+                    };
+
+                    return mode === "fixtures" ? (
                       <KnockoutMatchCard
                         key={match.id}
-                        tournamentId={tournamentId}
-                        categoryId={categoryId}
-                        teams={teams}
-                        match={match}
-                        mode={mode}
+                        {...commonProps}
+                        teams={props.teams}
+                        mode="fixtures"
                         canManageTeams={canManageTeams}
-                        teamALabel={teamALabel}
-                        teamBLabel={teamBLabel}
+                      />
+                    ) : (
+                      <KnockoutMatchCard
+                        key={match.id}
+                        {...commonProps}
+                        mode="results"
                       />
                     );
                   })}
@@ -160,25 +177,28 @@ export function KnockoutStageList({
   );
 }
 
-function KnockoutMatchCard({
-  tournamentId,
-  categoryId,
-  teams,
-  match,
-  mode,
-  canManageTeams,
-  teamALabel,
-  teamBLabel,
-}: {
+type KnockoutMatchCardProps = {
   tournamentId: string;
   categoryId: string;
-  teams: Array<{ id: string; label: string }>;
-  match: KnockoutStageListProps["stages"][number]["matches"][number];
-  mode: "fixtures" | "results";
-  canManageTeams: boolean;
+  match: KnockoutStage["matches"][number];
   teamALabel: string;
   teamBLabel: string;
-}) {
+} & (
+  | {
+      mode: "fixtures";
+      teams: TeamOption[];
+      canManageTeams: boolean;
+    }
+  | {
+      mode: "results";
+      teams?: never;
+      canManageTeams?: never;
+    }
+);
+
+function KnockoutMatchCard(props: KnockoutMatchCardProps) {
+  const { tournamentId, categoryId, match, mode, teamALabel, teamBLabel } =
+    props;
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [isResultOpen, setIsResultOpen] = useState(false);
   const [resultResetMessage, setResultResetMessage] = useState("");
@@ -190,7 +210,7 @@ function KnockoutMatchCard({
 
   return (
     <div className="relative space-y-2">
-      {canManageTeams ? (
+      {mode === "fixtures" && props.canManageTeams ? (
         <div className="absolute right-2 top-2 z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -258,7 +278,7 @@ function KnockoutMatchCard({
 
       <MatchCard match={match} />
 
-      {resetTeamsMessage ? (
+      {mode === "fixtures" && resetTeamsMessage ? (
         <p
           className={`text-sm ${
             resetTeamsError ? "text-red-400" : "text-emerald-400"
@@ -343,23 +363,25 @@ function KnockoutMatchCard({
         </div>
       ) : null}
 
-      <CreateSheet
-        open={isAssignOpen}
-        onOpenChange={setIsAssignOpen}
-        triggerLabel=""
-        hideTrigger
-        title="Assign knockout teams"
-        description="Choose the teams for this knockout match."
-      >
-        <AssignKnockoutMatchForm
-          tournamentId={tournamentId}
-          categoryId={categoryId}
-          matchId={match.id}
-          teams={teams}
-          defaultTeamAId={match.teamAId}
-          defaultTeamBId={match.teamBId}
-        />
-      </CreateSheet>
+      {mode === "fixtures" && props.canManageTeams ? (
+        <CreateSheet
+          open={isAssignOpen}
+          onOpenChange={setIsAssignOpen}
+          triggerLabel=""
+          hideTrigger
+          title="Assign knockout teams"
+          description="Choose the teams for this knockout match."
+        >
+          <AssignKnockoutMatchForm
+            tournamentId={tournamentId}
+            categoryId={categoryId}
+            matchId={match.id}
+            teams={props.teams}
+            defaultTeamAId={match.teamAId}
+            defaultTeamBId={match.teamBId}
+          />
+        </CreateSheet>
+      ) : null}
     </div>
   );
 }
