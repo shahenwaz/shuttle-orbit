@@ -7,7 +7,10 @@ import {
   deleteMatchAction,
   type DeleteMatchActionState,
 } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/fixtures/actions";
-import { resetGroupFixturesAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
+import {
+  resetGroupFixturesAction,
+  type SimpleGroupActionState,
+} from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/groups/actions";
 import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { CreateGroupMatchForm } from "@/components/admin/fixtures/create-group-match-form";
@@ -119,8 +122,17 @@ function FixtureGroupCard({
   categoryId: string;
   group: GroupFixtureRow;
 }) {
+  const [isResetOpen, setIsResetOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
-    resetGroupFixturesAction,
+    async (previousState: SimpleGroupActionState, formData: FormData) => {
+      const result = await resetGroupFixturesAction(previousState, formData);
+
+      if (result.success) {
+        setIsResetOpen(false);
+      }
+
+      return result;
+    },
     {
       success: false,
       message: "",
@@ -183,25 +195,49 @@ function FixtureGroupCard({
               />
             </CreateSheet>
 
-            <form action={formAction}>
-              <input type="hidden" name="tournamentId" value={tournamentId} />
-              <input type="hidden" name="categoryId" value={categoryId} />
-              <input type="hidden" name="groupId" value={group.id} />
-              <Button
-                type="submit"
-                variant="outline"
-                size="sm"
-                disabled={isPending || group.matches.length === 0}
-                className={actionPillButtonClassName({
-                  variant: "neutral",
-                  className:
-                    "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-                })}
-              >
-                <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                Reset fixtures
-              </Button>
-            </form>
+            <CreateDialog
+              open={isResetOpen}
+              onOpenChange={setIsResetOpen}
+              triggerLabel="Reset fixtures"
+              title="Reset group fixtures"
+              description="This will permanently delete all fixtures and recorded results in this group."
+              triggerClassName={actionPillButtonClassName({
+                variant: "neutral",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<RotateCcw className="h-3.5 w-3.5" />}
+              triggerDisabled={isPending || group.matches.length === 0}
+            >
+              <form action={formAction} className="space-y-4">
+                <input type="hidden" name="tournamentId" value={tournamentId} />
+                <input type="hidden" name="categoryId" value={categoryId} />
+                <input type="hidden" name="groupId" value={group.id} />
+
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to reset {group.name}? All fixtures,
+                  sets, and recorded results in this group will be deleted.
+                </p>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsResetOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={isPending}
+                  >
+                    {isPending ? "Resetting..." : "Reset fixtures"}
+                  </Button>
+                </div>
+              </form>
+            </CreateDialog>
           </div>
         </div>
       </div>

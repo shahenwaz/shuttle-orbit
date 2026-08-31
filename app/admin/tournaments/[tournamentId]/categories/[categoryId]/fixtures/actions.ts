@@ -82,8 +82,16 @@ export async function generateGroupFixturesAction(
 
   const { tournamentId, categoryId, groupId } = parsed.data;
 
-  const group = await prisma.group.findUnique({
-    where: { id: groupId },
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      stage: {
+        categoryId,
+        category: {
+          tournamentId,
+        },
+      },
+    },
     include: {
       stage: {
         select: {
@@ -108,7 +116,7 @@ export async function generateGroupFixturesAction(
     },
   });
 
-  if (!group || group.stage.categoryId !== categoryId) {
+  if (!group) {
     return {
       success: false,
       message: "Selected group was not found for this category.",
@@ -242,8 +250,16 @@ export async function createGroupMatchAction(
     };
   }
 
-  const group = await prisma.group.findUnique({
-    where: { id: groupId },
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      stage: {
+        categoryId,
+        category: {
+          tournamentId,
+        },
+      },
+    },
     include: {
       stage: {
         select: {
@@ -259,7 +275,7 @@ export async function createGroupMatchAction(
     },
   });
 
-  if (!group || group.stage.categoryId !== categoryId) {
+  if (!group) {
     return {
       success: false,
       message: "Selected group was not found for this category.",

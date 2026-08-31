@@ -465,10 +465,22 @@ export async function removeGroupMembershipAction(
 
   const { tournamentId, categoryId, membershipId } = parsed.data;
 
-  const membership = await prisma.groupMembership.findUnique({
-    where: { id: membershipId },
+  const membership = await prisma.groupMembership.findFirst({
+    where: {
+      id: membershipId,
+      group: {
+        stage: {
+          categoryId,
+          category: {
+            tournamentId,
+          },
+        },
+      },
+    },
     select: {
       id: true,
+      groupId: true,
+      teamEntryId: true,
       group: {
         select: {
           stage: {
@@ -481,10 +493,28 @@ export async function removeGroupMembershipAction(
     },
   });
 
-  if (!membership || membership.group.stage.categoryId !== categoryId) {
+  if (!membership) {
     return {
       success: false,
       message: "Group membership not found.",
+    };
+  }
+
+  const matchUsageCount = await prisma.match.count({
+    where: {
+      groupId: membership.groupId,
+      OR: [
+        { teamAId: membership.teamEntryId },
+        { teamBId: membership.teamEntryId },
+      ],
+    },
+  });
+
+  if (matchUsageCount > 0) {
+    return {
+      success: false,
+      message:
+        "Reset or remove this group's fixtures before unassigning the team.",
     };
   }
 
@@ -523,8 +553,16 @@ export async function resetGroupFixturesAction(
 
   const { tournamentId, categoryId, groupId } = parsed.data;
 
-  const group = await prisma.group.findUnique({
-    where: { id: groupId },
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      stage: {
+        categoryId,
+        category: {
+          tournamentId,
+        },
+      },
+    },
     include: {
       stage: {
         select: {
@@ -535,7 +573,7 @@ export async function resetGroupFixturesAction(
     },
   });
 
-  if (!group || group.stage.categoryId !== categoryId) {
+  if (!group) {
     return {
       success: false,
       message: "Group not found.",
@@ -641,9 +679,15 @@ export async function updateGroupAction(
     };
   }
 
-  const existingGroup = await prisma.group.findUnique({
+  const existingGroup = await prisma.group.findFirst({
     where: {
       id: groupId,
+      stage: {
+        categoryId,
+        category: {
+          tournamentId,
+        },
+      },
     },
     select: {
       id: true,
@@ -745,6 +789,11 @@ export async function deleteGroupAction(
           id: true,
         },
       },
+      matches: {
+        select: {
+          id: true,
+        },
+      },
     },
   });
 
@@ -759,6 +808,14 @@ export async function deleteGroupAction(
     return {
       success: false,
       message: "Unassign all teams from this group before deleting it.",
+    };
+  }
+
+  if (group.matches.length > 0) {
+    return {
+      success: false,
+      message:
+        "Reset or remove this group's fixtures before deleting the group.",
     };
   }
 

@@ -26,6 +26,20 @@ export async function saveKnockoutStageSelection(args: {
     includeThirdPlace = true,
   } = args;
 
+  const category = await prisma.tournamentCategory.findFirst({
+    where: {
+      id: categoryId,
+      tournamentId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!category) {
+    throw new Error("Tournament category not found.");
+  }
+
   await saveCategoryKnockoutConfig({
     categoryId,
     startStageType,
