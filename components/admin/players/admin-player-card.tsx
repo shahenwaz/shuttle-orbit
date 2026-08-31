@@ -139,7 +139,7 @@ export function AdminPlayerCard({ player, clubs }: AdminPlayerCardProps) {
         triggerLabel=""
         hideTrigger
         title="Remove player"
-        description="This will only work if the player has not been used in any team or tournament history."
+        description="This will only work if the player has not been used in tournament or league history."
       >
         <form
           className="space-y-4"

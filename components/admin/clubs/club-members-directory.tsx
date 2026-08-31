@@ -19,26 +19,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type ClubMemberPlayer = {
-  id: string;
-  fullName: string;
-  nickname: string | null;
-};
-
 type ClubMemberRow = {
   id: string;
   clubId: string;
-  playerId: string;
   name: string;
   nickname: string | null;
   role: string;
   isPublic: boolean;
-  player: ClubMemberPlayer;
 };
 
 type ClubMembersDirectoryProps = {
   members: ClubMemberRow[];
-  players: ClubMemberPlayer[];
 };
 
 const initialDeleteState: DeleteClubMemberActionState = {
@@ -64,10 +55,9 @@ function getInitials(name: string) {
 
 type ClubMemberCardProps = {
   member: ClubMemberRow;
-  players: ClubMemberPlayer[];
 };
 
-function ClubMemberCard({ member, players }: ClubMemberCardProps) {
+function ClubMemberCard({ member }: ClubMemberCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteState, setDeleteState] =
@@ -159,11 +149,10 @@ function ClubMemberCard({ member, players }: ClubMemberCardProps) {
         triggerLabel=""
         hideTrigger
         title="Edit club member"
-        description="Update the member link, role, and public visibility."
+        description="Update the member role and public visibility."
       >
         <EditClubMemberForm
           member={member}
-          players={players}
           onSuccess={() => setIsEditOpen(false)}
         />
       </CreateDialog>
@@ -238,20 +227,17 @@ function ClubMemberCard({ member, players }: ClubMemberCardProps) {
   );
 }
 
-export function ClubMembersDirectory({
-  members,
-  players,
-}: ClubMembersDirectoryProps) {
+export function ClubMembersDirectory({ members }: ClubMembersDirectoryProps) {
   if (members.length === 0) {
     return (
-      <EmptyState message="No club members added yet. Add members as linked players or club-only members." />
+      <EmptyState message="No club members added yet. Add an existing player to this club." />
     );
   }
 
   return (
     <div className="grid gap-1.5 sm:gap-2 md:grid-cols-2">
       {members.map((member) => (
-        <ClubMemberCard key={member.id} member={member} players={players} />
+        <ClubMemberCard key={member.id} member={member} />
       ))}
     </div>
   );

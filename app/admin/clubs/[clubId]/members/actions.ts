@@ -11,8 +11,6 @@ export type ClubMemberActionState = {
   message: string;
   fieldErrors?: {
     playerId?: string[];
-    name?: string[];
-    nickname?: string[];
     role?: string[];
     isPublic?: string[];
   };

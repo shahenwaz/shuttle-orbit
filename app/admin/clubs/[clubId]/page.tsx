@@ -100,16 +100,10 @@ export default async function ClubWorkspacePage({
   const members = club.players.map((player: ClubPlayerRow) => ({
     id: player.id,
     clubId: club.id,
-    playerId: player.id,
     name: player.fullName,
     nickname: player.nickname,
     role: player.clubRole,
     isPublic: player.clubProfilePublic,
-    player: {
-      id: player.id,
-      fullName: player.fullName,
-      nickname: player.nickname,
-    },
   }));
 
   return (
@@ -149,7 +143,7 @@ export default async function ClubWorkspacePage({
             </CreateSheet>
           </div>
 
-          <ClubMembersDirectory members={members} players={availablePlayers} />
+          <ClubMembersDirectory members={members} />
         </section>
       </PageContainer>
     </>

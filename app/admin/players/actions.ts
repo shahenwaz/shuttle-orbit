@@ -1,6 +1,6 @@
 "use server";
 
-import { ClubMemberRole } from "@prisma/client";
+import { ClubMemberRole, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { requireAdmin } from "@/lib/auth";
@@ -256,13 +256,26 @@ export async function deletePlayerAction(
     };
   }
 
-  const usageCount = await prisma.teamEntry.count({
-    where: {
-      OR: [{ player1Id: playerId }, { player2Id: playerId }],
-    },
-  });
+  const [teamEntryUsageCount, leagueTeamUsageCount, leagueStatUsageCount] =
+    await Promise.all([
+      prisma.teamEntry.count({
+        where: {
+          OR: [{ player1Id: playerId }, { player2Id: playerId }],
+        },
+      }),
+      prisma.leagueTeamPlayer.count({
+        where: {
+          playerId,
+        },
+      }),
+      prisma.playerLeagueStat.count({
+        where: {
+          playerId,
+        },
+      }),
+    ]);
 
-  if (usageCount > 0) {
+  if (teamEntryUsageCount > 0) {
     return {
       success: false,
       message:
@@ -270,11 +283,44 @@ export async function deletePlayerAction(
     };
   }
 
-  await prisma.player.delete({
-    where: {
-      id: playerId,
-    },
-  });
+  if (leagueTeamUsageCount > 0 || leagueStatUsageCount > 0) {
+    return {
+      success: false,
+      message:
+        "This player cannot be deleted because they are already used in league teams or league history.",
+    };
+  }
+
+  try {
+    await prisma.player.delete({
+      where: {
+        id: playerId,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return {
+        success: false,
+        message: "Player was not found.",
+      };
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return {
+        success: false,
+        message:
+          "This player cannot be deleted because they are still used by tournament or league records.",
+      };
+    }
+
+    throw error;
+  }
 
   revalidatePath("/admin/players");
   revalidatePath("/clubs");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState } from "react";
 
 import {
   createClubMemberAction,
@@ -40,32 +40,6 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
     initialState,
   );
 
-  const [selectedPlayerId, setSelectedPlayerId] = useState("");
-  const [name, setName] = useState("");
-  const [nickname, setNickname] = useState("");
-
-  const selectedPlayer = useMemo(
-    () => players.find((player) => player.id === selectedPlayerId),
-    [players, selectedPlayerId],
-  );
-
-  function handlePlayerChange(playerId: string) {
-    setSelectedPlayerId(playerId);
-
-    const player = players.find((item) => item.id === playerId);
-
-    if (player) {
-      setName(player.fullName);
-      setNickname(player.nickname ?? "");
-      return;
-    }
-
-    setName("");
-    setNickname("");
-  }
-
-  const isLinkedPlayer = Boolean(selectedPlayer);
-
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="clubId" value={clubId} />
@@ -81,8 +55,7 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
         <select
           id="playerId"
           name="playerId"
-          value={selectedPlayerId}
-          onChange={(event) => handlePlayerChange(event.target.value)}
+          defaultValue=""
           className={inputClassName}
         >
           <option value="">Select player</option>
@@ -100,47 +73,6 @@ export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
         </p>
 
         <FieldError errors={state.fieldErrors?.playerId} />
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="name" className="text-sm font-medium text-foreground">
-            Member name
-          </label>
-          <input
-            id="name"
-            name="name"
-            value={name}
-            readOnly={isLinkedPlayer}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Member name"
-            className={`${inputClassName} ${
-              isLinkedPlayer ? "cursor-not-allowed text-muted-foreground" : ""
-            }`}
-          />
-          <FieldError errors={state.fieldErrors?.name} />
-        </div>
-
-        <div className="space-y-2">
-          <label
-            htmlFor="nickname"
-            className="text-sm font-medium text-foreground"
-          >
-            Nickname
-          </label>
-          <input
-            id="nickname"
-            name="nickname"
-            value={nickname}
-            readOnly={isLinkedPlayer}
-            onChange={(event) => setNickname(event.target.value)}
-            placeholder="Optional"
-            className={`${inputClassName} ${
-              isLinkedPlayer ? "cursor-not-allowed text-muted-foreground" : ""
-            }`}
-          />
-          <FieldError errors={state.fieldErrors?.nickname} />
-        </div>
       </div>
 
       <div className="space-y-2">
