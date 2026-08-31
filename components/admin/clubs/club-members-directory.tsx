@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  Link2,
-  MoreVertical,
-  Pencil,
-  Shield,
-  Trash2,
-  UserRound,
-} from "lucide-react";
+import { Link2, MoreVertical, Pencil, Trash2, UserRound } from "lucide-react";
 
 import {
   deleteClubMemberAction,
@@ -35,12 +28,12 @@ type ClubMemberPlayer = {
 type ClubMemberRow = {
   id: string;
   clubId: string;
-  playerId: string | null;
+  playerId: string;
   name: string;
   nickname: string | null;
   role: string;
   isPublic: boolean;
-  player: ClubMemberPlayer | null;
+  player: ClubMemberPlayer;
 };
 
 type ClubMembersDirectoryProps = {
@@ -111,17 +104,10 @@ function ClubMemberCard({ member, players }: ClubMemberCardProps) {
                 {member.nickname ? `@${member.nickname}` : "No nickname"}
               </span>
 
-              {member.player ? (
-                <span className="inline-flex items-center gap-1 text-sky-200">
-                  <Link2 className="h-3 w-3" />
-                  Tour player
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1">
-                  <Shield className="h-3 w-3" />
-                  Club-only
-                </span>
-              )}
+              <span className="inline-flex items-center gap-1 text-sky-200">
+                <Link2 className="h-3 w-3" />
+                Tour player
+              </span>
 
               {!member.isPublic ? <span>Hidden</span> : null}
             </div>

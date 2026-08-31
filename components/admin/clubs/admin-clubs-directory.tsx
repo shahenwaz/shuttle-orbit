@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 type AdminClubRow = {
   id: string;
   name: string;
-  slug: string;
   shortName: string | null;
   homeVenue: string | null;
   _count: {

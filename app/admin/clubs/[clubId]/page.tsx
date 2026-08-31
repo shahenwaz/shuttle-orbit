@@ -28,11 +28,51 @@ export default async function ClubWorkspacePage({
 }: ClubWorkspacePageProps) {
   const { clubId } = await params;
   const resolvedSearchParams = await searchParams;
+  const activeTab = getActiveTab(resolvedSearchParams?.tab);
+
+  if (activeTab === "overview") {
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortName: true,
+        description: true,
+        homeVenue: true,
+        logoUrl: true,
+        bannerUrl: true,
+        isPublic: true,
+        _count: { select: { players: true } },
+      },
+    });
+
+    if (!club) notFound();
+
+    return (
+      <>
+        <ClubWorkspaceHeader
+          clubId={club.id}
+          clubName={club.name}
+          homeVenue={club.homeVenue}
+          memberCount={club._count.players}
+          activeTab={activeTab}
+        />
+
+        <PageContainer className="space-y-4 pt-4 pb-4 sm:space-y-5 sm:pt-5 sm:pb-5">
+          <ClubOverviewPanel club={club} />
+        </PageContainer>
+      </>
+    );
+  }
 
   const [club, availablePlayers] = await Promise.all([
     prisma.club.findUnique({
       where: { id: clubId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        homeVenue: true,
         players: {
           orderBy: [{ clubRole: "asc" }, { fullName: "asc" }],
           select: {
@@ -41,7 +81,6 @@ export default async function ClubWorkspacePage({
             nickname: true,
             clubRole: true,
             clubProfilePublic: true,
-            clubJoinedAt: true,
           },
         },
         _count: { select: { players: true } },
@@ -66,15 +105,12 @@ export default async function ClubWorkspacePage({
     nickname: player.nickname,
     role: player.clubRole,
     isPublic: player.clubProfilePublic,
-    joinedAt: player.clubJoinedAt,
     player: {
       id: player.id,
       fullName: player.fullName,
       nickname: player.nickname,
     },
   }));
-
-  const activeTab = getActiveTab(resolvedSearchParams?.tab);
 
   return (
     <>
@@ -87,41 +123,34 @@ export default async function ClubWorkspacePage({
       />
 
       <PageContainer className="space-y-4 pt-4 pb-4 sm:space-y-5 sm:pt-5 sm:pb-5">
-        {activeTab === "overview" ? <ClubOverviewPanel club={club} /> : null}
-
-        {activeTab === "members" ? (
-          <section className="space-y-4 pt-2">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold tracking-tight text-purple-400">
-                  Club Members
-                </h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Members assigned to this club from the global player database.
-                </p>
-              </div>
-
-              <CreateSheet
-                triggerLabel="Add player"
-                title="Add player to club"
-                description="Assign an existing Shuttle Orbit player to this club."
-                triggerClassName={actionPillButtonClassName({
-                  variant: "create",
-                  className:
-                    "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-                })}
-                triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
-              >
-                <ClubMemberForm clubId={club.id} players={availablePlayers} />
-              </CreateSheet>
+        <section className="space-y-4 pt-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1">
+              <h2 className="text-base font-semibold tracking-tight text-purple-400">
+                Club Members
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Members assigned to this club from the global player database.
+              </p>
             </div>
 
-            <ClubMembersDirectory
-              members={members}
-              players={availablePlayers}
-            />
-          </section>
-        ) : null}
+            <CreateSheet
+              triggerLabel="Add player"
+              title="Add player to club"
+              description="Assign an existing Shuttle Orbit player to this club."
+              triggerClassName={actionPillButtonClassName({
+                variant: "create",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
+            >
+              <ClubMemberForm clubId={club.id} players={availablePlayers} />
+            </CreateSheet>
+          </div>
+
+          <ClubMembersDirectory members={members} players={availablePlayers} />
+        </section>
       </PageContainer>
     </>
   );

@@ -10,35 +10,29 @@ import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function AdminClubsPage() {
-  const [clubs, clubCount] = await Promise.all([
-    prisma.club.findMany({
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        shortName: true,
-        description: true,
-        homeVenue: true,
-        isPublic: true,
-        _count: {
-          select: {
-            players: true,
-          },
+  const clubs = await prisma.club.findMany({
+    orderBy: {
+      name: "asc",
+    },
+    select: {
+      id: true,
+      name: true,
+      shortName: true,
+      homeVenue: true,
+      _count: {
+        select: {
+          players: true,
         },
       },
-    }),
-    prisma.club.count(),
-  ]);
+    },
+  });
 
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader title="Club management" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Clubs" value={clubCount} />
+        <CompactStatPill label="Clubs" value={clubs.length} />
 
         <CreateSheet
           triggerLabel="Add club"

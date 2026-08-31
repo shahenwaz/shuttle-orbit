@@ -29,7 +29,7 @@ const adminSections = [
   {
     title: "Clubs",
     description:
-      "Manage club profiles, member access, assigned players, and club session planning.",
+      "Manage club profiles, assigned players, member roles, and public visibility.",
     icon: Building2,
     href: "/admin/clubs",
     cta: "Manage clubs",
