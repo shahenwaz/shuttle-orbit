@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { CalendarDays, Globe, MapPin, Settings2 } from "lucide-react";
 
