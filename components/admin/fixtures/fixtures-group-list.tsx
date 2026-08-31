@@ -31,26 +31,27 @@ type MatchRow = {
   winnerId: string | null;
   teamAId: string | null;
   teamBId: string | null;
+  sets: Array<{
+    setNumber: number;
+    teamAScore: number;
+    teamBScore: number;
+  }>;
   teamA: {
     teamName: string | null;
     player1: {
       fullName: string;
-      nickname: string | null;
     };
     player2: {
       fullName: string;
-      nickname: string | null;
     };
   } | null;
   teamB: {
     teamName: string | null;
     player1: {
       fullName: string;
-      nickname: string | null;
     };
     player2: {
       fullName: string;
-      nickname: string | null;
     };
   } | null;
 };
@@ -59,17 +60,14 @@ type GroupFixtureRow = {
   id: string;
   name: string;
   memberships: Array<{
-    id: string;
     teamEntry?: {
       id: string;
       teamName: string | null;
       player1: {
         fullName: string;
-        nickname: string | null;
       };
       player2: {
         fullName: string;
-        nickname: string | null;
       };
     };
   }>;

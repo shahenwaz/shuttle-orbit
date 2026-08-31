@@ -30,7 +30,10 @@ export default async function AdminCategoryFixturesPage({
       id: categoryId,
       tournamentId,
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      knockoutStartStage: true,
       tournament: {
         select: {
           id: true,
@@ -41,42 +44,47 @@ export default async function AdminCategoryFixturesPage({
         orderBy: {
           createdAt: "asc",
         },
-        include: {
+        select: {
+          id: true,
+          teamName: true,
           player1: {
             select: {
               fullName: true,
-              nickname: true,
             },
           },
           player2: {
             select: {
               fullName: true,
-              nickname: true,
             },
           },
         },
       },
       stages: {
-        include: {
+        select: {
+          id: true,
+          name: true,
+          stageType: true,
           groups: {
             orderBy: {
               groupOrder: "asc",
             },
-            include: {
+            select: {
+              id: true,
+              name: true,
               memberships: {
-                include: {
+                select: {
                   teamEntry: {
-                    include: {
+                    select: {
+                      id: true,
+                      teamName: true,
                       player1: {
                         select: {
                           fullName: true,
-                          nickname: true,
                         },
                       },
                       player2: {
                         select: {
                           fullName: true,
-                          nickname: true,
                         },
                       },
                     },
@@ -87,40 +95,50 @@ export default async function AdminCategoryFixturesPage({
                 orderBy: {
                   createdAt: "asc",
                 },
-                include: {
+                select: {
+                  id: true,
+                  roundLabel: true,
+                  status: true,
+                  scoreSummary: true,
+                  winnerId: true,
+                  teamAId: true,
+                  teamBId: true,
                   sets: {
                     orderBy: {
                       setNumber: "asc",
                     },
+                    select: {
+                      setNumber: true,
+                      teamAScore: true,
+                      teamBScore: true,
+                    },
                   },
                   teamA: {
-                    include: {
+                    select: {
+                      teamName: true,
                       player1: {
                         select: {
                           fullName: true,
-                          nickname: true,
                         },
                       },
                       player2: {
                         select: {
                           fullName: true,
-                          nickname: true,
                         },
                       },
                     },
                   },
                   teamB: {
-                    include: {
+                    select: {
+                      teamName: true,
                       player1: {
                         select: {
                           fullName: true,
-                          nickname: true,
                         },
                       },
                       player2: {
                         select: {
                           fullName: true,
-                          nickname: true,
                         },
                       },
                     },
@@ -136,40 +154,50 @@ export default async function AdminCategoryFixturesPage({
             orderBy: {
               createdAt: "asc",
             },
-            include: {
+            select: {
+              id: true,
+              roundLabel: true,
+              status: true,
+              scoreSummary: true,
+              winnerId: true,
+              teamAId: true,
+              teamBId: true,
               sets: {
                 orderBy: {
                   setNumber: "asc",
                 },
+                select: {
+                  setNumber: true,
+                  teamAScore: true,
+                  teamBScore: true,
+                },
               },
               teamA: {
-                include: {
+                select: {
+                  teamName: true,
                   player1: {
                     select: {
                       fullName: true,
-                      nickname: true,
                     },
                   },
                   player2: {
                     select: {
                       fullName: true,
-                      nickname: true,
                     },
                   },
                 },
               },
               teamB: {
-                include: {
+                select: {
+                  teamName: true,
                   player1: {
                     select: {
                       fullName: true,
-                      nickname: true,
                     },
                   },
                   player2: {
                     select: {
                       fullName: true,
-                      nickname: true,
                     },
                   },
                 },
@@ -179,12 +207,6 @@ export default async function AdminCategoryFixturesPage({
         },
         orderBy: {
           stageOrder: "asc",
-        },
-      },
-      _count: {
-        select: {
-          teamEntries: true,
-          matches: true,
         },
       },
     },
