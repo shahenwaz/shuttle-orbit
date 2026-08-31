@@ -1,5 +1,6 @@
 "use server";
 
+import { ClubMemberRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { requireAdmin } from "@/lib/auth";
@@ -171,7 +172,6 @@ export async function updatePlayerAction(
       select: {
         id: true,
         clubId: true,
-        clubJoinedAt: true,
       },
     }),
   ]);
@@ -205,7 +205,22 @@ export async function updatePlayerAction(
     };
   }
 
-  const isJoiningNewClub = validClubId && currentPlayer.clubId !== validClubId;
+  const isChangingClub = currentPlayer.clubId !== validClubId;
+  const clubMembershipUpdate = !isChangingClub
+    ? {}
+    : validClubId
+      ? {
+          clubRole: ClubMemberRole.MEMBER,
+          clubProfilePublic: true,
+          clubJoinedAt: new Date(),
+          clubNotes: null,
+        }
+      : {
+          clubRole: ClubMemberRole.MEMBER,
+          clubProfilePublic: false,
+          clubJoinedAt: null,
+          clubNotes: null,
+        };
 
   await prisma.player.update({
     where: { id: playerId },
@@ -213,10 +228,7 @@ export async function updatePlayerAction(
       fullName,
       nickname,
       clubId: validClubId,
-      clubProfilePublic: Boolean(validClubId),
-      clubJoinedAt: validClubId
-        ? (currentPlayer.clubJoinedAt ?? (isJoiningNewClub ? new Date() : null))
-        : null,
+      ...clubMembershipUpdate,
     },
   });
 
