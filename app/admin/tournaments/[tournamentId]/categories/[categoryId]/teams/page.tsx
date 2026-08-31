@@ -21,35 +21,29 @@ export default async function AdminCategoryTeamsPage({
 }: AdminCategoryTeamsPageProps) {
   const { tournamentId, categoryId } = await params;
 
-  const [tournament, category, players] = await Promise.all([
-    prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
+  const [category, players] = await Promise.all([
     prisma.tournamentCategory.findFirst({
       where: {
         id: categoryId,
         tournamentId,
       },
-      include: {
-        stages: {
+      select: {
+        id: true,
+        name: true,
+        tournament: {
           select: {
             id: true,
-            groups: {
-              select: {
-                id: true,
-              },
-            },
+            name: true,
           },
         },
         teamEntries: {
           orderBy: {
             createdAt: "asc",
           },
-          include: {
+          select: {
+            id: true,
+            teamName: true,
+            status: true,
             player1: {
               select: {
                 id: true,
@@ -64,12 +58,6 @@ export default async function AdminCategoryTeamsPage({
                 nickname: true,
               },
             },
-          },
-        },
-        _count: {
-          select: {
-            teamEntries: true,
-            matches: true,
           },
         },
       },
@@ -89,9 +77,11 @@ export default async function AdminCategoryTeamsPage({
     }),
   ]);
 
-  if (!tournament || !category) {
+  if (!category) {
     notFound();
   }
+
+  const tournament = category.tournament;
 
   return (
     <>

@@ -25,177 +25,176 @@ export default async function AdminCategoryFixturesPage({
 }: AdminCategoryFixturesPageProps) {
   const { tournamentId, categoryId } = await params;
 
-  const [tournament, category] = await Promise.all([
-    prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      select: {
-        id: true,
-        name: true,
+  const category = await prisma.tournamentCategory.findFirst({
+    where: {
+      id: categoryId,
+      tournamentId,
+    },
+    include: {
+      tournament: {
+        select: {
+          id: true,
+          name: true,
+        },
       },
-    }),
-    prisma.tournamentCategory.findFirst({
-      where: {
-        id: categoryId,
-        tournamentId,
-      },
-      include: {
-        teamEntries: {
-          orderBy: {
-            createdAt: "asc",
+      teamEntries: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        include: {
+          player1: {
+            select: {
+              fullName: true,
+              nickname: true,
+            },
           },
-          include: {
-            player1: {
-              select: {
-                fullName: true,
-                nickname: true,
+          player2: {
+            select: {
+              fullName: true,
+              nickname: true,
+            },
+          },
+        },
+      },
+      stages: {
+        include: {
+          groups: {
+            orderBy: {
+              groupOrder: "asc",
+            },
+            include: {
+              memberships: {
+                include: {
+                  teamEntry: {
+                    include: {
+                      player1: {
+                        select: {
+                          fullName: true,
+                          nickname: true,
+                        },
+                      },
+                      player2: {
+                        select: {
+                          fullName: true,
+                          nickname: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              matches: {
+                orderBy: {
+                  createdAt: "asc",
+                },
+                include: {
+                  sets: {
+                    orderBy: {
+                      setNumber: "asc",
+                    },
+                  },
+                  teamA: {
+                    include: {
+                      player1: {
+                        select: {
+                          fullName: true,
+                          nickname: true,
+                        },
+                      },
+                      player2: {
+                        select: {
+                          fullName: true,
+                          nickname: true,
+                        },
+                      },
+                    },
+                  },
+                  teamB: {
+                    include: {
+                      player1: {
+                        select: {
+                          fullName: true,
+                          nickname: true,
+                        },
+                      },
+                      player2: {
+                        select: {
+                          fullName: true,
+                          nickname: true,
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
-            player2: {
-              select: {
-                fullName: true,
-                nickname: true,
+          },
+          matches: {
+            where: {
+              groupId: null,
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+            include: {
+              sets: {
+                orderBy: {
+                  setNumber: "asc",
+                },
+              },
+              teamA: {
+                include: {
+                  player1: {
+                    select: {
+                      fullName: true,
+                      nickname: true,
+                    },
+                  },
+                  player2: {
+                    select: {
+                      fullName: true,
+                      nickname: true,
+                    },
+                  },
+                },
+              },
+              teamB: {
+                include: {
+                  player1: {
+                    select: {
+                      fullName: true,
+                      nickname: true,
+                    },
+                  },
+                  player2: {
+                    select: {
+                      fullName: true,
+                      nickname: true,
+                    },
+                  },
+                },
               },
             },
           },
         },
-        stages: {
-          include: {
-            groups: {
-              orderBy: {
-                groupOrder: "asc",
-              },
-              include: {
-                memberships: {
-                  include: {
-                    teamEntry: {
-                      include: {
-                        player1: {
-                          select: {
-                            fullName: true,
-                            nickname: true,
-                          },
-                        },
-                        player2: {
-                          select: {
-                            fullName: true,
-                            nickname: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-                matches: {
-                  orderBy: {
-                    createdAt: "asc",
-                  },
-                  include: {
-                    sets: {
-                      orderBy: {
-                        setNumber: "asc",
-                      },
-                    },
-                    teamA: {
-                      include: {
-                        player1: {
-                          select: {
-                            fullName: true,
-                            nickname: true,
-                          },
-                        },
-                        player2: {
-                          select: {
-                            fullName: true,
-                            nickname: true,
-                          },
-                        },
-                      },
-                    },
-                    teamB: {
-                      include: {
-                        player1: {
-                          select: {
-                            fullName: true,
-                            nickname: true,
-                          },
-                        },
-                        player2: {
-                          select: {
-                            fullName: true,
-                            nickname: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            matches: {
-              where: {
-                groupId: null,
-              },
-              orderBy: {
-                createdAt: "asc",
-              },
-              include: {
-                sets: {
-                  orderBy: {
-                    setNumber: "asc",
-                  },
-                },
-                teamA: {
-                  include: {
-                    player1: {
-                      select: {
-                        fullName: true,
-                        nickname: true,
-                      },
-                    },
-                    player2: {
-                      select: {
-                        fullName: true,
-                        nickname: true,
-                      },
-                    },
-                  },
-                },
-                teamB: {
-                  include: {
-                    player1: {
-                      select: {
-                        fullName: true,
-                        nickname: true,
-                      },
-                    },
-                    player2: {
-                      select: {
-                        fullName: true,
-                        nickname: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            stageOrder: "asc",
-          },
-        },
-        _count: {
-          select: {
-            teamEntries: true,
-            matches: true,
-          },
+        orderBy: {
+          stageOrder: "asc",
         },
       },
-    }),
-  ]);
+      _count: {
+        select: {
+          teamEntries: true,
+          matches: true,
+        },
+      },
+    },
+  });
 
-  if (!tournament || !category) {
+  if (!category) {
     notFound();
   }
+
+  const tournament = category.tournament;
 
   type CategoryStage = (typeof category.stages)[number];
   type CategoryTeamEntry = (typeof category.teamEntries)[number];
@@ -331,10 +330,7 @@ export default async function AdminCategoryFixturesPage({
           mode="fixtures"
           knockoutStartStageType={
             (category.knockoutStartStage as
-              | "quarter_final"
-              | "semi_final"
-              | "final"
-              | null) ?? null
+              "quarter_final" | "semi_final" | "final" | null) ?? null
           }
         />
       </PageContainer>

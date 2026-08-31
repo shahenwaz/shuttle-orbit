@@ -10,36 +10,33 @@ import { PageContainer } from "@/components/layout/page-container";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function AdminTournamentsPage() {
-  const [tournaments, tournamentCount] = await Promise.all([
-    prisma.tournament.findMany({
-      orderBy: {
-        eventDate: "desc",
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        location: true,
-        eventDate: true,
-        description: true,
-        _count: {
-          select: {
-            categories: true,
-            teamEntries: true,
-            matches: true,
-          },
+  const tournaments = await prisma.tournament.findMany({
+    orderBy: {
+      eventDate: "desc",
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      location: true,
+      eventDate: true,
+      description: true,
+      _count: {
+        select: {
+          categories: true,
+          teamEntries: true,
+          matches: true,
         },
       },
-    }),
-    prisma.tournament.count(),
-  ]);
+    },
+  });
 
   return (
     <PageContainer className="space-y-4 sm:space-y-6">
       <AdminShellHeader title="Tournament management" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Tournaments" value={tournamentCount} />
+        <CompactStatPill label="Tournaments" value={tournaments.length} />
 
         <CreateSheet
           triggerLabel="Add tournament"

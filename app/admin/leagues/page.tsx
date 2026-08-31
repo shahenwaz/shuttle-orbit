@@ -11,7 +11,7 @@ import { CompactStatPill } from "@/components/shared/stats/compact-stat-pill";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function AdminLeaguesPage() {
-  const [clubs, leaguePlayers, leagues, leagueCount] = await Promise.all([
+  const [clubs, leaguePlayers, leagues] = await Promise.all([
     prisma.club.findMany({
       orderBy: {
         name: "asc",
@@ -58,7 +58,6 @@ export default async function AdminLeaguesPage() {
         },
       },
     }),
-    prisma.league.count(),
   ]);
 
   return (
@@ -66,7 +65,7 @@ export default async function AdminLeaguesPage() {
       <AdminShellHeader title="Community leagues" />
 
       <section className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Leagues" value={leagueCount} />
+        <CompactStatPill label="Leagues" value={leagues.length} />
 
         {clubs.length > 0 ? (
           <CreateSheet

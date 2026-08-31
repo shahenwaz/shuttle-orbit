@@ -31,10 +31,14 @@ export async function saveCategoryKnockoutConfig({
   });
 }
 
-export async function getCategoryKnockoutConfig(categoryId: string) {
-  return prisma.tournamentCategory.findUnique({
+export async function getCategoryKnockoutConfig(
+  categoryId: string,
+  tournamentId: string,
+) {
+  return prisma.tournamentCategory.findFirst({
     where: {
       id: categoryId,
+      tournamentId,
     },
     select: {
       id: true,
@@ -42,6 +46,12 @@ export async function getCategoryKnockoutConfig(categoryId: string) {
       code: true,
       knockoutStartStage: true,
       knockoutConfig: true,
+      tournament: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 }

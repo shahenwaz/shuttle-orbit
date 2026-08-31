@@ -38,7 +38,7 @@ function sortCategoryCodes(codes: string[]) {
 }
 
 export default async function AdminPlayersPage() {
-  const [players, playerCount, clubs] = await Promise.all([
+  const [players, clubs] = await Promise.all([
     prisma.player.findMany({
       orderBy: {
         createdAt: "desc",
@@ -76,7 +76,6 @@ export default async function AdminPlayersPage() {
         },
       },
     }),
-    prisma.player.count(),
     prisma.club.findMany({
       orderBy: {
         name: "asc",
@@ -123,7 +122,7 @@ export default async function AdminPlayersPage() {
       <AdminShellHeader title="Player management" />
 
       <section className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <CompactStatPill label="Players" value={playerCount} />
+        <CompactStatPill label="Players" value={players.length} />
         <CompactStatPill label="Clubs" value={clubs.length} />
 
         <CreateDialog

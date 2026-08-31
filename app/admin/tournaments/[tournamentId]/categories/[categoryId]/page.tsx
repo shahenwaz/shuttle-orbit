@@ -4,7 +4,6 @@ import { GitBranch } from "lucide-react";
 import { CategoryWorkspaceHeader } from "@/components/admin/layout/category-workspace-header";
 import { KnockoutStageSelector } from "@/components/admin/knockout/knockout-stage-selector";
 import { PageContainer } from "@/components/layout/page-container";
-import { prisma } from "@/lib/db/prisma";
 import { getCategoryKnockoutConfig } from "@/lib/tournament-category/knockout-config";
 import type { KnockoutStageType } from "@/lib/knockout/types";
 
@@ -28,20 +27,13 @@ export default async function AdminCategoryPage({
 }: AdminCategoryPageProps) {
   const { tournamentId, categoryId } = await params;
 
-  const [tournament, category] = await Promise.all([
-    prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-    getCategoryKnockoutConfig(categoryId),
-  ]);
+  const category = await getCategoryKnockoutConfig(categoryId, tournamentId);
 
-  if (!tournament || !category) {
+  if (!category) {
     notFound();
   }
+
+  const tournament = category.tournament;
 
   const currentStartStage =
     (category.knockoutStartStage as KnockoutStageType | null) ?? null;

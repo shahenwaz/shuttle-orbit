@@ -30,50 +30,47 @@ export default async function AdminCategoryGroupsPage({
 }: AdminCategoryGroupsPageProps) {
   const { tournamentId, categoryId } = await params;
 
-  const [tournament, category] = await Promise.all([
-    prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      select: {
-        id: true,
-        name: true,
+  const category = await prisma.tournamentCategory.findFirst({
+    where: {
+      id: categoryId,
+      tournamentId,
+    },
+    include: {
+      tournament: {
+        select: {
+          id: true,
+          name: true,
+        },
       },
-    }),
-    prisma.tournamentCategory.findFirst({
-      where: {
-        id: categoryId,
-        tournamentId,
-      },
-      include: {
-        stages: {
-          orderBy: {
-            stageOrder: "asc",
-          },
-          include: {
-            groups: {
-              orderBy: {
-                groupOrder: "asc",
-              },
-              include: {
-                memberships: {
-                  orderBy: {
-                    createdAt: "asc",
-                  },
-                  include: {
-                    teamEntry: {
-                      include: {
-                        player1: {
-                          select: {
-                            id: true,
-                            fullName: true,
-                            nickname: true,
-                          },
+      stages: {
+        orderBy: {
+          stageOrder: "asc",
+        },
+        include: {
+          groups: {
+            orderBy: {
+              groupOrder: "asc",
+            },
+            include: {
+              memberships: {
+                orderBy: {
+                  createdAt: "asc",
+                },
+                include: {
+                  teamEntry: {
+                    include: {
+                      player1: {
+                        select: {
+                          id: true,
+                          fullName: true,
+                          nickname: true,
                         },
-                        player2: {
-                          select: {
-                            id: true,
-                            fullName: true,
-                            nickname: true,
-                          },
+                      },
+                      player2: {
+                        select: {
+                          id: true,
+                          fullName: true,
+                          nickname: true,
                         },
                       },
                     },
@@ -83,34 +80,36 @@ export default async function AdminCategoryGroupsPage({
             },
           },
         },
-        teamEntries: {
-          orderBy: {
-            createdAt: "asc",
-          },
-          include: {
-            player1: {
-              select: {
-                id: true,
-                fullName: true,
-                nickname: true,
-              },
+      },
+      teamEntries: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        include: {
+          player1: {
+            select: {
+              id: true,
+              fullName: true,
+              nickname: true,
             },
-            player2: {
-              select: {
-                id: true,
-                fullName: true,
-                nickname: true,
-              },
+          },
+          player2: {
+            select: {
+              id: true,
+              fullName: true,
+              nickname: true,
             },
           },
         },
       },
-    }),
-  ]);
+    },
+  });
 
-  if (!tournament || !category) {
+  if (!category) {
     notFound();
   }
+
+  const tournament = category.tournament;
 
   type CategoryStage = (typeof category.stages)[number];
   type CategoryTeamEntry = (typeof category.teamEntries)[number];
