@@ -186,6 +186,7 @@ function FixtureGroupCard({
                   "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
               })}
               triggerIcon={<CalendarPlus className="h-3.5 w-3.5" />}
+              triggerDisabled={teamOptions.length < 2}
             >
               <CreateGroupMatchForm
                 tournamentId={tournamentId}
@@ -194,6 +195,12 @@ function FixtureGroupCard({
                 teams={teamOptions}
               />
             </CreateSheet>
+
+            {teamOptions.length < 2 ? (
+              <span className="text-[10px] text-muted-foreground sm:text-[11px]">
+                Assign at least two teams before adding a match.
+              </span>
+            ) : null}
 
             <CreateDialog
               open={isResetOpen}

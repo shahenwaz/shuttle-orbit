@@ -202,6 +202,7 @@ export default async function AdminCategoryGroupsPage({
                   "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
               })}
               triggerIcon={<FolderPlus className="h-3.5 w-3.5" />}
+              triggerDisabled={groupStages.length === 0}
             >
               <CreateGroupForm
                 tournamentId={tournament.id}
@@ -213,6 +214,12 @@ export default async function AdminCategoryGroupsPage({
               />
             </CreateDialog>
 
+            {groupStages.length === 0 ? (
+              <span className="text-[10px] text-muted-foreground sm:text-[11px]">
+                Create a group stage before adding groups.
+              </span>
+            ) : null}
+
             <CreateSheet
               triggerLabel="Assign team"
               title="Assign team to group"
@@ -223,6 +230,9 @@ export default async function AdminCategoryGroupsPage({
                   "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
               })}
               triggerIcon={<MoveRight className="h-3.5 w-3.5" />}
+              triggerDisabled={
+                teamOptions.length === 0 || groupOptions.length === 0
+              }
             >
               <AssignTeamToGroupForm
                 tournamentId={tournament.id}
@@ -231,6 +241,12 @@ export default async function AdminCategoryGroupsPage({
                 groups={groupOptions}
               />
             </CreateSheet>
+
+            {teamOptions.length === 0 || groupOptions.length === 0 ? (
+              <span className="text-[10px] text-muted-foreground sm:text-[11px]">
+                Add teams and groups before assigning teams.
+              </span>
+            ) : null}
 
             <ShuffleUnassignedTeamsButton
               tournamentId={tournament.id}

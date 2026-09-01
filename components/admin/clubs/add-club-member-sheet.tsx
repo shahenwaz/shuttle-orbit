@@ -23,25 +23,34 @@ export function AddClubMemberSheet({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <CreateSheet
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      triggerLabel="Add player"
-      title="Add player to club"
-      description="Assign an existing Shuttle Orbit player to this club."
-      triggerClassName={actionPillButtonClassName({
-        variant: "create",
-        className: "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-      })}
-      triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
-    >
-      {isOpen ? (
-        <ClubMemberForm
-          clubId={clubId}
-          players={players}
-          onSuccess={() => setIsOpen(false)}
-        />
+    <>
+      <CreateSheet
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        triggerLabel="Add player"
+        title="Add player to club"
+        description="Assign an existing Shuttle Orbit player to this club."
+        triggerClassName={actionPillButtonClassName({
+          variant: "create",
+          className: "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+        })}
+        triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
+        triggerDisabled={players.length === 0}
+      >
+        {isOpen ? (
+          <ClubMemberForm
+            clubId={clubId}
+            players={players}
+            onSuccess={() => setIsOpen(false)}
+          />
+        ) : null}
+      </CreateSheet>
+
+      {players.length === 0 ? (
+        <span className="text-[10px] text-muted-foreground sm:text-[11px]">
+          No available players can be added to this club.
+        </span>
       ) : null}
-    </CreateSheet>
+    </>
   );
 }

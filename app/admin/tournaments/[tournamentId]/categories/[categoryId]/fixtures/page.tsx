@@ -276,6 +276,7 @@ export default async function AdminCategoryFixturesPage({
                   "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
               })}
               triggerIcon={<CalendarRange className="h-3.5 w-3.5" />}
+              triggerDisabled={groupOptions.length === 0}
             >
               <GenerateGroupFixturesForm
                 tournamentId={tournament.id}
@@ -283,6 +284,12 @@ export default async function AdminCategoryFixturesPage({
                 groups={groupOptions}
               />
             </CreateSheet>
+
+            {groupOptions.length === 0 ? (
+              <span className="text-[10px] text-muted-foreground sm:text-[11px]">
+                Create a group before generating fixtures.
+              </span>
+            ) : null}
 
             <form
               className="flex flex-wrap items-center gap-2"

@@ -25,6 +25,7 @@ type CreateSheetProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
+  triggerDisabled?: boolean;
 };
 
 export function CreateSheet({
@@ -38,12 +39,13 @@ export function CreateSheet({
   open,
   onOpenChange,
   hideTrigger = false,
+  triggerDisabled = false,
 }: CreateSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       {!hideTrigger ? (
         <SheetTrigger asChild>
-          <Button className={cn(triggerClassName)}>
+          <Button className={cn(triggerClassName)} disabled={triggerDisabled}>
             {triggerIcon ? (
               <span className="mr-1">{triggerIcon}</span>
             ) : !hideIcon ? (

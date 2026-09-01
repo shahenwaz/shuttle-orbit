@@ -202,6 +202,7 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
     props;
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [isResultOpen, setIsResultOpen] = useState(false);
+  const [isResetTeamsOpen, setIsResetTeamsOpen] = useState(false);
   const [isResetResultOpen, setIsResetResultOpen] = useState(false);
   const [resultResetMessage, setResultResetMessage] = useState("");
   const [resultResetError, setResultResetError] = useState(false);
@@ -209,6 +210,9 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
   const [resetTeamsError, setResetTeamsError] = useState(false);
   const [isResetTeamsPending, startResetTeamsTransition] = useTransition();
   const [isResetResultPending, startResetResultTransition] = useTransition();
+  const participantsReady = Boolean(
+    match.teamAId && match.teamBId && match.teamA && match.teamB,
+  );
 
   return (
     <div className="relative space-y-2">
@@ -244,28 +248,7 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
                 onSelect={() => {
                   setResetTeamsMessage("");
                   setResetTeamsError(false);
-
-                  startResetTeamsTransition(async () => {
-                    try {
-                      await resetKnockoutMatchTeamsAction({
-                        tournamentId,
-                        categoryId,
-                        matchId: match.id,
-                      });
-
-                      setResetTeamsError(false);
-                      setResetTeamsMessage(
-                        "Knockout match teams reset successfully.",
-                      );
-                    } catch (error) {
-                      setResetTeamsError(true);
-                      setResetTeamsMessage(
-                        error instanceof Error
-                          ? error.message
-                          : "Failed to reset knockout match teams.",
-                      );
-                    }
-                  });
+                  setIsResetTeamsOpen(true);
                 }}
                 className="cursor-pointer"
                 disabled={isResetTeamsPending}
@@ -280,7 +263,7 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
 
       <MatchCard match={match} />
 
-      {mode === "fixtures" && resetTeamsMessage ? (
+      {mode === "fixtures" && resetTeamsMessage && !isResetTeamsOpen ? (
         <p
           className={`text-sm ${
             resetTeamsError ? "text-red-400" : "text-emerald-400"
@@ -316,6 +299,7 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
                 "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
             })}
             triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
+            triggerDisabled={!participantsReady}
           >
             {isResultOpen ? (
               <RecordMatchResultForm
@@ -408,27 +392,111 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
               </form>
             </CreateDialog>
           ) : null}
+
+          {!participantsReady ? (
+            <p className="w-full text-right text-[10px] text-muted-foreground sm:text-[11px]">
+              Assign both teams before recording a result.
+            </p>
+          ) : null}
         </div>
       ) : null}
 
       {mode === "fixtures" && props.canManageTeams ? (
-        <CreateSheet
-          open={isAssignOpen}
-          onOpenChange={setIsAssignOpen}
-          triggerLabel=""
-          hideTrigger
-          title="Assign knockout teams"
-          description="Choose the teams for this knockout match."
-        >
-          <AssignKnockoutMatchForm
-            tournamentId={tournamentId}
-            categoryId={categoryId}
-            matchId={match.id}
-            teams={props.teams}
-            defaultTeamAId={match.teamAId}
-            defaultTeamBId={match.teamBId}
-          />
-        </CreateSheet>
+        <>
+          <CreateSheet
+            open={isAssignOpen}
+            onOpenChange={setIsAssignOpen}
+            triggerLabel=""
+            hideTrigger
+            title="Assign knockout teams"
+            description="Choose the teams for this knockout match."
+          >
+            <AssignKnockoutMatchForm
+              tournamentId={tournamentId}
+              categoryId={categoryId}
+              matchId={match.id}
+              teams={props.teams}
+              defaultTeamAId={match.teamAId}
+              defaultTeamBId={match.teamBId}
+            />
+          </CreateSheet>
+
+          <CreateDialog
+            open={isResetTeamsOpen}
+            onOpenChange={setIsResetTeamsOpen}
+            triggerLabel=""
+            hideTrigger
+            title="Reset knockout teams"
+            description="This will reset both participant slots to TBD."
+          >
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setResetTeamsMessage("");
+                setResetTeamsError(false);
+
+                startResetTeamsTransition(async () => {
+                  try {
+                    await resetKnockoutMatchTeamsAction({
+                      tournamentId,
+                      categoryId,
+                      matchId: match.id,
+                    });
+
+                    setResetTeamsError(false);
+                    setResetTeamsMessage(
+                      "Knockout match teams reset successfully.",
+                    );
+                    setIsResetTeamsOpen(false);
+                  } catch (error) {
+                    setResetTeamsError(true);
+                    setResetTeamsMessage(
+                      error instanceof Error
+                        ? error.message
+                        : "Failed to reset knockout match teams.",
+                    );
+                  }
+                });
+              }}
+            >
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to reset this knockout match? Team A and
+                Team B will both be changed to TBD.
+              </p>
+
+              {resetTeamsMessage ? (
+                <div
+                  className={`rounded-xl border px-3 py-2 text-sm ${
+                    resetTeamsError
+                      ? "border-red-500/20 bg-red-500/10 text-red-300"
+                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  }`}
+                >
+                  {resetTeamsMessage}
+                </div>
+              ) : null}
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsResetTeamsOpen(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={isResetTeamsPending}
+                >
+                  {isResetTeamsPending ? "Resetting..." : "Reset teams"}
+                </Button>
+              </div>
+            </form>
+          </CreateDialog>
+        </>
       ) : null}
     </div>
   );

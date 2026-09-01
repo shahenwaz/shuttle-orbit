@@ -188,6 +188,9 @@ function LeagueResultMatchCard({
   const [resetMessage, setResetMessage] = useState("");
   const [resetError, setResetError] = useState(false);
   const [isResetPending, startResetTransition] = useTransition();
+  const participantsReady = Boolean(
+    match.entryAId && match.entryBId && match.entryA && match.entryB,
+  );
 
   return (
     <div className="space-y-2">
@@ -206,6 +209,7 @@ function LeagueResultMatchCard({
               "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
           })}
           triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
+          triggerDisabled={!participantsReady}
         >
           {isResultOpen ? (
             <LeagueResultForm
@@ -291,6 +295,12 @@ function LeagueResultMatchCard({
               </div>
             </form>
           </CreateDialog>
+        ) : null}
+
+        {!participantsReady ? (
+          <p className="w-full text-right text-[10px] text-muted-foreground sm:text-[11px]">
+            Assign both entries before recording a result.
+          </p>
         ) : null}
       </div>
     </div>
