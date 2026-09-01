@@ -23,6 +23,7 @@ type LeagueResultFormProps = {
     entryAScore: number;
     entryBScore: number;
   }[];
+  onSuccess?: () => void;
 };
 
 const initialState: LeagueResultActionState = {
@@ -44,10 +45,19 @@ export function LeagueResultForm({
   entryALabel,
   entryBLabel,
   existingSets = [],
+  onSuccess,
 }: LeagueResultFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(
-    recordLeagueResultAction,
+    async (previousState: LeagueResultActionState, formData: FormData) => {
+      const result = await recordLeagueResultAction(previousState, formData);
+
+      if (result.success) {
+        onSuccess?.();
+      }
+
+      return result;
+    },
     initialState,
   );
 

@@ -17,6 +17,7 @@ type ClubMemberFormPlayer = {
 type ClubMemberFormProps = {
   clubId: string;
   players: ClubMemberFormPlayer[];
+  onSuccess?: () => void;
 };
 
 const initialState: ClubMemberActionState = {
@@ -34,9 +35,21 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="text-xs text-red-300">{errors[0]}</p>;
 }
 
-export function ClubMemberForm({ clubId, players }: ClubMemberFormProps) {
+export function ClubMemberForm({
+  clubId,
+  players,
+  onSuccess,
+}: ClubMemberFormProps) {
   const [state, formAction, pending] = useActionState(
-    createClubMemberAction,
+    async (previousState: ClubMemberActionState, formData: FormData) => {
+      const result = await createClubMemberAction(previousState, formData);
+
+      if (result.success) {
+        onSuccess?.();
+      }
+
+      return result;
+    },
     initialState,
   );
 

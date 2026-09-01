@@ -207,13 +207,16 @@ function LeagueResultMatchCard({
           })}
           triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
         >
-          <LeagueResultForm
-            leagueId={leagueId}
-            matchId={match.id}
-            entryALabel={entryALabel}
-            entryBLabel={entryBLabel}
-            existingSets={match.sets}
-          />
+          {isResultOpen ? (
+            <LeagueResultForm
+              leagueId={leagueId}
+              matchId={match.id}
+              entryALabel={entryALabel}
+              entryBLabel={entryBLabel}
+              existingSets={match.sets}
+              onSuccess={() => setIsResultOpen(false)}
+            />
+          ) : null}
         </CreateSheet>
 
         {isCompleted ? (

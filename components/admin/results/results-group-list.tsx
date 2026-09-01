@@ -184,14 +184,17 @@ function GroupResultMatchCard({
           })}
           triggerIcon={<PenSquare className="h-3.5 w-3.5" />}
         >
-          <RecordMatchResultForm
-            tournamentId={tournamentId}
-            categoryId={categoryId}
-            matchId={match.id}
-            teamALabel={teamALabel}
-            teamBLabel={teamBLabel}
-            existingSets={match.sets}
-          />
+          {isResultOpen ? (
+            <RecordMatchResultForm
+              tournamentId={tournamentId}
+              categoryId={categoryId}
+              matchId={match.id}
+              teamALabel={teamALabel}
+              teamBLabel={teamBLabel}
+              existingSets={match.sets}
+              onSuccess={() => setIsResultOpen(false)}
+            />
+          ) : null}
         </CreateSheet>
 
         {match.status === "completed" ? (

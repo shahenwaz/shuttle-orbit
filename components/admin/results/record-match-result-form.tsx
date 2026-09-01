@@ -23,6 +23,7 @@ type RecordMatchResultFormProps = {
     teamAScore: number;
     teamBScore: number;
   }>;
+  onSuccess?: () => void;
 };
 
 const initialState: RecordMatchResultActionState = {
@@ -38,11 +39,20 @@ export function RecordMatchResultForm({
   teamALabel,
   teamBLabel,
   existingSets = [],
+  onSuccess,
 }: RecordMatchResultFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [state, formAction, isPending] = useActionState(
-    recordMatchResultAction,
+    async (previousState: RecordMatchResultActionState, formData: FormData) => {
+      const result = await recordMatchResultAction(previousState, formData);
+
+      if (result.success) {
+        onSuccess?.();
+      }
+
+      return result;
+    },
     initialState,
   );
 

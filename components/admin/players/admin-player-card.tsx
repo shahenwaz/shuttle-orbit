@@ -126,11 +126,13 @@ export function AdminPlayerCard({ player, clubs }: AdminPlayerCardProps) {
         title="Edit player"
         description="Update the player details and optional club."
       >
-        <EditPlayerForm
-          player={player}
-          clubs={clubs}
-          onSuccess={() => setIsEditOpen(false)}
-        />
+        {isEditOpen ? (
+          <EditPlayerForm
+            player={player}
+            clubs={clubs}
+            onSuccess={() => setIsEditOpen(false)}
+          />
+        ) : null}
       </CreateDialog>
 
       <CreateDialog

@@ -88,15 +88,17 @@ export function StageCardActions({
         title="Edit stage"
         description="Rename this stage."
       >
-        <EditStageForm
-          tournamentId={tournamentId}
-          categoryId={categoryId}
-          stage={{
-            id: stageId,
-            name: stageName,
-          }}
-          onSuccess={() => setIsEditOpen(false)}
-        />
+        {isEditOpen ? (
+          <EditStageForm
+            tournamentId={tournamentId}
+            categoryId={categoryId}
+            stage={{
+              id: stageId,
+              name: stageName,
+            }}
+            onSuccess={() => setIsEditOpen(false)}
+          />
+        ) : null}
       </CreateDialog>
 
       <CreateDialog

@@ -1,16 +1,13 @@
-import { PlusSquare } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { ClubMemberForm } from "@/components/admin/clubs/club-member-form";
+import { AddClubMemberSheet } from "@/components/admin/clubs/add-club-member-sheet";
 import { ClubMembersDirectory } from "@/components/admin/clubs/club-members-directory";
 import { ClubOverviewPanel } from "@/components/admin/clubs/club-overview-panel";
 import {
   ClubWorkspaceHeader,
   type ClubWorkspaceTab,
 } from "@/components/admin/clubs/club-workspace-header";
-import { CreateSheet } from "@/components/admin/create-sheet";
 import { PageContainer } from "@/components/layout/page-container";
-import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 import { prisma } from "@/lib/db/prisma";
 
 type ClubWorkspacePageProps = {
@@ -128,19 +125,7 @@ export default async function ClubWorkspacePage({
               </p>
             </div>
 
-            <CreateSheet
-              triggerLabel="Add player"
-              title="Add player to club"
-              description="Assign an existing Shuttle Orbit player to this club."
-              triggerClassName={actionPillButtonClassName({
-                variant: "create",
-                className:
-                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-              })}
-              triggerIcon={<PlusSquare className="h-3.5 w-3.5" />}
-            >
-              <ClubMemberForm clubId={club.id} players={availablePlayers} />
-            </CreateSheet>
+            <AddClubMemberSheet clubId={club.id} players={availablePlayers} />
           </div>
 
           <ClubMembersDirectory members={members} />
