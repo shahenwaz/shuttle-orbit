@@ -83,7 +83,13 @@ export function CategoryCardActions({
         title="Edit category"
         description="Update category details."
       >
-        <EditCategoryForm tournamentId={tournamentId} category={category} />
+        {isEditOpen ? (
+          <EditCategoryForm
+            tournamentId={tournamentId}
+            category={category}
+            onSuccess={() => setIsEditOpen(false)}
+          />
+        ) : null}
       </CreateDialog>
 
       <CreateDialog

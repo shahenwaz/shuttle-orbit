@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import {
   updateGroupAction,
@@ -18,6 +18,7 @@ type EditGroupFormProps = {
     name: string;
     groupOrder: number;
   };
+  onSuccess?: () => void;
 };
 
 const initialState: UpdateGroupActionState = {
@@ -30,11 +31,18 @@ export function EditGroupForm({
   tournamentId,
   categoryId,
   group,
+  onSuccess,
 }: EditGroupFormProps) {
   const [state, formAction, isPending] = useActionState(
     updateGroupAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (state.success) {
+      onSuccess?.();
+    }
+  }, [onSuccess, state.success]);
 
   return (
     <form action={formAction} className="space-y-5">

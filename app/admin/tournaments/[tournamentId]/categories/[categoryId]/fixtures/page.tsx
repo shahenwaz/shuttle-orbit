@@ -285,6 +285,7 @@ export default async function AdminCategoryFixturesPage({
             </CreateSheet>
 
             <form
+              className="flex flex-wrap items-center gap-2"
               action={async () => {
                 "use server";
                 await generateKnockoutBracketAction({
@@ -295,15 +296,22 @@ export default async function AdminCategoryFixturesPage({
             >
               <button
                 type="submit"
+                disabled={!category.knockoutStartStage}
                 className={actionPillButtonClassName({
                   variant: "create",
                   className:
-                    "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+                    "px-2.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-[11px]",
                 })}
               >
                 <GitBranch className="mr-1 inline h-3.5 w-3.5" />
                 Generate knockout
               </button>
+
+              {!category.knockoutStartStage ? (
+                <span className="text-[10px] text-muted-foreground sm:text-[11px]">
+                  Configure the knockout stage first.
+                </span>
+              ) : null}
             </form>
           </>
         }

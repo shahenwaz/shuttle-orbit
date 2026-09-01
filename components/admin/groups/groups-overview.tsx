@@ -191,15 +191,18 @@ function GroupCard({
         title="Edit group"
         description="Update the group name or order."
       >
-        <EditGroupForm
-          tournamentId={tournamentId}
-          categoryId={categoryId}
-          group={{
-            id: group.id,
-            name: group.name,
-            groupOrder: group.groupOrder,
-          }}
-        />
+        {isEditOpen ? (
+          <EditGroupForm
+            tournamentId={tournamentId}
+            categoryId={categoryId}
+            group={{
+              id: group.id,
+              name: group.name,
+              groupOrder: group.groupOrder,
+            }}
+            onSuccess={() => setIsEditOpen(false)}
+          />
+        ) : null}
       </CreateDialog>
 
       <CreateDialog

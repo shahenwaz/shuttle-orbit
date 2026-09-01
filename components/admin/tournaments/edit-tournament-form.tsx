@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Loader2, Save } from "lucide-react";
 
 import {
@@ -19,6 +19,7 @@ type EditTournamentFormProps = {
     eventDate: Date;
     description: string | null;
   };
+  onSuccess?: () => void;
 };
 
 const initialState: UpdateTournamentActionState = {
@@ -31,11 +32,20 @@ function toDateInputValue(date: Date) {
   return new Date(date).toISOString().slice(0, 10);
 }
 
-export function EditTournamentForm({ tournament }: EditTournamentFormProps) {
+export function EditTournamentForm({
+  tournament,
+  onSuccess,
+}: EditTournamentFormProps) {
   const [state, formAction, isPending] = useActionState(
     updateTournamentAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (state.success) {
+      onSuccess?.();
+    }
+  }, [onSuccess, state.success]);
 
   return (
     <form action={formAction} className="space-y-6">

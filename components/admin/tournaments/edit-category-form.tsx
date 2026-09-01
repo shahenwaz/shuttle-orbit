@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Loader2, Save } from "lucide-react";
 
 import {
@@ -19,6 +19,7 @@ type EditCategoryFormProps = {
     code: string;
     rulesSummary: string | null;
   };
+  onSuccess?: () => void;
 };
 
 const initialState: UpdateTournamentCategoryActionState = {
@@ -30,11 +31,18 @@ const initialState: UpdateTournamentCategoryActionState = {
 export function EditCategoryForm({
   tournamentId,
   category,
+  onSuccess,
 }: EditCategoryFormProps) {
   const [state, formAction, isPending] = useActionState(
     updateTournamentCategoryAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (state.success) {
+      onSuccess?.();
+    }
+  }, [onSuccess, state.success]);
 
   return (
     <form action={formAction} className="space-y-6">

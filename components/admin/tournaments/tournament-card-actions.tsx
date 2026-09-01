@@ -89,15 +89,18 @@ export function TournamentCardActions({
         title="Edit tournament"
         description="Update tournament details."
       >
-        <EditTournamentForm
-          tournament={{
-            id: tournament.id,
-            name: tournament.name,
-            location: tournament.location,
-            eventDate: tournament.eventDate,
-            description: tournament.description,
-          }}
-        />
+        {isEditOpen ? (
+          <EditTournamentForm
+            tournament={{
+              id: tournament.id,
+              name: tournament.name,
+              location: tournament.location,
+              eventDate: tournament.eventDate,
+              description: tournament.description,
+            }}
+            onSuccess={() => setIsEditOpen(false)}
+          />
+        ) : null}
       </CreateDialog>
 
       <CreateDialog
