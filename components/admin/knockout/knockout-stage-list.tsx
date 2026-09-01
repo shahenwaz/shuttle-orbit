@@ -9,6 +9,8 @@ import {
   Users2,
 } from "lucide-react";
 import { resetKnockoutMatchTeamsAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/knockout-actions";
+import { resetMatchResultAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/results/actions";
+import { CreateDialog } from "@/components/admin/create-dialog";
 import { CreateSheet } from "@/components/admin/create-sheet";
 import { AssignKnockoutMatchForm } from "@/components/admin/knockout/assign-knockout-match-form";
 import { RecordMatchResultForm } from "@/components/admin/results/record-match-result-form";
@@ -24,7 +26,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatTeamName } from "@/lib/utils/format";
 import type { KnockoutStageType } from "@/lib/knockout/types";
-import { resetMatchResultAction } from "@/app/admin/tournaments/[tournamentId]/categories/[categoryId]/results/actions";
 
 type TeamOption = {
   id: string;
@@ -201,6 +202,7 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
     props;
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [isResultOpen, setIsResultOpen] = useState(false);
+  const [isResetResultOpen, setIsResetResultOpen] = useState(false);
   const [resultResetMessage, setResultResetMessage] = useState("");
   const [resultResetError, setResultResetError] = useState(false);
   const [resetTeamsMessage, setResetTeamsMessage] = useState("");
@@ -288,7 +290,7 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
         </p>
       ) : null}
 
-      {resultResetMessage ? (
+      {resultResetMessage && !isResetResultOpen ? (
         <p
           className={`text-sm ${
             resultResetError ? "text-red-400" : "text-emerald-400"
@@ -326,39 +328,82 @@ function KnockoutMatchCard(props: KnockoutMatchCardProps) {
           </CreateSheet>
 
           {match.status === "completed" ? (
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-
-                const formData = new FormData();
-                formData.set("tournamentId", tournamentId);
-                formData.set("categoryId", categoryId);
-                formData.set("matchId", match.id);
-
-                setResultResetMessage("");
-                setResultResetError(false);
-
-                startResetResultTransition(async () => {
-                  const result = await resetMatchResultAction(formData);
-
-                  setResultResetError(!result.success);
-                  setResultResetMessage(result.message);
-                });
-              }}
+            <CreateDialog
+              open={isResetResultOpen}
+              onOpenChange={setIsResetResultOpen}
+              triggerLabel="Reset result"
+              title="Reset knockout result"
+              description="This will permanently remove the recorded result and sets. Downstream participant slots may also be cleared."
+              triggerClassName={actionPillButtonClassName({
+                variant: "neutral",
+                className:
+                  "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
+              })}
+              triggerIcon={<Undo2 className="h-3.5 w-3.5" />}
+              triggerDisabled={isResetResultPending}
             >
-              <Button
-                type="submit"
-                disabled={isResetResultPending}
-                className={actionPillButtonClassName({
-                  variant: "neutral",
-                  className:
-                    "px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px]",
-                })}
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+
+                  const formData = new FormData();
+                  formData.set("tournamentId", tournamentId);
+                  formData.set("categoryId", categoryId);
+                  formData.set("matchId", match.id);
+
+                  setResultResetMessage("");
+                  setResultResetError(false);
+
+                  startResetResultTransition(async () => {
+                    const result = await resetMatchResultAction(formData);
+
+                    setResultResetError(!result.success);
+                    setResultResetMessage(result.message);
+
+                    if (result.success) {
+                      setIsResetResultOpen(false);
+                    }
+                  });
+                }}
               >
-                <Undo2 className="mr-1 h-3.5 w-3.5" />
-                Reset result
-              </Button>
-            </form>
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to reset this knockout result? Its
+                  recorded result and sets will be removed, and any downstream
+                  participant slots supplied by this match may also be cleared.
+                </p>
+
+                {resultResetMessage ? (
+                  <div
+                    className={`rounded-xl border px-3 py-2 text-sm ${
+                      resultResetError
+                        ? "border-red-500/20 bg-red-500/10 text-red-300"
+                        : "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                    }`}
+                  >
+                    {resultResetMessage}
+                  </div>
+                ) : null}
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsResetResultOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={isResetResultPending}
+                  >
+                    {isResetResultPending ? "Resetting..." : "Reset result"}
+                  </Button>
+                </div>
+              </form>
+            </CreateDialog>
           ) : null}
         </div>
       ) : null}
