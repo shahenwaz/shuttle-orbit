@@ -1,18 +1,28 @@
 import type { MetadataRoute } from "next";
 
+import { getPublicClubSitemapEntries } from "@/lib/clubs/queries";
 import { getPlayerSitemapEntries } from "@/lib/player/queries";
-import { getTournamentSitemapEntries } from "@/lib/tournament/queries";
+import {
+  getTournamentCategorySitemapEntries,
+  getTournamentSitemapEntries,
+} from "@/lib/tournament/queries";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [tournaments, players] = await Promise.all([
-    getTournamentSitemapEntries(),
-    getPlayerSitemapEntries(),
-  ]);
+  const [tournaments, tournamentCategories, players, clubs] = await Promise.all(
+    [
+      getTournamentSitemapEntries(),
+      getTournamentCategorySitemapEntries(),
+      getPlayerSitemapEntries(),
+      getPublicClubSitemapEntries(),
+    ],
+  );
 
   type SitemapTournament = (typeof tournaments)[number];
+  type SitemapTournamentWithCategories = (typeof tournamentCategories)[number];
   type SitemapPlayer = (typeof players)[number];
+  type SitemapClub = (typeof clubs)[number];
 
   const now = new Date();
 
@@ -31,6 +41,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${siteUrl}/players`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/clubs`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
@@ -67,5 +83,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  return [...staticRoutes, ...tournamentRoutes, ...playerRoutes];
+  const categoryRoutes: MetadataRoute.Sitemap = tournamentCategories.flatMap(
+    (tournament: SitemapTournamentWithCategories) =>
+      tournament.categories.map((category) => ({
+        url: `${siteUrl}/tournaments/${tournament.slug}/categories/${category.code}`,
+        lastModified: category.updatedAt,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      })),
+  );
+
+  const clubRoutes: MetadataRoute.Sitemap = clubs.map((club: SitemapClub) => ({
+    url: `${siteUrl}/clubs/${club.slug}`,
+    lastModified: club.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...tournamentRoutes,
+    ...categoryRoutes,
+    ...playerRoutes,
+    ...clubRoutes,
+  ];
 }

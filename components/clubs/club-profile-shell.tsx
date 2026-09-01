@@ -1,33 +1,37 @@
 import { ClubMembersPanel } from "@/components/clubs/club-members-panel";
 import { ClubOverviewPanel } from "@/components/clubs/club-overview-panel";
-import type { PublicClubProfileTab } from "@/components/clubs/public-club-profile-header";
 import type { ClubProfileMember } from "@/lib/clubs/club-profile-mappers";
 
+type ClubProfileShellData =
+  | {
+      activeTab: "overview";
+      club: {
+        description: string | null;
+        homeVenue: string | null;
+        memberCount: number;
+      };
+    }
+  | {
+      activeTab: "members";
+      members: ClubProfileMember[];
+    };
+
 type ClubProfileShellProps = {
-  club: {
-    description: string | null;
-    homeVenue: string | null;
-  };
-  members: ClubProfileMember[];
-  activeTab: PublicClubProfileTab;
+  data: ClubProfileShellData;
 };
 
-export function ClubProfileShell({
-  club,
-  members,
-  activeTab,
-}: ClubProfileShellProps) {
+export function ClubProfileShell({ data }: ClubProfileShellProps) {
   return (
     <div className="space-y-5">
-      {activeTab === "overview" ? (
+      {data.activeTab === "overview" ? (
         <ClubOverviewPanel
-          description={club.description}
-          homeVenue={club.homeVenue}
-          memberCount={members.length}
+          description={data.club.description}
+          homeVenue={data.club.homeVenue}
+          memberCount={data.club.memberCount}
         />
-      ) : null}
-
-      {activeTab === "members" ? <ClubMembersPanel members={members} /> : null}
+      ) : (
+        <ClubMembersPanel members={data.members} />
+      )}
     </div>
   );
 }

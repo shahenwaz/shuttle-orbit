@@ -66,6 +66,20 @@ export async function getTournamentSitemapEntries() {
   });
 }
 
+export async function getTournamentCategorySitemapEntries() {
+  return prisma.tournament.findMany({
+    select: {
+      slug: true,
+      categories: {
+        select: {
+          code: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+}
+
 export async function getTournamentMetadataBySlug(slug: string) {
   return prisma.tournament.findUnique({
     where: { slug },

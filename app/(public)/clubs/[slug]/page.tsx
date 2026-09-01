@@ -62,70 +62,102 @@ export default async function PublicClubPage({
 }: PublicClubPageProps) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
+  const activeTab = getActiveTab(resolvedSearchParams?.tab);
 
-  const club = await prisma.club.findUnique({
-    where: {
-      slug,
-    },
-    select: {
-      name: true,
-      shortName: true,
-      description: true,
-      homeVenue: true,
-      logoUrl: true,
-      isPublic: true,
-      players: {
-        where: {
-          isActive: true,
-          clubProfilePublic: true,
-        },
-        orderBy: {
-          fullName: "asc",
-        },
-        select: {
-          id: true,
-          fullName: true,
-          nickname: true,
-          clubId: true,
-        },
-      },
-    },
-  });
+  const profileData =
+    activeTab === "members"
+      ? await prisma.club.findUnique({
+          where: {
+            slug,
+          },
+          select: {
+            name: true,
+            shortName: true,
+            homeVenue: true,
+            logoUrl: true,
+            isPublic: true,
+            players: {
+              where: {
+                isActive: true,
+                clubProfilePublic: true,
+              },
+              orderBy: {
+                fullName: "asc",
+              },
+              select: {
+                id: true,
+                fullName: true,
+                nickname: true,
+              },
+            },
+          },
+        })
+      : await prisma.club.findUnique({
+          where: {
+            slug,
+          },
+          select: {
+            name: true,
+            shortName: true,
+            description: true,
+            homeVenue: true,
+            logoUrl: true,
+            isPublic: true,
+            _count: {
+              select: {
+                players: {
+                  where: {
+                    isActive: true,
+                    clubProfilePublic: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 
-  if (!club || !club.isPublic) {
+  if (!profileData || !profileData.isPublic) {
     notFound();
   }
 
-  type PlayerRow = (typeof club.players)[number];
+  const shellData =
+    activeTab === "members" && "players" in profileData
+      ? {
+          activeTab,
+          members: profileData.players.map((player) =>
+            mapClubProfileMember(player),
+          ),
+        }
+      : activeTab === "overview" && "_count" in profileData
+        ? {
+            activeTab,
+            club: {
+              description: profileData.description,
+              homeVenue: profileData.homeVenue,
+              memberCount: profileData._count.players,
+            },
+          }
+        : null;
 
-  const members = club.players.map((player: PlayerRow) =>
-    mapClubProfileMember(player),
-  );
-
-  const activeTab = getActiveTab(resolvedSearchParams?.tab);
+  if (!shellData) {
+    notFound();
+  }
 
   return (
     <>
       <PublicClubProfileHeader
         club={{
-          name: club.name,
-          shortName: club.shortName,
-          homeVenue: club.homeVenue,
-          logoUrl: club.logoUrl,
+          name: profileData.name,
+          shortName: profileData.shortName,
+          homeVenue: profileData.homeVenue,
+          logoUrl: profileData.logoUrl,
         }}
         activeTab={activeTab}
         baseHref={`/clubs/${slug}`}
       />
 
       <PageContainer className="py-5 sm:py-7">
-        <ClubProfileShell
-          club={{
-            description: club.description,
-            homeVenue: club.homeVenue,
-          }}
-          members={members}
-          activeTab={activeTab}
-        />
+        <ClubProfileShell data={shellData} />
       </PageContainer>
     </>
   );
