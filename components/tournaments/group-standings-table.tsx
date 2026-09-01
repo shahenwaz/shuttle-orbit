@@ -15,7 +15,7 @@ type GroupStandingsTableProps = {
 export function GroupStandingsTable({ rows }: GroupStandingsTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="border-t border-white/10 px-3 py-3 sm:px-4 sm:py-4">
+      <div className="surface-card overflow-hidden px-3 py-3 sm:px-4 sm:py-4">
         <p className="text-xs text-muted-foreground sm:text-sm">
           No standings available yet.
         </p>
@@ -24,7 +24,7 @@ export function GroupStandingsTable({ rows }: GroupStandingsTableProps) {
   }
 
   return (
-    <div className="w-full border-t border-white/10">
+    <div className="surface-card w-full overflow-hidden">
       <div className="w-full overflow-x-auto overscroll-x-contain">
         <Table className="min-w-110 border-collapse">
           <TableHeader>

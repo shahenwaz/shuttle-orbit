@@ -362,29 +362,6 @@ export async function getCategoryByTournamentAndCode(
               },
             },
           },
-          teamEntries: {
-            orderBy: {
-              createdAt: "asc",
-            },
-            select: {
-              id: true,
-              teamName: true,
-              player1: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  nickname: true,
-                },
-              },
-              player2: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  nickname: true,
-                },
-              },
-            },
-          },
         },
       },
     },

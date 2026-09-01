@@ -134,7 +134,7 @@ export function MatchCard({ match }: MatchCardProps) {
     match.status === "completed" && displayScore !== null;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/4">
+    <div className="surface-card overflow-hidden">
       <div className="flex items-center justify-center gap-3 border-b border-white/10 px-3 py-2.5 sm:px-4">
         <p className="truncate text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:text-xs">
           {match.roundLabel ?? "Match"}
