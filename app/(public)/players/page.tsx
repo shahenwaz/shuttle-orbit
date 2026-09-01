@@ -17,11 +17,7 @@ export default async function PlayersPage() {
 
   return (
     <PageContainer className="space-y-6 sm:space-y-8">
-      <PublicPageHeader
-        eyebrow="Players"
-        title="Community badminton players"
-        description="Browse players who have taken part in community tournaments and follow their ongoing participation."
-      />
+      <PublicPageHeader eyebrow="Players" title="BD Community Players" />
 
       {players.length === 0 ? (
         <EmptyState message="No players are available right now." />

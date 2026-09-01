@@ -44,12 +44,8 @@ export default async function LeaderboardPage({
   ]);
 
   const title = activeCategory
-    ? `${activeCategory} player rankings`
+    ? `${activeCategory} category player rankings`
     : "BD Community players universal ranking";
-
-  const description = activeCategory
-    ? `Track player standings for the ${activeCategory} category based on completed tournament results.`
-    : "Track player standings across completed tournaments based on final placements and recorded results.";
 
   const activeValue = activeCategory
     ? activeCategory.toLowerCase()
@@ -57,11 +53,7 @@ export default async function LeaderboardPage({
 
   return (
     <PageContainer className="space-y-5 pb-5 sm:space-y-6 sm:pb-7 md:pb-10">
-      <PublicPageHeader
-        eyebrow="Leaderboard"
-        title={title}
-        description={description}
-      />
+      <PublicPageHeader eyebrow="Leaderboard" title={title} />
 
       <LeaderboardFilterTabs
         activeValue={activeValue}

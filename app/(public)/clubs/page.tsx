@@ -48,11 +48,7 @@ export default async function PublicClubsPage() {
 
   return (
     <PageContainer className="space-y-6 sm:space-y-8">
-      <PublicPageHeader
-        eyebrow="Clubs"
-        title="BD Community badminton clubs"
-        description="Explore BD community badminton clubs."
-      />
+      <PublicPageHeader eyebrow="Clubs" title="BD Community Clubs" />
 
       {clubs.length === 0 ? (
         <EmptyState message="No public clubs are available right now." />
