@@ -11,6 +11,35 @@ import {
 import type { KnockoutStageType } from "@/lib/knockout/types";
 import { saveCategoryKnockoutConfig } from "@/lib/tournament-category/knockout-config";
 
+const knockoutStageTypes: KnockoutStageType[] = [
+  "quarter_final",
+  "semi_final",
+  "final",
+  "third_place",
+];
+
+function isKnockoutStageType(value: string): value is KnockoutStageType {
+  return knockoutStageTypes.includes(value as KnockoutStageType);
+}
+
+function shouldIncludeThirdPlace(config: unknown) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return false;
+  }
+
+  return (config as { includeThirdPlace?: unknown }).includeThirdPlace === true;
+}
+
+function getEffectiveThirdPlaceSetting(
+  startStageType: KnockoutStageType | null,
+  config: unknown,
+) {
+  return (
+    startStageType !== null &&
+    (startStageType !== "final" || shouldIncludeThirdPlace(config))
+  );
+}
+
 export async function saveKnockoutStageSelection(args: {
   tournamentId: string;
   categoryId: string;
@@ -33,11 +62,47 @@ export async function saveKnockoutStageSelection(args: {
     },
     select: {
       id: true,
+      knockoutStartStage: true,
+      knockoutConfig: true,
+      matches: {
+        where: {
+          groupId: null,
+          stage: {
+            stageType: {
+              in: knockoutStageTypes,
+            },
+          },
+        },
+        take: 1,
+        select: {
+          id: true,
+        },
+      },
     },
   });
 
   if (!category) {
     throw new Error("Tournament category not found.");
+  }
+
+  const currentStartStageType =
+    category.knockoutStartStage as KnockoutStageType | null;
+  const currentIncludeThirdPlace = getEffectiveThirdPlaceSetting(
+    currentStartStageType,
+    category.knockoutConfig,
+  );
+  const requestedIncludeThirdPlace = getEffectiveThirdPlaceSetting(
+    startStageType,
+    { includeThirdPlace },
+  );
+  const configurationChanged =
+    currentStartStageType !== startStageType ||
+    currentIncludeThirdPlace !== requestedIncludeThirdPlace;
+
+  if (category.matches.length > 0 && configurationChanged) {
+    throw new Error(
+      "Remove or reset the existing knockout bracket before changing its starting stage or third-place configuration.",
+    );
   }
 
   await saveCategoryKnockoutConfig({
@@ -50,14 +115,6 @@ export async function saveKnockoutStageSelection(args: {
   revalidatePath(
     `/admin/tournaments/${tournamentId}/categories/${categoryId}/fixtures`,
   );
-}
-
-function shouldIncludeThirdPlace(config: unknown) {
-  if (!config || typeof config !== "object" || Array.isArray(config)) {
-    return false;
-  }
-
-  return (config as { includeThirdPlace?: unknown }).includeThirdPlace === true;
 }
 
 export async function generateKnockoutBracketAction(args: {
@@ -82,6 +139,15 @@ export async function generateKnockoutBracketAction(args: {
           id: true,
           stageType: true,
           stageOrder: true,
+          matches: {
+            where: {
+              groupId: null,
+            },
+            take: 1,
+            select: {
+              id: true,
+            },
+          },
         },
       },
     },
@@ -95,6 +161,31 @@ export async function generateKnockoutBracketAction(args: {
   const seeds = buildKnockoutStageSeeds(startStageType, {
     includeThirdPlace: shouldIncludeThirdPlace(category.knockoutConfig),
   });
+
+  const expectedStageTypes = new Set(seeds.map((seed) => seed.stageType));
+  const populatedKnockoutStageTypes: KnockoutStageType[] = [];
+
+  for (const stage of category.stages) {
+    if (stage.matches.length > 0 && isKnockoutStageType(stage.stageType)) {
+      populatedKnockoutStageTypes.push(stage.stageType);
+    }
+  }
+  const existingStartStageType = (
+    ["quarter_final", "semi_final", "final"] as KnockoutStageType[]
+  ).find((stageType) => populatedKnockoutStageTypes.includes(stageType));
+  const hasConflictingStage = populatedKnockoutStageTypes.some(
+    (stageType) => !expectedStageTypes.has(stageType),
+  );
+
+  if (
+    hasConflictingStage ||
+    (existingStartStageType !== undefined &&
+      existingStartStageType !== startStageType)
+  ) {
+    throw new Error(
+      "The existing knockout bracket conflicts with the configured starting stage. Remove or reset the existing bracket before generating it again.",
+    );
+  }
 
   type CategoryStage = (typeof category.stages)[number];
   type KnockoutSeed = (typeof seeds)[number];
