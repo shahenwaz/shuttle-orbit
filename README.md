@@ -1,332 +1,229 @@
 # Shuttle Orbit
 
-A modern badminton tournament and ranking platform for community competitions.
+Shuttle Orbit is a modern badminton community platform for tournaments, player rankings, public club profiles, Player-based club membership, and community leagues.
 
-Shuttle Orbit helps communities run flexible badminton tournaments with admin-controlled setup, public tournament pages, fixtures, standings, results, player records, and ranking support.
+## Current features
 
-![Next.js](https://img.shields.io/badge/Next.js-App%20Router-black?logo=nextdotjs)
-![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38BDF8?logo=tailwindcss&logoColor=white)
-![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-Components-111827)
-![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
+### Public site
 
-## Current status
+- Tournament listings, tournament summaries, and category pages
+- Category Info, Teams, Players, Matches, and Standings views
+- Group-stage and knockout fixtures, including TBD participants and multi-set results
+- Universal and category-based leaderboards
+- Player directory and public player profiles with tournament history
+- Public club directory and club profiles
+- Active club members shown according to each member's public-visibility setting
+- Route metadata, sitemap coverage, and public loading/error states
 
-The core tournament management foundation is in place, along with ranking, leaderboard, and player profile support.
+### Administration
 
-Shuttle Orbit currently includes:
+- Authenticated admin routes and server-protected mutations
+- Tournament and category creation, editing, and guarded deletion
+- Team-entry and player management
+- Group assignment, fixture generation, manual fixtures, and result management
+- Knockout configuration, bracket generation, propagation, and third-place support
+- Ranking recalculation and administration
+- Club profiles and Player-based membership with roles and public visibility
+- Community league creation, fixtures, results, and derived player statistics
+- League host selection from existing clubs through `League.hostClubId`
 
-- Public tournament, category, player, and leaderboard pages
-- Admin tournament, player, team, group, fixture, result, and ranking workflows
-- Flexible category structures with group stages, multiple stages, knockouts, finals, and third-place matches
-- Fixture generation, manual fixture creation, score recording, result reset, and standings calculation
-- Player records, tournament history, ranking data, and leaderboard support
-- Public match cards with multi-set score details
-- Modern dark UI with mobile-first responsive polish
-- Branded Shuttle Orbit identity, favicon, app icon, and web app manifest setup
+## Tournament formats
+
+Tournament categories support flexible, data-driven structures, including:
+
+- One or more round-robin group stages
+- Manual or generated group fixtures
+- Configurable knockout start stages
+- Semi-finals, finals, and optional third-place matches
+- One-set group matches and optional multi-set knockout matches
+- Manual corrections with safeguards around completed downstream results
+
+Tournament rankings remain separate from tournament operation logic so results can be audited and recalculated.
+
+## Clubs and community leagues
+
+Clubs are persistent public community entities. Membership is attached to the global `Player` record and includes a `ClubMemberRole`, public-profile visibility, a club join date, and optional admin notes. There is no separate club-only member identity.
+
+Public club profiles show active members only when their club profile is public. Club administration manages membership, roles, and visibility without changing the player's global identity.
+
+Community leagues are separate from tournament categories and rankings. Current league formats include round robin, team-pair matrix, fixed doubles, and manual flows. A league may reference an existing host club through nullable `League.hostClubId`.
 
 ## Tech stack
 
-| Area               | Stack                                            |
-| ------------------ | ------------------------------------------------ |
-| Framework          | Next.js App Router                               |
-| Language           | TypeScript                                       |
-| Styling            | Tailwind CSS                                     |
-| UI                 | shadcn/ui                                        |
-| Database ORM       | Prisma                                           |
-| Database           | PostgreSQL                                       |
-| Icons              | Lucide React                                     |
-| Validation / Forms | Server actions with validation-focused workflows |
-
-## Project goal
-
-Shuttle Orbit is built as a long-term badminton tournament platform, not a one-off event page.
-
-The app is designed around these principles:
-
-- Players are persistent across tournaments.
-- Doubles teams are tournament-specific.
-- Tournament formats should stay flexible.
-- Admins should be able to manage real-life changes manually.
-- Public pages should be clean, mobile-friendly, and easy to follow.
-- Ranking and player history should be built safely on top of completed results.
-
-## Main features
-
-### Public experience
-
-- Homepage with tournament highlights
-- Tournament listing and detail pages
-- Category pages with players, teams, matches, and standings
-- Multi-stage tournament display support
-- Latest fixture and result presentation
-- Searchable players directory
-- Player profile pages with tournament history and ranking context
-- Public leaderboard with universal and category-based ranking views
-- Public match cards with clear set-by-set score details for multi-set knockout matches
-- Mobile-first public UI
-
-### Admin experience
-
-- Admin dashboard layout
-- Tournament creation and editing
-- Tournament category management
-- Player creation, editing, and deletion
-- Team entry and team name management
-- Group creation, editing, deletion, and team assignment
-- Group-stage fixture generation
-- Manual fixture creation
-- Match result recording and reset flow
-- Safe individual match removal
-- Group cleanup and fixture reset controls
-- Knockout stage setup and result handling
-- Optional multi-set scoring for knockout matches
-- Third-place match flow
-- Stage rename support
-- Multiple group stages before knockout
-- Ranking data, leaderboard management, and admin ranking tools
-- Existing score preload when editing match results
-- Ranking recalculation for completed tournaments
-- Random shuffle helper for assigning unassigned teams into first-stage groups
-
-## Tournament format support
-
-Shuttle Orbit supports flexible badminton formats instead of forcing one fixed structure.
-
-Currently supported flows include:
-
-- Round-robin groups
-- Multiple groups inside one category
-- Advanced round-robin stages before knockouts
-- Semi-final and final stages
-- Third-place matches
-- Manually managed fixtures and results
-- One-set group matches
-- Optional multi-set knockout matches
-- Ranking support for later group stages treated as advanced stages
-- Final-only round-robin tournament ranking support with standings-based 3rd and 4th placement handling
-
-Example supported structure:
-
-```txt
-Category C
-├── First Group Stage
-│   ├── Group C1
-│   ├── Group C2
-│   └── Group C3
-├── Second Group Stage
-│   ├── Group C Second Round 1
-│   └── Group C Second Round 2
-└── Knockout Stage
-    ├── Semi-finals
-    ├── Third-place match
-    └── Final
-```
+| Area                 | Technology                               |
+| -------------------- | ---------------------------------------- |
+| Framework            | Next.js 16 App Router and React 19       |
+| Language             | TypeScript                               |
+| Styling              | Tailwind CSS 4                           |
+| UI                   | shadcn/ui and Radix UI                   |
+| Database             | PostgreSQL                               |
+| ORM                  | Prisma 7                                 |
+| Authentication       | Auth.js / NextAuth with JWT sessions     |
+| Validation and forms | Zod, React Hook Form, and Server Actions |
+| Icons                | Lucide React                             |
+| Deployment           | Vercel with Vercel Analytics             |
 
 ## Project structure
 
 ```txt
 app/
-├── admin/
-├── players/
-├── tournaments/
-└── leaderboard/
+  (public)/
+    clubs/
+    leaderboard/
+    login/
+    players/
+    tournaments/
+  admin/
+    clubs/
+    leagues/
+    players/
+    rankings/
+    tournaments/
+  api/auth/
+  layout.tsx
+  sitemap.ts
 
 components/
-├── admin/
-├── layout/
-├── players/
-├── public/
-├── shared/
-├── tournaments/
-└── ui/
+  admin/
+  clubs/
+  layout/
+  players/
+  tournaments/
+  ui/
 
 lib/
-├── db/
-├── tournament/
-├── utils/
-└── validations/
+  clubs/
+  leagues/
+  rankings/
+  tournament/
+  validations/
+  auth.ts
+  prisma.ts
 
 prisma/
-├── schema.prisma
-└── seed.ts
+  migrations/
+  schema.prisma
+  seed.ts
 ```
 
-## Routes
+The `(public)` route group supplies the public site shell but does not change public URLs.
 
-### Public routes
+## Main routes
+
+### Public
 
 ```txt
 /
+/login
 /tournaments
 /tournaments/[slug]
 /tournaments/[slug]/categories/[categoryCode]
+/leaderboard
 /players
 /players/[playerId]
-/leaderboard
+/clubs
+/clubs/[slug]
 ```
 
-### Admin routes
+### Admin
 
 ```txt
 /admin
-/admin/players
 /admin/tournaments
-/admin/tournaments/[id]
-/admin/tournaments/[id]/categories/[categoryId]
+/admin/tournaments/[tournamentId]
+/admin/tournaments/[tournamentId]/categories/[categoryId]
+/admin/players
+/admin/clubs
+/admin/clubs/[clubId]
+/admin/leagues
+/admin/leagues/[leagueId]
 /admin/rankings
 ```
 
-Admin category pages include workflows for teams, groups, fixtures, results, stages, and knockout management.
+Category workspaces provide dedicated Teams, Groups, Fixtures, Results, and Knockout Setup routes.
 
-## Database concepts
+## Core data model
 
-Core models include:
-
-- **Player** — persistent community player record
-- **Tournament** — event container
-- **TournamentCategory** — category or division inside a tournament
-- **TeamEntry** — tournament-specific doubles pairing
-- **Stage** — group stage, second stage, knockout, or custom stage
-- **Group** — group inside a stage
-- **GroupMembership** — team assignment to a group
-- **Match** — fixture between two teams
-- **MatchSet** — per-set score data
-- **PlayerTournamentStat** — player summary for a tournament category
-- **RankingLedger** — auditable ranking points generated from tournament results
+- `Player`: persistent identity shared by tournaments, clubs, rankings, and leagues
+- `Tournament` and `TournamentCategory`: events and their divisions
+- `TeamEntry`: category-specific doubles pairing
+- `Stage`, `Group`, and `GroupMembership`: tournament structure and group assignments
+- `Match` and `MatchSet`: tournament fixtures and scores
+- `PlayerTournamentStat` and `RankingLedger`: derived tournament statistics and auditable ranking points
+- `Club`: public club profile and host relation for leagues
+- `League`, `LeagueTeam`, `LeagueTeamPlayer`, `LeagueMatch`, and `LeagueSet`: community league operation
+- `PlayerLeagueStat`: derived league player statistics
+- `AdminUser`: authenticated administrator identity
 
 ## Local development
 
-### 1. Clone the repository
+### Requirements
+
+- A Node.js version compatible with Next.js 16
+- PostgreSQL
+- npm
+
+### Setup
 
 ```bash
 git clone <repository-url>
 cd shuttle-orbit
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Create environment file
-
-Create a `.env` file in the project root.
+Create a `.env` file in the project root:
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=verify-full"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="replace-with-a-secure-password"
+ADMIN_NAME="Shuttle Orbit Admin"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```
 
-Do not commit the real `.env` file. Use `.env.example` for safe shared examples.
+Do not commit real credentials or connection strings.
 
-### 4. Generate Prisma client
+Prepare the database and start development:
 
 ```bash
 npx prisma generate
-```
-
-### 5. Run database migration
-
-```bash
 npx prisma migrate dev
-```
-
-### 6. Seed the database
-
-```bash
 npx prisma db seed
-```
-
-### 7. Start the development server
-
-```bash
 npm run dev
 ```
 
-Open the app at:
-
-```txt
-http://localhost:3000
-```
+The local site is available at `http://localhost:3000` by default.
 
 ## Useful commands
 
 ```bash
 npm run dev
-npm run build
 npm run lint
+npm run build
+npm run start
+npx prisma format
+npx prisma validate
 npx prisma generate
 npx prisma migrate dev
 npx prisma db seed
 npx prisma studio
 ```
 
-## Design direction
+`npm run build` generates the Prisma client before running the production Next.js build. The Prisma client is also generated after dependency installation.
 
-- Dark theme
-- Modern and polished
-- Mobile-first
-- Compact tournament information
-- Clean cards, tabs, and public pages
-- Reusable admin and public components
-- No unnecessary clutter
+## Development principles
 
-Most public users are expected to view tournament pages on phones, so mobile responsiveness is a major design priority.
+- Prefer Server Components and narrow Prisma selects for public pages.
+- Keep client-side islands focused on genuine interaction.
+- Preserve the compact, mobile-first dark interface and Shuttle Orbit branding.
+- Keep tournament, ranking, club, and league business rules distinct.
+- Protect admin mutations on the server and use transactions for related writes that must succeed together.
+- Do not reset or destructively migrate a real database without explicit review.
 
-## Ranking direction
+## Deployment
 
-Ranking logic stays separate from tournament operation logic.
-
-Current ranking direction:
-
-1. Store completed tournament results.
-2. Generate player tournament statistics from completed events.
-3. Generate ranking ledger records from those statistics.
-4. Build public leaderboard views from ranking ledger totals.
-5. Support category-specific rankings.
-6. Support universal ranking from category results.
-
-This keeps rankings auditable, flexible, and easier to recalculate when tournament results are corrected.
-
-## Roadmap
-
-### Completed foundation work
-
-- Project setup and UI foundation
-- Prisma and PostgreSQL setup
-- Seed data
-- Public tournament pages
-- Admin tournament setup
-- Player and team management
-- Group management
-- Fixture generation
-- Result recording
-- Standings display
-- Knockout and third-place flow foundation
-- Public player directory and profile foundation
-- Player profile enrichment
-- Ranking data, leaderboard views, and admin ranking tools
-- Public leaderboard filters and summaries
-- Admin route authentication
-- Shuttle Orbit branding, logo, favicon, and app icon setup
-
-### Next major areas
-
-- Optional club profiles for organised badminton communities, including club players, hosted tournaments, and club-level achievements.
-- More robust tournament format presets
-
-## Deployment notes
-
-The app is intended to be deployed on Vercel with a hosted PostgreSQL database such as Neon or Supabase.
-
-Before production deployment:
-
-- Configure production environment variables
-- Confirm Prisma migration workflow
-- Ensure build and lint checks pass
+The project is designed for Vercel with a hosted PostgreSQL database. Configure production environment variables, apply reviewed Prisma migrations through the deployment workflow, and verify lint and build checks before release.
 
 ## Author
 
-Built by [**Shahenwaz Muzahid**](https://github.com/shahenwaz) as a long-term badminton tournament platform for flexible community competitions.
+Built by [Shahenwaz Muzahid](https://github.com/shahenwaz) for flexible community badminton competitions.
