@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -46,6 +47,18 @@ function revalidateTeamPaths(tournamentId: string, categoryId: string) {
   );
 }
 
+function getDuplicatePlayerState(): CreateTeamEntryActionState {
+  return {
+    success: false,
+    message:
+      "One or both selected players are already assigned in this category.",
+    fieldErrors: {
+      player1Id: ["Each player can only appear once in the same category."],
+      player2Id: ["Each player can only appear once in the same category."],
+    },
+  };
+}
+
 export async function createTeamEntryAction(
   _prevState: CreateTeamEntryActionState,
   formData: FormData,
@@ -73,102 +86,125 @@ export async function createTeamEntryAction(
   const { tournamentId, categoryId, player1Id, player2Id, teamName } =
     parsed.data;
 
-  const category = await prisma.tournamentCategory.findFirst({
-    where: {
-      id: categoryId,
-      tournamentId,
-    },
-    select: {
-      id: true,
-    },
-  });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const result = await prisma.$transaction(
+        async (tx) => {
+          const category = await tx.tournamentCategory.findFirst({
+            where: {
+              id: categoryId,
+              tournamentId,
+            },
+            select: {
+              id: true,
+            },
+          });
 
-  if (!category) {
-    return {
-      success: false,
-      message: "Tournament category was not found.",
-    };
+          if (!category) {
+            return { status: "category_not_found" as const };
+          }
+
+          const validPlayerCount = await tx.player.count({
+            where: {
+              id: {
+                in: [player1Id, player2Id],
+              },
+              isActive: true,
+            },
+          });
+
+          if (validPlayerCount !== 2) {
+            return { status: "players_unavailable" as const };
+          }
+
+          const existingTeamWithEitherPlayer = await tx.teamEntry.findFirst({
+            where: {
+              tournamentId,
+              categoryId,
+              OR: [
+                { player1Id },
+                { player2Id },
+                { player1Id: player2Id },
+                { player2Id: player1Id },
+              ],
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (existingTeamWithEitherPlayer) {
+            return { status: "players_already_registered" as const };
+          }
+
+          await tx.teamEntry.create({
+            data: {
+              tournamentId,
+              categoryId,
+              player1Id,
+              player2Id,
+              teamName: teamName || null,
+              status: "registered",
+            },
+          });
+
+          return { status: "created" as const };
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
+
+      if (result.status === "category_not_found") {
+        return {
+          success: false,
+          message: "Tournament category was not found.",
+        };
+      }
+
+      if (result.status === "players_unavailable") {
+        return {
+          success: false,
+          message: "One or both selected players are no longer available.",
+          fieldErrors: {
+            player1Id: ["Choose active players from the player list."],
+            player2Id: ["Choose active players from the player list."],
+          },
+        };
+      }
+
+      if (result.status === "players_already_registered") {
+        return getDuplicatePlayerState();
+      }
+
+      break;
+    } catch (error) {
+      const isSerializationConflict =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2034";
+
+      if (isSerializationConflict && attempt === 0) {
+        continue;
+      }
+
+      if (isSerializationConflict) {
+        return getDuplicatePlayerState();
+      }
+
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        (error.code === "P2002" || error.code === "P2003")
+      ) {
+        return {
+          success: false,
+          message:
+            "The team could not be created because its category or player selection changed. Refresh and try again.",
+        };
+      }
+
+      throw error;
+    }
   }
-
-  const validPlayerCount = await prisma.player.count({
-    where: {
-      id: {
-        in: [player1Id, player2Id],
-      },
-      isActive: true,
-    },
-  });
-
-  if (validPlayerCount !== 2) {
-    return {
-      success: false,
-      message: "One or both selected players are no longer available.",
-      fieldErrors: {
-        player1Id: ["Choose active players from the player list."],
-        player2Id: ["Choose active players from the player list."],
-      },
-    };
-  }
-
-  const existingTeamWithEitherPlayer = await prisma.teamEntry.findFirst({
-    where: {
-      tournamentId,
-      categoryId,
-      OR: [
-        { player1Id },
-        { player2Id },
-        { player1Id: player2Id },
-        { player2Id: player1Id },
-      ],
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (existingTeamWithEitherPlayer) {
-    return {
-      success: false,
-      message:
-        "One or both selected players are already assigned in this category.",
-      fieldErrors: {
-        player1Id: ["Each player can only appear once in the same category."],
-        player2Id: ["Each player can only appear once in the same category."],
-      },
-    };
-  }
-
-  const duplicatePair = await prisma.teamEntry.findFirst({
-    where: {
-      tournamentId,
-      categoryId,
-      OR: [
-        { player1Id, player2Id },
-        { player1Id: player2Id, player2Id: player1Id },
-      ],
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (duplicatePair) {
-    return {
-      success: false,
-      message: "This team pairing already exists in the category.",
-    };
-  }
-
-  await prisma.teamEntry.create({
-    data: {
-      tournamentId,
-      categoryId,
-      player1Id,
-      player2Id,
-      teamName: teamName || null,
-      status: "registered",
-    },
-  });
 
   revalidateTeamPaths(tournamentId, categoryId);
 
