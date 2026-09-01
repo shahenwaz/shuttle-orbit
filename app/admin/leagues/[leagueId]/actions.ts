@@ -1,5 +1,6 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -202,8 +203,8 @@ export async function recordLeagueResultAction(
     };
   }
 
-  await prisma.$transaction([
-    prisma.leagueMatch.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.leagueMatch.update({
       where: {
         id: match.id,
       },
@@ -211,25 +212,25 @@ export async function recordLeagueResultAction(
         winnerTeamId,
         scoreSummary: buildScoreSummary(sets),
       },
-    }),
-    prisma.leagueSet.deleteMany({
+    });
+
+    await tx.leagueSet.deleteMany({
       where: {
         matchId: match.id,
       },
-    }),
-    ...sets.map((set) =>
-      prisma.leagueSet.create({
-        data: {
-          matchId: match.id,
-          setNumber: set.setNumber,
-          teamAScore: set.entryAScore,
-          teamBScore: set.entryBScore,
-        },
-      }),
-    ),
-  ]);
+    });
 
-  await recalculateLeaguePlayerStats(leagueId);
+    await tx.leagueSet.createMany({
+      data: sets.map((set) => ({
+        matchId: match.id,
+        setNumber: set.setNumber,
+        teamAScore: set.entryAScore,
+        teamBScore: set.entryBScore,
+      })),
+    });
+
+    await recalculateLeaguePlayerStats(tx, leagueId);
+  });
 
   revalidatePath(`/admin/leagues/${leagueId}`);
 
@@ -263,8 +264,8 @@ export async function resetLeagueResultAction(formData: FormData) {
     };
   }
 
-  await prisma.$transaction([
-    prisma.leagueMatch.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.leagueMatch.update({
       where: {
         id: match.id,
       },
@@ -272,15 +273,16 @@ export async function resetLeagueResultAction(formData: FormData) {
         winnerTeamId: null,
         scoreSummary: null,
       },
-    }),
-    prisma.leagueSet.deleteMany({
+    });
+
+    await tx.leagueSet.deleteMany({
       where: {
         matchId: match.id,
       },
-    }),
-  ]);
+    });
 
-  await recalculateLeaguePlayerStats(leagueId);
+    await recalculateLeaguePlayerStats(tx, leagueId);
+  });
 
   revalidatePath(`/admin/leagues/${leagueId}`);
 
@@ -337,8 +339,11 @@ export async function deleteLeagueAction(formData: FormData) {
   redirect("/admin/leagues");
 }
 
-async function recalculateLeaguePlayerStats(leagueId: string) {
-  const completedMatches = await prisma.leagueMatch.findMany({
+async function recalculateLeaguePlayerStats(
+  tx: Prisma.TransactionClient,
+  leagueId: string,
+) {
+  const completedMatches = await tx.leagueMatch.findMany({
     where: {
       leagueId,
       winnerTeamId: {
@@ -471,24 +476,23 @@ async function recalculateLeaguePlayerStats(leagueId: string) {
     }
   }
 
-  await prisma.$transaction([
-    prisma.playerLeagueStat.deleteMany({
-      where: {
+  await tx.playerLeagueStat.deleteMany({
+    where: {
+      leagueId,
+    },
+  });
+
+  if (statMap.size > 0) {
+    await tx.playerLeagueStat.createMany({
+      data: Array.from(statMap.entries()).map(([playerId, stat]) => ({
+        playerId,
         leagueId,
-      },
-    }),
-    ...Array.from(statMap.entries()).map(([playerId, stat]) =>
-      prisma.playerLeagueStat.create({
-        data: {
-          playerId,
-          leagueId,
-          matchesPlayed: stat.matchesPlayed,
-          matchesWon: stat.matchesWon,
-          matchesLost: stat.matchesLost,
-          pointsFor: stat.pointsFor,
-          pointsAgainst: stat.pointsAgainst,
-        },
-      }),
-    ),
-  ]);
+        matchesPlayed: stat.matchesPlayed,
+        matchesWon: stat.matchesWon,
+        matchesLost: stat.matchesLost,
+        pointsFor: stat.pointsFor,
+        pointsAgainst: stat.pointsAgainst,
+      })),
+    });
+  }
 }
