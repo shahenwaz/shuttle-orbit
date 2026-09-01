@@ -358,8 +358,16 @@ export async function assignTeamToGroupAction(
 
   const { tournamentId, categoryId, groupId, teamEntryId } = parsed.data;
 
-  const group = await prisma.group.findUnique({
-    where: { id: groupId },
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      stage: {
+        categoryId,
+        category: {
+          tournamentId,
+        },
+      },
+    },
     include: {
       stage: {
         select: {
@@ -370,7 +378,7 @@ export async function assignTeamToGroupAction(
     },
   });
 
-  if (!group || group.stage.categoryId !== categoryId) {
+  if (!group) {
     return {
       success: false,
       message: "Selected group was not found for this category.",
@@ -413,6 +421,21 @@ export async function assignTeamToGroupAction(
       return {
         success: false,
         message: "This team is already assigned to the selected group.",
+      };
+    }
+
+    const existingGroupMatchCount = await prisma.match.count({
+      where: {
+        groupId: existingMembershipInStage.groupId,
+        OR: [{ teamAId: teamEntryId }, { teamBId: teamEntryId }],
+      },
+    });
+
+    if (existingGroupMatchCount > 0) {
+      return {
+        success: false,
+        message:
+          "Reset or remove the team's fixtures in its current group before moving it.",
       };
     }
 

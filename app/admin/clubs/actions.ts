@@ -112,17 +112,35 @@ export async function updateClubAction(
     };
   }
 
-  const existingClub = await prisma.club.findFirst({
-    where: {
-      slug: parsed.data.slug,
-      NOT: {
+  const [currentClub, existingClub] = await Promise.all([
+    prisma.club.findUnique({
+      where: {
         id: clubId,
       },
-    },
-    select: {
-      id: true,
-    },
-  });
+      select: {
+        id: true,
+        slug: true,
+      },
+    }),
+    prisma.club.findFirst({
+      where: {
+        slug: parsed.data.slug,
+        NOT: {
+          id: clubId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
+
+  if (!currentClub) {
+    return {
+      success: false,
+      message: "Club not found.",
+    };
+  }
 
   if (existingClub) {
     return {
@@ -143,6 +161,9 @@ export async function updateClubAction(
 
   revalidatePath("/admin/clubs");
   revalidatePath(`/admin/clubs/${clubId}`);
+  revalidatePath("/clubs");
+  revalidatePath(`/clubs/${currentClub.slug}`);
+  revalidatePath(`/clubs/${parsed.data.slug}`);
 
   return {
     success: true,

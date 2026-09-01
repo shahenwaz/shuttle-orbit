@@ -150,9 +150,10 @@ export async function createClubMemberAction(
     };
   }
 
-  await prisma.player.update({
+  const assignment = await prisma.player.updateMany({
     where: {
       id: player.id,
+      clubId: null,
     },
     data: {
       clubId,
@@ -161,6 +162,13 @@ export async function createClubMemberAction(
       clubJoinedAt: new Date(),
     },
   });
+
+  if (assignment.count === 0) {
+    return {
+      success: false,
+      message: "This player's club assignment changed. Refresh and try again.",
+    };
+  }
 
   revalidateClubPaths(clubId);
 
@@ -220,15 +228,23 @@ export async function updateClubMemberAction(
     };
   }
 
-  await prisma.player.update({
+  const update = await prisma.player.updateMany({
     where: {
       id: player.id,
+      clubId,
     },
     data: {
       clubRole: role ?? ClubMemberRole.MEMBER,
       clubProfilePublic: isPublic,
     },
   });
+
+  if (update.count === 0) {
+    return {
+      success: false,
+      message: "Club player no longer belongs to this club.",
+    };
+  }
 
   revalidateClubPaths(clubId);
 
@@ -271,9 +287,10 @@ export async function deleteClubMemberAction(
     };
   }
 
-  await prisma.player.update({
+  const removal = await prisma.player.updateMany({
     where: {
       id: player.id,
+      clubId,
     },
     data: {
       clubId: null,
@@ -283,6 +300,13 @@ export async function deleteClubMemberAction(
       clubNotes: null,
     },
   });
+
+  if (removal.count === 0) {
+    return {
+      success: false,
+      message: "Club player no longer belongs to this club.",
+    };
+  }
 
   revalidateClubPaths(clubId);
 

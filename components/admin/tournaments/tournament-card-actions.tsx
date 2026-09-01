@@ -87,7 +87,7 @@ export function TournamentCardActions({
         triggerLabel=""
         hideTrigger
         title="Edit tournament"
-        description="Update tournament details and mark it completed when finished."
+        description="Update tournament details."
       >
         <EditTournamentForm
           tournament={{

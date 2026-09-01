@@ -90,6 +90,26 @@ export async function createTeamEntryAction(
     };
   }
 
+  const validPlayerCount = await prisma.player.count({
+    where: {
+      id: {
+        in: [player1Id, player2Id],
+      },
+      isActive: true,
+    },
+  });
+
+  if (validPlayerCount !== 2) {
+    return {
+      success: false,
+      message: "One or both selected players are no longer available.",
+      fieldErrors: {
+        player1Id: ["Choose active players from the player list."],
+        player2Id: ["Choose active players from the player list."],
+      },
+    };
+  }
+
   const existingTeamWithEitherPlayer = await prisma.teamEntry.findFirst({
     where: {
       tournamentId,
