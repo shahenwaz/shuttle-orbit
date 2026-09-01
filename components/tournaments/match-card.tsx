@@ -1,7 +1,9 @@
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 import { cn } from "@/lib/utils";
 import { formatTeamName } from "@/lib/utils/format";
 
 type MatchCardProps = {
+  contextLabel?: string;
   match: {
     id: string;
     status: string;
@@ -41,11 +43,10 @@ function getScoreParts(scoreSummary: string | null) {
     return null;
   }
 
-  const cleaned = scoreSummary.trim();
-  const match = cleaned.match(/^(\d+)\s*-\s*(\d+)$/);
+  const match = scoreSummary.trim().match(/^(\d+)\s*-\s*(\d+)$/);
 
   if (!match) {
-    return cleaned;
+    return null;
   }
 
   return {
@@ -84,7 +85,6 @@ function getSetScoreSummary(
   const teamASetWins = orderedSets.filter(
     (set) => set.teamAScore > set.teamBScore,
   ).length;
-
   const teamBSetWins = orderedSets.filter(
     (set) => set.teamBScore > set.teamAScore,
   ).length;
@@ -94,14 +94,12 @@ function getSetScoreSummary(
       teamAScore: String(teamASetWins),
       teamBScore: String(teamBSetWins),
     },
-    setDetails: orderedSets.map(
-      (set) => `${set.teamAScore} - ${set.teamBScore}`,
-    ),
+    setDetails: orderedSets.map((set) => `${set.teamAScore}–${set.teamBScore}`),
     isMultiSet: true,
   };
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, contextLabel }: MatchCardProps) {
   const teamALabel = match.teamA
     ? formatTeamName(
         match.teamA.player1.fullName,
@@ -109,7 +107,6 @@ export function MatchCard({ match }: MatchCardProps) {
         match.teamA.teamName,
       )
     : "TBD";
-
   const teamBLabel = match.teamB
     ? formatTeamName(
         match.teamB.player1.fullName,
@@ -122,111 +119,86 @@ export function MatchCard({ match }: MatchCardProps) {
     match.winnerId != null && match.winnerId === match.teamAId;
   const teamBIsWinner =
     match.winnerId != null && match.winnerId === match.teamBId;
-
   const score = getSetScoreSummary(match.sets, match.scoreSummary);
-
-  const displayScore =
-    score.displayScore !== null && typeof score.displayScore !== "string"
-      ? score.displayScore
-      : null;
-
   const hasCompletedScore =
-    match.status === "completed" && displayScore !== null;
+    match.status === "completed" && score.displayScore !== null;
 
   return (
-    <div className="surface-card overflow-hidden">
-      <div className="flex items-center justify-center gap-3 border-b border-white/10 px-3 py-2.5 sm:px-4">
-        <p className="truncate text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:text-xs">
-          {match.roundLabel ?? "Match"}
+    <article
+      className={surfaceCardClassName({
+        variant: "elevated",
+        accent: "brand",
+        className: "min-w-0 overflow-hidden px-3 py-1.5 sm:px-3.5",
+      })}
+    >
+      <div className="min-w-0 space-y-1">
+        <p className="truncate text-[10px] leading-5 font-semibold uppercase tracking-[0.16em] text-foreground sm:text-[11px]">
+          {contextLabel ?? match.roundLabel ?? "Match"}
         </p>
-      </div>
 
-      <div className="px-3 py-3 sm:px-4 sm:py-3.5">
-        {hasCompletedScore ? (
-          <div className="space-y-2.5">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
-              <p
-                className={cn(
-                  "truncate text-xs sm:text-sm",
-                  teamAIsWinner
-                    ? "font-semibold text-foreground"
-                    : "font-medium text-muted-foreground",
-                )}
-                title={teamALabel}
-              >
-                {teamALabel}
-              </p>
-
-              <div className="shrink-0 whitespace-nowrap text-sm font-bold tracking-tight text-foreground sm:text-base">
-                <span
-                  className={cn(
-                    teamAIsWinner ? "text-primary" : "text-foreground",
-                  )}
-                >
-                  {displayScore?.teamAScore}
-                </span>
-                <span className="px-1.5 text-muted-foreground">-</span>
-                <span
-                  className={cn(
-                    teamBIsWinner ? "text-primary" : "text-foreground",
-                  )}
-                >
-                  {displayScore?.teamBScore}
-                </span>
-              </div>
-
-              <p
-                className={cn(
-                  "truncate text-right text-xs sm:text-sm",
-                  teamBIsWinner
-                    ? "font-semibold text-foreground"
-                    : "font-medium text-muted-foreground",
-                )}
-                title={teamBLabel}
-              >
-                {teamBLabel}
-              </p>
-            </div>
-
-            {score.isMultiSet ? (
-              <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/8 pt-2">
-                <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                  Sets
-                </span>
-
-                {score.setDetails.map((setScore, index) => (
-                  <span
-                    key={`${match.id}-set-${index}`}
-                    className="rounded-full border border-white/10 bg-background/45 px-2 py-0.5 text-[10px] font-semibold text-foreground sm:text-[11px]"
-                  >
-                    {setScore}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
+        <div className="space-y-0.5 border-t border-white/10 pt-1.5">
+          <div className="flex min-w-0 items-center gap-2">
             <p
-              className="truncate text-xs font-medium text-foreground sm:text-sm"
+              className={cn(
+                "min-w-0 flex-1 truncate text-xs leading-5 text-primary sm:text-[13px]",
+                teamAIsWinner ? "font-semibold" : "font-medium",
+                !match.teamA && "text-muted-foreground",
+              )}
               title={teamALabel}
             >
               {teamALabel}
             </p>
 
-            <div className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary sm:text-xs">
-              VS
-            </div>
+            <span
+              className={cn(
+                "shrink-0 text-sm leading-5 font-bold tracking-tight tabular-nums",
+                teamAIsWinner ? "text-purple-400" : "text-foreground",
+                !hasCompletedScore && "text-muted-foreground",
+              )}
+            >
+              {hasCompletedScore && score.displayScore
+                ? score.displayScore.teamAScore
+                : "—"}
+            </span>
+          </div>
 
+          <div className="flex min-w-0 items-center gap-2">
             <p
-              className="truncate text-right text-xs font-medium text-foreground sm:text-sm"
+              className={cn(
+                "min-w-0 flex-1 truncate text-xs leading-5 text-primary sm:text-[13px]",
+                teamBIsWinner ? "font-semibold" : "font-medium",
+                !match.teamB && "text-muted-foreground",
+              )}
               title={teamBLabel}
             >
               {teamBLabel}
             </p>
+
+            <span
+              className={cn(
+                "shrink-0 text-sm leading-5 font-bold tracking-tight tabular-nums",
+                teamBIsWinner ? "text-purple-400" : "text-foreground",
+                !hasCompletedScore && "text-muted-foreground",
+              )}
+            >
+              {hasCompletedScore && score.displayScore
+                ? score.displayScore.teamBScore
+                : "—"}
+            </span>
           </div>
-        )}
+        </div>
+
+        {score.isMultiSet ? (
+          <div className="flex flex-wrap items-baseline gap-x-2 border-t border-white/10 pt-1">
+            <span className="shrink-0 text-[9px] leading-5 font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-[10px]">
+              Sets
+            </span>
+            <p className="min-w-0 flex-1 text-[9px] leading-5 font-medium text-muted-foreground tabular-nums sm:text-[10px]">
+              {score.setDetails.join(" · ")}
+            </p>
+          </div>
+        ) : null}
       </div>
-    </div>
+    </article>
   );
 }

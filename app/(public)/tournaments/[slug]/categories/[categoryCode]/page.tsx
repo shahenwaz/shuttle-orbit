@@ -14,7 +14,6 @@ import {
   getCategoryOverviewByTournamentAndCode,
   getCategoryTeamsByTournamentAndCode,
 } from "@/lib/tournament/queries";
-import { getLeaderboard } from "@/lib/rankings/queries";
 
 type CategoryDetailPageProps = {
   params: Promise<{
@@ -60,21 +59,6 @@ export async function generateMetadata({
   });
 }
 
-function getRankingScopeForCategory(categoryCode: string) {
-  const normalizedCode = categoryCode.trim().toUpperCase();
-
-  if (normalizedCode === "MIXED") {
-    return {
-      scope: "UNIVERSAL" as const,
-    };
-  }
-
-  return {
-    scope: "CATEGORY" as const,
-    categoryCode: normalizedCode,
-  };
-}
-
 async function getCategoryPageData(
   slug: string,
   categoryCode: string,
@@ -108,41 +92,12 @@ async function getCategoryPageData(
       notFound();
     }
 
-    if (activeTab === "players") {
-      return {
-        tournament,
-        category,
-        tabData: {
-          activeTab,
-          category,
-        } as const,
-      };
-    }
-
-    const rankingScope = getRankingScopeForCategory(category.code);
-    const categoryLeaderboard = await getLeaderboard({
-      scope: rankingScope.scope,
-      categoryCode:
-        rankingScope.scope === "CATEGORY"
-          ? rankingScope.categoryCode
-          : undefined,
-    });
-
-    const playerRanks = categoryLeaderboard.reduce<Record<string, number>>(
-      (rankMap, row) => {
-        rankMap[row.playerId] = row.rank;
-        return rankMap;
-      },
-      {},
-    );
-
     return {
       tournament,
       category,
       tabData: {
         activeTab,
         category,
-        playerRanks,
       } as const,
     };
   }

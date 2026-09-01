@@ -9,13 +9,11 @@ type TeamCardProps = {
       id: string;
       fullName: string;
       nickname: string | null;
-      rankingPosition?: number | null;
     };
     player2: {
       id: string;
       fullName: string;
       nickname: string | null;
-      rankingPosition?: number | null;
     };
   };
   badgeLabel?: string;
@@ -54,12 +52,10 @@ export function TeamCard({ team, badgeLabel = "Team" }: TeamCardProps) {
           <PlayerLine
             name={team.player1.fullName}
             nickname={team.player1.nickname}
-            rankingPosition={team.player1.rankingPosition}
           />
           <PlayerLine
             name={team.player2.fullName}
             nickname={team.player2.nickname}
-            rankingPosition={team.player2.rankingPosition}
           />
         </div>
       </div>
@@ -70,30 +66,18 @@ export function TeamCard({ team, badgeLabel = "Team" }: TeamCardProps) {
 function PlayerLine({
   name,
   nickname,
-  rankingPosition,
 }: {
   name: string;
   nickname: string | null;
-  rankingPosition?: number | null;
 }) {
-  const rankLabel = rankingPosition
-    ? `#${String(rankingPosition).padStart(2, "0")}`
-    : "UR";
-
   return (
-    <div className="flex min-w-0 items-baseline gap-2">
-      <span className="w-7 shrink-0 text-[10px] font-semibold tabular-nums text-purple-300/80">
-        {rankLabel}
-      </span>
-
-      <p className="min-w-0 truncate text-xs font-semibold leading-5 text-purple-400 sm:text-[13px]">
-        {name}
-        {nickname ? (
-          <span className="ml-1.5 font-medium text-muted-foreground">
-            @{nickname}
-          </span>
-        ) : null}
-      </p>
-    </div>
+    <p className="min-w-0 truncate text-xs font-semibold leading-5 text-purple-400 sm:text-[13px]">
+      {name}
+      {nickname ? (
+        <span className="ml-1.5 font-medium text-muted-foreground">
+          @{nickname}
+        </span>
+      ) : null}
+    </p>
   );
 }

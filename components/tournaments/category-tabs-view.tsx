@@ -88,7 +88,6 @@ type CategoryTabData =
   | {
       activeTab: "teams";
       category: CategoryTeamEntries;
-      playerRanks: Record<string, number>;
     }
   | {
       activeTab: "matches" | "standings";
@@ -128,6 +127,28 @@ function SectionMetaLine({
       <p className="leading-5">{children}</p>
     </div>
   );
+}
+
+function combineContextLabels(primaryLabel: string, detailLabel?: string) {
+  const primary = primaryLabel.trim();
+  const detail = detailLabel?.trim();
+
+  if (!detail) {
+    return primary;
+  }
+
+  const normalizedPrimary = primary.toLocaleLowerCase();
+  const normalizedDetail = detail.toLocaleLowerCase();
+
+  if (normalizedDetail.includes(normalizedPrimary)) {
+    return detail;
+  }
+
+  if (normalizedPrimary.includes(normalizedDetail)) {
+    return primary;
+  }
+
+  return `${primary} · ${detail}`;
 }
 
 export function CategoryTabsView({ data }: CategoryTabsViewProps) {
@@ -209,22 +230,7 @@ export function CategoryTabsView({ data }: CategoryTabsViewProps) {
           ) : (
             <div className="grid min-w-0 gap-1.5 sm:gap-2 md:grid-cols-2">
               {data.category.teamEntries.map((team) => (
-                <TeamCard
-                  key={team.id}
-                  team={{
-                    ...team,
-                    player1: {
-                      ...team.player1,
-                      rankingPosition:
-                        data.playerRanks[team.player1.id] ?? null,
-                    },
-                    player2: {
-                      ...team.player2,
-                      rankingPosition:
-                        data.playerRanks[team.player2.id] ?? null,
-                    },
-                  }}
-                />
+                <TeamCard key={team.id} team={team} />
               ))}
             </div>
           )}
@@ -246,7 +252,7 @@ export function CategoryTabsView({ data }: CategoryTabsViewProps) {
               const groupedSections = stage.groups
                 .map((group) => ({
                   id: group.id,
-                  heading: `${stage.name} – ${group.name}`,
+                  name: group.name,
                   matches: stage.matches.filter(
                     (match) => match.groupId === group.id,
                   ),
@@ -257,36 +263,42 @@ export function CategoryTabsView({ data }: CategoryTabsViewProps) {
               );
 
               return (
-                <div key={stage.id} className="space-y-4 sm:space-y-5">
+                <div key={stage.id} className="space-y-1.5 sm:space-y-2">
                   {groupedSections.map((section) => (
-                    <section
+                    <div
                       key={section.id}
-                      className="space-y-2 sm:space-y-2.5"
+                      className="grid gap-1.5 sm:gap-2 lg:grid-cols-2"
                     >
-                      <h3 className="text-sm font-semibold text-foreground sm:text-base">
-                        {section.heading}
-                      </h3>
-
-                      <div className="grid gap-1.5 sm:gap-2 lg:grid-cols-2">
-                        {section.matches.map((match) => (
-                          <MatchCard key={match.id} match={match} />
-                        ))}
-                      </div>
-                    </section>
+                      {section.matches.map((match) => (
+                        <MatchCard
+                          key={match.id}
+                          match={match}
+                          contextLabel={combineContextLabels(
+                            section.name,
+                            match.roundLabel ?? undefined,
+                          )}
+                        />
+                      ))}
+                    </div>
                   ))}
 
                   {ungroupedMatches.length > 0 ? (
-                    <section className="space-y-2 sm:space-y-2.5">
-                      <h3 className="text-sm font-semibold text-foreground sm:text-base">
-                        {stage.name}
-                      </h3>
+                    <div className="grid gap-1.5 sm:gap-2 lg:grid-cols-2">
+                      {ungroupedMatches.map((match) => {
+                        const contextLabel = combineContextLabels(
+                          stage.name,
+                          match.roundLabel ?? undefined,
+                        );
 
-                      <div className="grid gap-1.5 sm:gap-2 lg:grid-cols-2">
-                        {ungroupedMatches.map((match) => (
-                          <MatchCard key={match.id} match={match} />
-                        ))}
-                      </div>
-                    </section>
+                        return (
+                          <MatchCard
+                            key={match.id}
+                            match={match}
+                            contextLabel={contextLabel}
+                          />
+                        );
+                      })}
+                    </div>
                   ) : null}
                 </div>
               );

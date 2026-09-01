@@ -64,7 +64,7 @@ export function GroupStandingsTable({ rows }: GroupStandingsTableProps) {
                 </TableCell>
 
                 <TableCell className="px-3 py-2">
-                  <span className="block max-w-35 truncate text-xs font-medium text-foreground sm:max-w-55 sm:text-sm">
+                  <span className="block max-w-35 truncate text-xs font-medium text-primary sm:max-w-55 sm:text-sm">
                     {row.teamName}
                   </span>
                 </TableCell>
