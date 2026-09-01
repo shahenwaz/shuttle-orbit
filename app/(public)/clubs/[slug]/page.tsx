@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
@@ -8,6 +9,7 @@ import { ClubProfileShell } from "@/components/clubs/club-profile-shell";
 import { PageContainer } from "@/components/layout/page-container";
 import { mapClubProfileMember } from "@/lib/clubs/club-profile-mappers";
 import { prisma } from "@/lib/db/prisma";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 type PublicClubPageProps = {
   params: Promise<{
@@ -22,6 +24,36 @@ function getActiveTab(tab: string | undefined): PublicClubProfileTab {
   if (tab === "members") return "members";
 
   return "overview";
+}
+
+export async function generateMetadata({
+  params,
+}: PublicClubPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const club = await prisma.club.findUnique({
+    where: {
+      slug,
+    },
+    select: {
+      name: true,
+      description: true,
+      isPublic: true,
+    },
+  });
+
+  if (!club?.isPublic) {
+    return buildPageMetadata({
+      title: "Club Profile",
+      description: "View a community badminton club profile and its members.",
+    });
+  }
+
+  return buildPageMetadata({
+    title: club.name,
+    description:
+      club.description ||
+      `View ${club.name}'s community badminton club profile and public members.`,
+  });
 }
 
 export default async function PublicClubPage({

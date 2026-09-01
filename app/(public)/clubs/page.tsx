@@ -33,7 +33,12 @@ export default async function PublicClubsPage() {
       logoUrl: true,
       _count: {
         select: {
-          players: true,
+          players: {
+            where: {
+              isActive: true,
+              clubProfilePublic: true,
+            },
+          },
         },
       },
     },

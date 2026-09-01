@@ -30,9 +30,9 @@ export function SiteHeader() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-primary/75">
                 Badminton Platform
               </p>
-              <h1 className="truncate font-heading text-sm font-semibold tracking-tight text-foreground sm:text-base">
+              <p className="truncate font-heading text-sm font-semibold tracking-tight text-foreground sm:text-base">
                 Shuttle Orbit
-              </h1>
+              </p>
             </div>
           </Link>
 

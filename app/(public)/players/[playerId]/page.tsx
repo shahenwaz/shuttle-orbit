@@ -9,7 +9,10 @@ import { PlayerAppearanceCard } from "@/components/players/player-appearance-car
 import { ProfileSummaryCard } from "@/components/players/profile-summary-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
-import { getPlayerProfile } from "@/lib/player/queries";
+import {
+  getPlayerProfile,
+  getPlayerProfileMetadata,
+} from "@/lib/player/queries";
 import { MetaInfoPill } from "@/components/shared/meta-info-pill";
 import { SectionIntro } from "@/components/shared/section-intro";
 
@@ -23,9 +26,9 @@ export async function generateMetadata({
   params,
 }: PlayerProfilePageProps): Promise<Metadata> {
   const { playerId } = await params;
-  const profile = await getPlayerProfile(playerId);
+  const player = await getPlayerProfileMetadata(playerId);
 
-  if (!profile) {
+  if (!player) {
     return buildPageMetadata({
       title: "Player Profile",
       description:
@@ -34,8 +37,8 @@ export async function generateMetadata({
   }
 
   return buildPageMetadata({
-    title: profile.player.fullName,
-    description: `View ${profile.player.fullName}'s badminton player profile, tournament appearances, ranking summary, and match history.`,
+    title: player.fullName,
+    description: `View ${player.fullName}'s badminton player profile, tournament appearances, ranking summary, and match history.`,
   });
 }
 
@@ -83,9 +86,11 @@ export default async function PlayerProfilePage({
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
               {player.fullName}
             </h1>
-            <span className="text-xs font-medium text-muted-foreground sm:text-sm">
-              @{player.nickname}
-            </span>
+            {player.nickname ? (
+              <span className="text-xs font-medium text-muted-foreground sm:text-sm">
+                @{player.nickname}
+              </span>
+            ) : null}
           </div>
         </div>
 

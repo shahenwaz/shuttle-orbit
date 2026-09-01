@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getPlayersDirectory } from "@/lib/player/queries";
+import { getPlayerSitemapEntries } from "@/lib/player/queries";
 import { getTournamentSitemapEntries } from "@/lib/tournament/queries";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -8,7 +8,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [tournaments, players] = await Promise.all([
     getTournamentSitemapEntries(),
-    getPlayersDirectory(),
+    getPlayerSitemapEntries(),
   ]);
 
   type SitemapTournament = (typeof tournaments)[number];
@@ -61,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const playerRoutes: MetadataRoute.Sitemap = players.map(
     (player: SitemapPlayer) => ({
       url: `${siteUrl}/players/${player.id}`,
-      lastModified: now,
+      lastModified: player.updatedAt,
       changeFrequency: "monthly",
       priority: 0.6,
     }),

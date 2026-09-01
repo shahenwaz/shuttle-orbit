@@ -6,7 +6,6 @@ import { PageContainer } from "@/components/layout/page-container";
 import { actionPillButtonClassName } from "@/components/shared/action-pill-button";
 
 export default function PublicError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -32,12 +31,6 @@ export default function PublicError({
               a moment.
             </p>
           </div>
-
-          {error?.message ? (
-            <div className="rounded-md border border-white/10 bg-background/50 px-3 py-2 text-left text-xs text-muted-foreground">
-              {error.message}
-            </div>
-          ) : null}
 
           <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
             <button

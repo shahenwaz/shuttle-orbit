@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { PublicTournamentCategoryCard } from "@/components/public/public-tournament-category-card";
+import { EmptyState } from "@/components/shared/empty-state";
 import { TournamentHero } from "@/components/tournaments/tournament-hero";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -58,15 +59,21 @@ export default async function TournamentDetailPage({
       <TournamentHero tournament={tournament} />
 
       <section className="space-y-3 sm:space-y-4">
-        <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
-          {tournament.categories.map((category: TournamentCategoryItem) => (
-            <PublicTournamentCategoryCard
-              key={category.id}
-              category={category}
-              href={`/tournaments/${tournament.slug}/categories/${category.code}`}
-            />
-          ))}
-        </div>
+        <h2 className="sr-only">Tournament categories</h2>
+
+        {tournament.categories.length === 0 ? (
+          <EmptyState message="No categories are available for this tournament yet." />
+        ) : (
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+            {tournament.categories.map((category: TournamentCategoryItem) => (
+              <PublicTournamentCategoryCard
+                key={category.id}
+                category={category}
+                href={`/tournaments/${tournament.slug}/categories/${category.code}`}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </PageContainer>
   );

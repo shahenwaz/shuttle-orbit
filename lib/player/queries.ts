@@ -126,6 +126,26 @@ export async function getPlayersDirectory() {
   });
 }
 
+export async function getPlayerSitemapEntries() {
+  return prisma.player.findMany({
+    select: {
+      id: true,
+      updatedAt: true,
+    },
+  });
+}
+
+export async function getPlayerProfileMetadata(playerId: string) {
+  return prisma.player.findUnique({
+    where: {
+      id: playerId,
+    },
+    select: {
+      fullName: true,
+    },
+  });
+}
+
 export async function getLeaderboardPositionForPlayer(playerId: string) {
   const grouped = await prisma.rankingLedger.groupBy({
     by: ["playerId"],
