@@ -208,7 +208,7 @@ function GroupCard({
         triggerLabel=""
         hideTrigger
         title="Delete group"
-        description="This will only work if the group has no assigned teams."
+        description="The group must have no assigned teams or fixtures before it can be deleted."
       >
         <form
           className="space-y-4"

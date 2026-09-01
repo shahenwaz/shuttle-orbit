@@ -95,7 +95,7 @@ export function FixturesGroupList({
 }: FixturesGroupListProps) {
   if (groups.length === 0) {
     return (
-      <EmptyState message="No groups available yet. Create groups first before generating fixtures." />
+      <EmptyState message="No groups available yet. Create groups before generating fixtures." />
     );
   }
 

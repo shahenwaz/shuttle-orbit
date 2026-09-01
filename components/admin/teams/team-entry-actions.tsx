@@ -173,7 +173,7 @@ export function TeamEntryActions({
         triggerLabel=""
         hideTrigger
         title="Remove team"
-        description="This will only work if the team is not assigned to any group yet."
+        description="The team must not be assigned to a group or used by fixtures or results."
       >
         <form
           className="space-y-4"

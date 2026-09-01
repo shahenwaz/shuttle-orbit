@@ -12,9 +12,7 @@ type DeleteLeagueButtonProps = {
   leagueId: string;
 };
 
-export function DeleteLeagueButton({
-  leagueId,
-}: DeleteLeagueButtonProps) {
+export function DeleteLeagueButton({ leagueId }: DeleteLeagueButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -26,7 +24,7 @@ export function DeleteLeagueButton({
       onOpenChange={setIsOpen}
       triggerLabel="Delete"
       title="Delete community league"
-      description="This will permanently delete this test league and its generated fixtures."
+      description="This will permanently delete the league, its fixtures, and its statistics."
       triggerClassName={actionPillButtonClassName({
         variant: "danger",
       })}
@@ -54,8 +52,8 @@ export function DeleteLeagueButton({
         }}
       >
         <p className="text-sm leading-6 text-muted-foreground">
-          Are you sure you want to delete this community league? This is mainly for
-          removing test leagues before real results are recorded.
+          Are you sure you want to delete this community league? Recorded
+          results must be reset before the league can be deleted.
         </p>
 
         {message ? (

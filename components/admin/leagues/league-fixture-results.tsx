@@ -13,10 +13,7 @@ import { MatchCard } from "@/components/tournaments/match-card";
 import { formatLeagueDisplayName } from "@/lib/leagues/display";
 
 type LeagueFixtureFormat =
-  | "ROUND_ROBIN"
-  | "TEAM_PAIR_MATRIX"
-  | "FIXED_DOUBLES"
-  | "MANUAL";
+  "ROUND_ROBIN" | "TEAM_PAIR_MATRIX" | "FIXED_DOUBLES" | "MANUAL";
 
 type Player = {
   fullName: string;
@@ -225,7 +222,7 @@ function LeagueResultMatchCard({
             onOpenChange={setIsResetOpen}
             triggerLabel="Reset result"
             title="Reset fixture result"
-            description="This will clear the saved score and set the fixture back to pending."
+            description="This will remove the saved score and sets, then return the fixture to pending."
             triggerClassName={actionPillButtonClassName({
               variant: "neutral",
               className:

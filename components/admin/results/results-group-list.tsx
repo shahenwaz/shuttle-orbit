@@ -200,7 +200,7 @@ function GroupResultMatchCard({
             onOpenChange={setIsResetOpen}
             triggerLabel="Reset result"
             title="Reset match result"
-            description="This will clear the saved score and set the match back to scheduled."
+            description="This will remove the saved score and sets, then return the match to scheduled."
             triggerClassName={actionPillButtonClassName({
               variant: "neutral",
               className:
