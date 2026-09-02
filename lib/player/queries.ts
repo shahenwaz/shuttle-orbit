@@ -29,54 +29,6 @@ function sortCategoryCodes(codes: string[]) {
   });
 }
 
-function getPlacementPriority(placementTier: string | null) {
-  switch (placementTier) {
-    case "CHAMPION":
-      return 700;
-    case "RUNNER_UP":
-      return 600;
-    case "THIRD_PLACE":
-      return 500;
-    case "SEMI_FINALIST":
-      return 450;
-    case "FOURTH_PLACE":
-      return 400;
-    case "ADVANCED_STAGE":
-      return 300;
-    case "GROUP_STAGE":
-      return 100;
-    default:
-      return 0;
-  }
-}
-
-function getBestResultValue({
-  categoryCode,
-  placementTier,
-}: {
-  categoryCode: string;
-  placementTier: string | null;
-}) {
-  switch (placementTier) {
-    case "CHAMPION":
-      return `${categoryCode} · #1`;
-    case "RUNNER_UP":
-      return `${categoryCode} · #2`;
-    case "THIRD_PLACE":
-      return `${categoryCode} · #3`;
-    case "FOURTH_PLACE":
-      return `${categoryCode} · #4`;
-    case "SEMI_FINALIST":
-      return `${categoryCode} · Semi Finalist`;
-    case "ADVANCED_STAGE":
-      return `${categoryCode} · Advanced`;
-    case "GROUP_STAGE":
-      return `${categoryCode} · Group`;
-    default:
-      return categoryCode;
-  }
-}
-
 export async function getPlayersDirectory() {
   const players = await prisma.player.findMany({
     orderBy: {
@@ -146,107 +98,23 @@ export async function getPlayerProfileMetadata(playerId: string) {
   });
 }
 
-export async function getLeaderboardPositionForPlayer(playerId: string) {
-  const grouped = await prisma.rankingLedger.groupBy({
-    by: ["playerId"],
-    where: {
-      scope: "UNIVERSAL",
-    },
-    _sum: {
-      totalPointsAwarded: true,
-    },
-    orderBy: [
-      {
-        _sum: {
-          totalPointsAwarded: "desc",
-        },
-      },
-      {
-        playerId: "asc",
-      },
-    ],
-  });
-
-  const index = grouped.findIndex((row) => row.playerId === playerId);
-
-  if (index === -1) {
-    return {
-      rank: null,
-      totalPoints: 0,
-    };
-  }
-
-  return {
-    rank: index + 1,
-    totalPoints: grouped[index]?._sum.totalPointsAwarded ?? 0,
-  };
-}
-
-export async function getCategoryLeaderboardPositionsForPlayer(
-  playerId: string,
-) {
-  const categoryRows = await prisma.rankingLedger.findMany({
-    where: {
-      playerId,
-      scope: "CATEGORY",
-    },
-    select: {
-      categoryCode: true,
-    },
-    distinct: ["categoryCode"],
-  });
-
-  const categoryCodes = sortCategoryCodes(
-    categoryRows.map((row) => row.categoryCode),
-  );
-
-  const rankings = await Promise.all(
-    categoryCodes.map(async (categoryCode) => {
-      const grouped = await prisma.rankingLedger.groupBy({
-        by: ["playerId"],
-        where: {
-          scope: "CATEGORY",
-          categoryCode,
-        },
-        _sum: {
-          totalPointsAwarded: true,
-        },
-        orderBy: [
-          {
-            _sum: {
-              totalPointsAwarded: "desc",
-            },
-          },
-          {
-            playerId: "asc",
-          },
-        ],
-      });
-
-      const index = grouped.findIndex((row) => row.playerId === playerId);
-
-      return {
-        categoryCode,
-        rank: index === -1 ? null : index + 1,
-        totalPoints:
-          index === -1 ? 0 : (grouped[index]?._sum.totalPointsAwarded ?? 0),
-      };
-    }),
-  );
-
-  return rankings;
-}
-
 export async function getPlayerProfile(playerId: string) {
   const player = await prisma.player.findUnique({
     where: {
       id: playerId,
     },
     select: {
-      id: true,
       fullName: true,
       nickname: true,
-      createdAt: true,
+      clubProfilePublic: true,
+      club: {
+        select: {
+          name: true,
+          shortName: true,
+          slug: true,
+          isPublic: true,
+        },
+      },
     },
   });
 
@@ -277,14 +145,12 @@ export async function getPlayerProfile(playerId: string) {
         select: {
           id: true,
           fullName: true,
-          nickname: true,
         },
       },
       player2: {
         select: {
           id: true,
           fullName: true,
-          nickname: true,
         },
       },
       category: {
@@ -296,7 +162,6 @@ export async function getPlayerProfile(playerId: string) {
               id: true,
               name: true,
               slug: true,
-              eventDate: true,
             },
           },
         },
@@ -324,14 +189,8 @@ export async function getPlayerProfile(playerId: string) {
             categoryId: true,
             finishLabel: true,
             rankingPoints: true,
-            placementTier: true,
             matchesPlayed: true,
             matchesWon: true,
-            category: {
-              select: {
-                code: true,
-              },
-            },
           },
         })
       : [];
@@ -340,70 +199,40 @@ export async function getPlayerProfile(playerId: string) {
     stats.map((stat) => [`${stat.tournamentId}:${stat.categoryId}`, stat]),
   );
 
-  const universalRanking = await getLeaderboardPositionForPlayer(playerId);
-  const categoryRankings =
-    await getCategoryLeaderboardPositionsForPlayer(playerId);
-
-  const bestStat =
-    [...stats].sort((a, b) => {
-      const placementDiff =
-        getPlacementPriority(b.placementTier) -
-        getPlacementPriority(a.placementTier);
-
-      if (placementDiff !== 0) {
-        return placementDiff;
-      }
-
-      const pointsDiff = b.rankingPoints - a.rankingPoints;
-
-      if (pointsDiff !== 0) {
-        return pointsDiff;
-      }
-
-      const categoryRankDiff =
-        getCategoryCodeRank(b.category.code) -
-        getCategoryCodeRank(a.category.code);
-
-      if (categoryRankDiff !== 0) {
-        return categoryRankDiff;
-      }
-
-      return a.category.code.localeCompare(b.category.code);
-    })[0] ?? null;
-
-  const bestCategory = bestStat?.category.code ?? null;
-  const bestResultLabel = bestStat
-    ? getBestResultValue({
-        categoryCode: bestStat.category.code,
-        placementTier: bestStat.placementTier,
-      })
-    : null;
-
   return {
-    player,
+    player: {
+      fullName: player.fullName,
+      nickname: player.nickname,
+      publicClub:
+        player.clubProfilePublic && player.club?.isPublic
+          ? {
+              name: player.club.name,
+              shortName: player.club.shortName,
+              slug: player.club.slug,
+            }
+          : null,
+    },
     appearances: appearances.map((entry) => {
       const key = `${entry.category.tournament.id}:${entry.category.id}`;
       const stat = statMap.get(key);
+      const partner =
+        entry.player1Id === playerId ? entry.player2 : entry.player1;
 
       return {
-        ...entry,
-        ranking: stat
+        id: entry.id,
+        teamName: entry.teamName,
+        partner,
+        categoryCode: entry.category.code,
+        tournament: entry.category.tournament,
+        result: stat
           ? {
               finishLabel: stat.finishLabel,
               rankingPoints: stat.rankingPoints,
-              placementTier: stat.placementTier,
               matchesPlayed: stat.matchesPlayed,
               matchesWon: stat.matchesWon,
             }
           : null,
       };
     }),
-    rankingSummary: {
-      universalRank: universalRanking.rank,
-      universalPoints: universalRanking.totalPoints,
-      bestCategory,
-      bestResultLabel,
-      categoryRankings,
-    },
   };
 }

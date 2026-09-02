@@ -2,18 +2,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Shapes, Trophy } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { PlayerAppearanceCard } from "@/components/players/player-appearance-card";
-import { ProfileSummaryCard } from "@/components/players/profile-summary-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import {
   getPlayerProfile,
   getPlayerProfileMetadata,
 } from "@/lib/player/queries";
-import { MetaInfoPill } from "@/components/shared/meta-info-pill";
+import { getPlayerInitials } from "@/lib/player/initials";
 import { SectionIntro } from "@/components/shared/section-intro";
 
 type PlayerProfilePageProps = {
@@ -32,13 +31,13 @@ export async function generateMetadata({
     return buildPageMetadata({
       title: "Player Profile",
       description:
-        "View badminton player profile, tournament appearances, ranking summary, and match history.",
+        "View a badminton player profile and tournament participation history.",
     });
   }
 
   return buildPageMetadata({
     title: player.fullName,
-    description: `View ${player.fullName}'s badminton player profile, tournament appearances, ranking summary, and match history.`,
+    description: `View ${player.fullName}'s badminton player profile and tournament participation history.`,
   });
 }
 
@@ -52,19 +51,18 @@ export default async function PlayerProfilePage({
     notFound();
   }
 
-  const { player, appearances, rankingSummary } = profile;
+  const { player, appearances } = profile;
 
   type PlayerAppearance = (typeof appearances)[number];
 
   const uniqueTournaments = new Set(
-    appearances.map((entry: PlayerAppearance) => entry.category.tournament.id),
+    appearances.map((entry: PlayerAppearance) => entry.tournament.id),
   ).size;
-
-  const bestCategoryDisplay = rankingSummary.bestResultLabel ?? "—";
+  const initials = getPlayerInitials(player.fullName, player.nickname);
 
   return (
-    <PageContainer className="space-y-5 sm:space-y-6">
-      <section className="space-y-3 sm:space-y-4">
+    <PageContainer className="space-y-4 sm:space-y-5">
+      <section className="space-y-2.5 sm:space-y-3">
         <Button
           asChild
           variant="outline"
@@ -77,69 +75,58 @@ export default async function PlayerProfilePage({
           </Link>
         </Button>
 
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/80">
-            Player profile
-          </p>
+        <div className="min-w-0 border-b border-white/10 pb-2.5">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sky-400/20 bg-sky-400/10 text-sm font-semibold tracking-wide text-sky-300">
+              {initials}
+            </div>
 
-          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              {player.fullName}
-            </h1>
-            {player.nickname ? (
-              <span className="text-xs font-medium text-muted-foreground sm:text-sm">
-                @{player.nickname}
-              </span>
-            ) : null}
+            <div className="min-w-0 flex-1">
+              <h1 className="wrap-break-word text-xl leading-tight font-bold tracking-tight text-sky-400 sm:text-2xl">
+                {player.fullName}
+              </h1>
+
+              {player.nickname || player.publicClub ? (
+                <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground sm:text-sm">
+                  {player.nickname ? <span>@{player.nickname}</span> : null}
+                  {player.nickname && player.publicClub ? <span>·</span> : null}
+                  {player.publicClub ? (
+                    <Link
+                      href={`/clubs/${player.publicClub.slug}`}
+                      className="min-w-0 truncate font-medium text-sky-300 transition hover:text-sky-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+                    >
+                      {player.publicClub.shortName ?? player.publicClub.name}
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] text-muted-foreground sm:text-xs">
+                <span>
+                  {appearances.length} appearance
+                  {appearances.length === 1 ? "" : "s"}
+                </span>
+                <span>·</span>
+                <span>
+                  {uniqueTournaments} tournament
+                  {uniqueTournaments === 1 ? "" : "s"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-2">
-          <MetaInfoPill icon={Shapes}>
-            {appearances.length} appearance
-            {appearances.length === 1 ? "" : "s"}
-          </MetaInfoPill>
-
-          <MetaInfoPill icon={Trophy}>
-            {uniqueTournaments} tournament
-            {uniqueTournaments === 1 ? "" : "s"}
-          </MetaInfoPill>
-        </div>
       </section>
 
-      <section className="space-y-3 sm:space-y-4">
+      <section className="space-y-2.5 sm:space-y-3">
         <SectionIntro
-          title="Ranking summary"
-          description="Current universal standing and best recorded tournament result."
-          descriptionClassName="max-w-2xl"
-        />
-
-        <div className="grid grid-cols-[0.7fr_0.85fr_1.45fr] gap-2 sm:grid-cols-3 sm:gap-3">
-          <ProfileSummaryCard
-            label="Rank"
-            value={rankingSummary.universalRank ?? "—"}
-          />
-
-          <ProfileSummaryCard
-            label="Points"
-            value={rankingSummary.universalPoints}
-          />
-
-          <ProfileSummaryCard label="Best" value={bestCategoryDisplay} />
-        </div>
-      </section>
-
-      <section className="space-y-3 sm:space-y-4">
-        <SectionIntro
-          title="Tournament appearances"
-          description="Teams, categories, and ranking outcomes recorded for this player so far."
-          titleClassName="text-lg sm:text-xl"
+          title="Tournament history"
+          description="Categories, partners, and recorded results from this player's tournament appearances."
         />
 
         {appearances.length === 0 ? (
           <EmptyState message="No tournament appearances available yet." />
         ) : (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-1.5 sm:space-y-2">
             {appearances.map((entry: PlayerAppearance) => (
               <PlayerAppearanceCard key={entry.id} entry={entry} />
             ))}

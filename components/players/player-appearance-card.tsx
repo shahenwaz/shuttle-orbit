@@ -1,32 +1,22 @@
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
 
-import { TeamCard } from "@/components/tournaments/team-card";
-import { formatDate } from "@/lib/utils/format";
+import { surfaceCardClassName } from "@/components/shared/surface-card";
 
 type PlayerAppearanceCardProps = {
   entry: {
     id: string;
     teamName: string | null;
-    player1: {
+    partner: {
       id: string;
       fullName: string;
-      nickname: string | null;
     };
-    player2: {
+    categoryCode: string;
+    tournament: {
       id: string;
-      fullName: string;
-      nickname: string | null;
+      name: string;
+      slug: string;
     };
-    category: {
-      code: string;
-      tournament: {
-        name: string;
-        slug: string;
-        eventDate: Date;
-      };
-    };
-    ranking: {
+    result: {
       finishLabel: string | null;
       rankingPoints: number;
       matchesPlayed: number;
@@ -36,66 +26,77 @@ type PlayerAppearanceCardProps = {
 };
 
 export function PlayerAppearanceCard({ entry }: PlayerAppearanceCardProps) {
+  const categoryHref = `/tournaments/${entry.tournament.slug}/categories/${entry.categoryCode}`;
+  const pointsLabel =
+    entry.result && entry.result.rankingPoints > 0
+      ? `+${entry.result.rankingPoints}`
+      : String(entry.result?.rankingPoints ?? 0);
+
   return (
-    <div className="space-y-3 rounded-2xl border border-white/10 bg-white/4 p-3 sm:p-4">
-      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground sm:text-xs">
+    <article
+      className={surfaceCardClassName({
+        variant: "elevated",
+        accent: "info",
+        className: "min-w-0 px-3 py-2 sm:px-3.5",
+      })}
+    >
+      <div className="space-y-1">
         <Link
-          href={`/tournaments/${entry.category.tournament.slug}`}
-          className="font-medium text-foreground transition hover:text-primary"
+          href={`/tournaments/${entry.tournament.slug}`}
+          className="block min-w-0 wrap-break-word text-sm leading-5 font-semibold text-sky-300 transition hover:text-sky-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
         >
-          {entry.category.tournament.name}
+          {entry.tournament.name}
         </Link>
 
-        <span>•</span>
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
+          <Link
+            href={categoryHref}
+            className="font-medium text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+          >
+            {entry.categoryCode}
+          </Link>
 
-        <Link
-          href={`/tournaments/${entry.category.tournament.slug}/categories/${entry.category.code}`}
-          className="font-medium text-primary transition hover:opacity-80"
-        >
-          {entry.category.code}
-        </Link>
-
-        <span>•</span>
-
-        <span className="inline-flex items-center gap-1">
-          <CalendarDays className="h-3.5 w-3.5" />
-          {formatDate(entry.category.tournament.eventDate)}
-        </span>
-      </div>
-
-      {entry.ranking ? (
-        <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5 text-foreground">
-            {entry.ranking.finishLabel ?? "Result"}
-          </span>
-
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5 text-foreground">
-            {entry.ranking.rankingPoints} pts
-          </span>
-
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1.5 text-muted-foreground">
-            {entry.ranking.matchesWon}/{entry.ranking.matchesPlayed} wins
-          </span>
+          {entry.teamName ? (
+            <>
+              <span className="text-muted-foreground">·</span>
+              <span className="min-w-0 wrap-break-word font-semibold text-primary">
+                {entry.teamName}
+              </span>
+            </>
+          ) : null}
         </div>
-      ) : null}
 
-      <TeamCard
-        team={{
-          id: entry.id,
-          teamName: entry.teamName,
-          player1: {
-            id: entry.player1.id,
-            fullName: entry.player1.fullName,
-            nickname: entry.player1.nickname,
-          },
-          player2: {
-            id: entry.player2.id,
-            fullName: entry.player2.fullName,
-            nickname: entry.player2.nickname,
-          },
-        }}
-        badgeLabel={entry.category.code}
-      />
-    </div>
+        <p className="min-w-0 text-xs leading-5 text-muted-foreground">
+          Partner:{" "}
+          <Link
+            href={`/players/${entry.partner.id}`}
+            className="wrap-break-word font-medium text-sky-300 transition hover:text-sky-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+          >
+            {entry.partner.fullName}
+          </Link>
+        </p>
+
+        {entry.result ? (
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 border-t border-white/10 pt-1 text-[10px] leading-4 text-muted-foreground sm:text-[11px]">
+            {entry.result.finishLabel ? (
+              <span className="font-medium text-foreground">
+                {entry.result.finishLabel}
+              </span>
+            ) : null}
+            {entry.result.finishLabel ? <span>·</span> : null}
+            <span>
+              Wins{" "}
+              <span className="font-medium text-foreground tabular-nums">
+                {entry.result.matchesWon}/{entry.result.matchesPlayed}
+              </span>
+            </span>
+            <span>·</span>
+            <span className="font-medium text-foreground tabular-nums">
+              {pointsLabel} pts
+            </span>
+          </div>
+        ) : null}
+      </div>
+    </article>
   );
 }
