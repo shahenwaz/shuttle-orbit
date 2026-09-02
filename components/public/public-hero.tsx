@@ -33,7 +33,7 @@ export function PublicHero({
         </div>
 
         <div className="space-y-3 sm:space-y-4">
-          <h1 className="max-w-3xl text-[2rem] font-bold leading-[1.08] tracking-[-0.045em] sm:text-5xl sm:leading-[1.05] lg:text-6xl">
+          <h1 className="max-w-3xl text-xl leading-tight font-bold tracking-[-0.045em] sm:text-2xl">
             {title}
           </h1>
 

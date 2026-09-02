@@ -44,7 +44,7 @@ export default async function LeaderboardPage({
   ]);
 
   const title = activeCategory
-    ? `${activeCategory} category player rankings`
+    ? `${activeCategory} category players ranking`
     : "BD Community players universal ranking";
 
   const activeValue = activeCategory
